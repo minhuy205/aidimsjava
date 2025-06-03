@@ -10,7 +10,7 @@ const HomePage = () => {
               </div>
               <ul className="nav-menu">
                 <li>
-                  <a href="#home">Trang chủ</a>
+                  <a href="index.js">Trang chủ</a>
                 </li>
                 <li>
                   <a href="#about">Giới thiệu</a>
