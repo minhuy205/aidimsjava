@@ -163,6 +163,145 @@
   color: white;
 }
 
+/* Hero Image */
+.hero-image {
+  display: flex;
+  justify-content: center;
+}
+
+.demo-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.card-header h3 {
+  color: #0066cc;
+  font-size: 1.3rem;
+}
+
+.demo-feature {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  margin: 10px 0;
+  background: #f8f9fa;
+  border-radius: 10px;
+  transition: transform 0.3s;
+}
+
+.demo-feature:hover {
+  transform: translateX(5px);
+}
+
+.demo-feature .icon {
+  font-size: 1.5rem;
+}
+
+/* Why Choose Section */
+.why-choose {
+  padding: 80px 0;
+  background: white;
+}
+
+.why-choose h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #0066cc;
+  margin-bottom: 50px;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+}
+
+.benefit-card {
+  text-align: center;
+  padding: 40px 20px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+
+.benefit-card:hover {
+  transform: translateY(-10px);
+}
+
+.benefit-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.benefit-card h3 {
+  color: #0066cc;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+  color: white;
+  padding: 80px 0;
+  text-align: center;
+}
+
+.cta-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.cta-section p {
+  font-size: 1.2rem;
+  margin-bottom: 40px;
+}
+
+.cta-stats {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  margin: 40px 0;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat strong {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 5px;
+}
+
+.btn-cta {
+  background: white;
+  color: #0066cc;
+  padding: 15px 40px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: all 0.3s;
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.btn-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
 /* Footer */
 .footer {
   background: #333;
@@ -221,6 +360,11 @@
 
   .nav-menu {
     display: none;
+  }
+
+  .cta-stats {
+    flex-direction: column;
+    gap: 30px;
   }
 
   .button-group {
