@@ -10,7 +10,7 @@ function LoginRegister() {
   return (
     <div className="auth-wrapper">
       {!isRegister ? (
-        <div className="container">
+        <div className="container3">
           <h2>Đăng nhập</h2>
           <form action="#" method="POST">
             <input type="text" name="username" placeholder="Tên đăng nhập" required />
