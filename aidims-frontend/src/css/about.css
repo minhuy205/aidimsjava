@@ -1,3 +1,58 @@
 .about-page {
-    margin-top: 70px;
+    margin-top: 80px;
+    margin-bottom: 10px;
+
 }
+
+.about-dashboard {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.about-dashboard h1 {
+    font-size: 32px;
+    color: #1e40af;
+    margin-bottom: 20px;
+}
+
+.about-dashboard h2 {
+    font-size: 24px;
+    color: #1e40af;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    border-left: 4px solid #3b82f6;
+    padding-left: 10px;
+  }
+  
+  .about-dashboard ul,
+  .about-dashboard ol {
+    padding-left: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .about-dashboard ul li,
+  .about-dashboard ol li {
+    margin-bottom: 10px;
+    color: #374151;
+  }
+  
+  .about-dashboard blockquote {
+    font-style: italic;
+    background-color: #f1f5f9;
+    border-left: 4px solid #60a5fa;
+    padding: 15px;
+    margin: 20px 0;
+    color: #1e293b;
+  }
+  
+  li a {
+    color: #3b82f6;
+    text-decoration: none;
+  }
+    li a:hover {
+        text-decoration: underline;
+    }

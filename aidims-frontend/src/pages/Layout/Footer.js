@@ -11,13 +11,13 @@ const Footer = () => (
                   <h4>Liên kết</h4>
                   <ul>
                     <li>
-                      <a href="#about">Giới thiệu</a>
+                      <a href="/about">Giới thiệu</a>
                     </li>
                     <li>
-                      <a href="#features">Tính năng</a>
+                      <a href="/feature">Tính năng</a>
                     </li>
                     <li>
-                      <a href="#contact">Liên hệ</a>
+                      <a href="/contact">Liên hệ</a>
                     </li>
                   </ul>
                 </div>

@@ -14,10 +14,10 @@ const Header = () => (
                   <a href="/about">Giới thiệu</a>
                 </li>
                 <li>
-                  <a href="#features">Tính năng</a>
+                  <a href="/Feature">Tính năng</a>
                 </li>
                 <li>
-                  <a href="#contact">Liên hệ</a>
+                  <a href="/Contact">Liên hệ</a>
                 </li>
                 <li>
                   <a href="/LoginRegister" className="login-btn">

@@ -1,0 +1,43 @@
+.role-features {
+    text-align: left;
+  }
+  
+  .role-features h2 {
+    font-size: 26px;
+    margin-bottom: 30px;
+    color: #1e3a8a;
+  }
+  
+  .role-block {
+    margin-bottom: 30px;
+    background-color: #f1f5f9;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.05);
+  }
+  
+  .role-block h3 {
+    color: #0f172a;
+    margin-bottom: 10px;
+    font-size: 20px;
+  }
+  
+  .role-block ul {
+    list-style: disc;
+    padding-left: 20px;
+  }
+  
+  .role-block li {
+    margin-bottom: 8px;
+    color: #374151;
+  }
+  
+  .bonus-tag {
+    background-color: #dcfce7;
+    color: #166534;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-left: 6px;
+  }
+  
