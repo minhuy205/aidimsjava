@@ -4,7 +4,7 @@ import HomePage from "./pages/Guest/index.js";
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginRegister from "./pages/Login/Login.js";
 import IndexDoctor from "./pages/Doctor/indexDoctor.js";
-import About from "./pages/Guest/About.js";
+import About from './pages/Guest/about.js';
 import Contact from './pages/Guest/Contact.js';
 import Feature from './pages/Guest/Feature.js';
 
