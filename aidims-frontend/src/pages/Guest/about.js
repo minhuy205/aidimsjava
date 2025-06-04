@@ -1,26 +1,13 @@
 // pages/About.js
 import React, { memo } from "react";
+import Layout from '../Layout/Layout';  // đúng theo cấu trúc hiện tại
 import "../../css/index.css"; // Đảm bảo đúng đường dẫn theo cấu trúc dự án của bạn
+import "../../css/about.css"; // Đảm bảo đúng đường dẫn theo cấu trúc dự án của bạn
 
 const About = () => {
     return (
+        <Layout>
         <div className="about-page">
-            {/* Header Navigation */}
-            <nav className="navbar">
-                <div className="nav-container">
-                    <div className="nav-logo">
-                        <a href="/"><h2>🏥 AIDIMS</h2></a>
-                    </div>
-                    <ul className="nav-menu">
-                        <li><a href="/">Trang chủ</a></li>
-                        <li><a href="/About">Giới thiệu</a></li>
-                        <li><a href="#features">Tính năng</a></li>
-                        <li><a href="#contact">Liên hệ</a></li>
-                        <li><a href="/LoginRegister" className="login-btn">Đăng nhập</a></li>
-                    </ul>
-                </div>
-            </nav>
-
             {/* About Section */}
             <section className="about-dashboard">
                 <h1>Giới thiệu về AIDIMS</h1>
@@ -37,7 +24,9 @@ const About = () => {
                     chất lượng điều trị và chăm sóc bệnh nhân.
                 </p>
             </section>
+            
         </div>
+        </Layout>
     );
 };
 
