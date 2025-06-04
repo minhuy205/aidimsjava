@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../css/login.css';
+import '../../css/login.css';
 
 function LoginRegister() {
   const [isRegister, setIsRegister] = useState(false);
@@ -21,7 +21,16 @@ function LoginRegister() {
             Chưa có tài khoản? <a href="#" onClick={showRegister}>Đăng ký</a>
           </p>
           <p className="center-text">
-            <a href="/index.html">Quay lại</a>
+            <a href="/">Nhân viên tiếp nhận</a>
+          </p>
+          <p className="center-text">
+            <a href="/IndexDoctor">Bác sĩ</a>
+          </p>
+          <p className="center-text">
+            <a href="/">Kỹ thuật viên hình ảnh</a>
+          </p>
+          <p className="center-text">
+            <a href="/">Quay lại</a>
           </p>
           <p className="center-text admin-link">
             <a href="/layoutADMIN.html">Chuyển sang trang dành cho Admin</a>
@@ -42,7 +51,7 @@ function LoginRegister() {
             Đã có tài khoản? <a href="#" onClick={showLogin}>Đăng nhập</a>
           </p>
           <p className="center-text">
-            <a href="/index.html">Quay lại</a>
+            <a href="/">Quay lại</a>
           </p>
         </div>
       )}

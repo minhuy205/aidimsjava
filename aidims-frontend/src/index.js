@@ -1,6 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './css/index.css';
 import HomePage from "./pages/Guest/index.js";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LoginRegister from "./pages/Login/Login.js";
+import IndexDoctor from "./pages/Doctor/indexDoctor.js";
+import About from "./pages/Guest/about.js";
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<HomePage />);
+root.render(
+  <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/LoginRegister" element={<LoginRegister />} />
+      <Route path="/IndexDoctor" element={<IndexDoctor />} />
+      <Route path="/About" element={<About />} />
+        {/* Add more routes as needed */}
+    </Routes>
+  </BrowserRouter>
+);

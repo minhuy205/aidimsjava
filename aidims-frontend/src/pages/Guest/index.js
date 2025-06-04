@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import "../../css/index.css"; // Ensure this path is correct based on your project structure
 const HomePage = () => {
     return (
         <div className="App">
@@ -6,14 +7,14 @@ const HomePage = () => {
           <nav className="navbar">
             <div className="nav-container">
               <div className="nav-logo">
-                <h2>🏥 AIDIMS</h2>
+                <a href="/"><h2>🏥 AIDIMS</h2></a>
               </div>
               <ul className="nav-menu">
                 <li>
-                  <a href="index.js">Trang chủ</a>
+                  <a href="/">Trang chủ</a>
                 </li>
                 <li>
-                  <a href="#about">Giới thiệu</a>
+                  <a href="/about">Giới thiệu</a>
                 </li>
                 <li>
                   <a href="#features">Tính năng</a>
@@ -22,7 +23,7 @@ const HomePage = () => {
                   <a href="#contact">Liên hệ</a>
                 </li>
                 <li>
-                  <a href="../pages/Login/LoginRegister.js" className="login-btn">
+                  <a href="/LoginRegister" className="login-btn">
                     Đăng nhập
                   </a>
                 </li>
@@ -52,7 +53,7 @@ const HomePage = () => {
                   <a className="btn-primary" href="#demo">
                     Xem Demo
                   </a>
-                  <a className="btn-secondary" href="#login">
+                  <a className="btn-secondary" href="/LoginRegister">
                     Đăng nhập Hệ thống
                   </a>
                 </div>
