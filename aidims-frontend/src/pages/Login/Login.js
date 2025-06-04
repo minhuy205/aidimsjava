@@ -37,7 +37,7 @@ function LoginRegister() {
           </p>
         </div>
       ) : (
-        <div className="container">
+        <div className="container3">
           <h2>Đăng ký</h2>
           <form action="#" method="POST">
             <input type="text" name="fullname" placeholder="Họ và tên" required />
