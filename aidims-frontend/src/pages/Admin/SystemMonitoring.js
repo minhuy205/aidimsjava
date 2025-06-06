@@ -149,7 +149,7 @@ const SystemMonitoring = () => {
       case "verify":
         return "✅"
       case "assign":
-        return "👨‍⚕️"
+        return "👨⚕️"
       default:
         return "📝"
     }
@@ -182,47 +182,46 @@ const SystemMonitoring = () => {
           <p>Theo dõi hiệu suất và trạng thái hoạt động của hệ thống AIDIMS</p>
         </div>
 
-        {/* System Overview */}
-        <div className="system-overview">
-          <h3>📈 Tổng quan hệ thống</h3>
-          <div className="overview-grid">
-            <div className="overview-card">
-              <div className="card-icon">👥</div>
-              <div className="card-content">
-                <div className="card-number">{systemStats.totalUsers}</div>
-                <div className="card-label">Tổng người dùng</div>
-                <div className="card-sublabel">{systemStats.activeUsers} đang hoạt động</div>
-              </div>
-            </div>
-            <div className="overview-card">
-              <div className="card-icon">👤</div>
-              <div className="card-content">
-                <div className="card-number">{systemStats.totalPatients}</div>
-                <div className="card-label">Tổng bệnh nhân</div>
-                <div className="card-sublabel">Trong hệ thống</div>
-              </div>
-            </div>
-            <div className="overview-card">
-              <div className="card-icon">🖼️</div>
-              <div className="card-content">
-                <div className="card-number">{systemStats.totalImages}</div>
-                <div className="card-label">Hình ảnh DICOM</div>
-                <div className="card-sublabel">Đã lưu trữ</div>
-              </div>
-            </div>
-            <div className="overview-card">
-              <div className="card-icon">💾</div>
-              <div className="card-content">
-                <div className="card-number">{systemStats.storageUsed} GB</div>
-                <div className="card-label">Dung lượng sử dụng</div>
-                <div className="card-sublabel">
-                  {Math.round((systemStats.storageUsed / systemStats.storageTotal) * 100)}% / {systemStats.storageTotal}{" "}
-                  GB
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* System Overview */}
+<div className="system-overview">
+  <h3>📈 Tổng quan hệ thống</h3>
+  <div className="overview-grid">
+    <div className="overview-card">
+      <div className="card-icon">👥</div>
+      <div className="card-content">
+        <div className="card-label">Tổng người dùng</div>
+        <div className="card-number">{systemStats.totalUsers}</div>
+        <div className="card-sublabel">{systemStats.activeUsers} đang hoạt động</div>
+      </div>
+    </div>
+    <div className="overview-card">
+      <div className="card-icon">👤</div>
+      <div className="card-content">
+        <div className="card-label">Tổng bệnh nhân</div>
+        <div className="card-number">{systemStats.totalPatients}</div>
+        <div className="card-sublabel">Trong hệ thống</div>
+      </div>
+    </div>
+    <div className="overview-card">
+      <div className="card-icon">🖼️</div>
+      <div className="card-content">
+        <div className="card-label">Hình ảnh DICOM</div>
+        <div className="card-number">{systemStats.totalImages}</div>
+        <div className="card-sublabel">Đã lưu trữ</div>
+      </div>
+    </div>
+    <div className="overview-card">
+      <div className="card-icon">💾</div>
+      <div className="card-content">
+        <div className="card-label">Dung lượng sử dụng</div>
+        <div className="card-number">{systemStats.storageUsed} GB</div>
+        <div className="card-sublabel">
+          {Math.round((systemStats.storageUsed / systemStats.storageTotal) * 100)}% / {systemStats.storageTotal} GB
         </div>
+      </div>
+    </div>
+  </div>
+</div>
 
         {/* System Performance */}
         <div className="system-performance">

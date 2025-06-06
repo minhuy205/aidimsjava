@@ -2,7 +2,7 @@
 .system-monitoring-page {
   max-width: 1200px;
   margin: 2rem auto;
-  padding: 0 2rem;
+  padding: 6rem 2rem 2rem; /* Thêm padding-top để tránh bị che bởi header */
 }
 
 .page-header {
@@ -271,7 +271,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .system-monitoring-page {
-    padding: 0 1rem;
+    padding: 5rem 1rem 2rem; /* Giảm padding-top trên mobile */
   }
 
   .overview-grid {
@@ -289,6 +289,10 @@
 }
 
 @media (max-width: 480px) {
+  .system-monitoring-page {
+    padding: 4rem 1rem 1rem; /* Padding nhỏ hơn cho mobile nhỏ */
+  }
+
   .overview-card {
     flex-direction: column;
     text-align: center;

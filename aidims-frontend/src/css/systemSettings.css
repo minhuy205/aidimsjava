@@ -2,7 +2,7 @@
 .system-settings-page {
   max-width: 1200px;
   margin: 2rem auto;
-  padding: 0 2rem;
+  padding: 6rem 2rem 2rem; /* Thêm padding-top để tránh bị che bởi header */
 }
 
 .page-header {
@@ -264,7 +264,7 @@ input:checked + .slider:before {
 
 @media (max-width: 768px) {
   .system-settings-page {
-    padding: 0 1rem;
+    padding: 5rem 1rem 2rem; /* Giảm padding-top trên mobile */
   }
 
   .settings-grid {
@@ -278,6 +278,10 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 480px) {
+  .system-settings-page {
+    padding: 4rem 1rem 1rem; /* Padding nhỏ hơn cho mobile nhỏ */
+  }
+
   .tab-item {
     padding: 0.75rem 0.5rem;
     font-size: 0.9rem;

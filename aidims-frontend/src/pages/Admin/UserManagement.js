@@ -273,23 +273,23 @@ const UserManagement = () => {
         </div>
 
         <div className="users-stats">
-          <div className="stat-card">
-            <div className="stat-number">{users.length}</div>
-            <div className="stat-label">Tổng người dùng</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">{users.filter((u) => u.isActive).length}</div>
-            <div className="stat-label">Đang hoạt động</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">{users.filter((u) => u.roleName === "doctor").length}</div>
-            <div className="stat-label">Bác sĩ</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">{users.filter((u) => u.roleName === "technician").length}</div>
-            <div className="stat-label">Kỹ thuật viên</div>
-          </div>
-        </div>
+  <div className="stat-card">
+    <div className="stat-label">Tổng người dùng</div>
+    <div className="stat-number">{users.length}</div>
+  </div>
+  <div className="stat-card">
+    <div className="stat-label">Đang hoạt động</div>
+    <div className="stat-number">{users.filter((u) => u.isActive).length}</div>
+  </div>
+  <div className="stat-card">
+    <div className="stat-label">Bác sĩ</div>
+    <div className="stat-number">{users.filter((u) => u.roleName === "doctor").length}</div>
+  </div>
+  <div className="stat-card">
+    <div className="stat-label">Kỹ thuật viên</div>
+    <div className="stat-number">{users.filter((u) => u.roleName === "technician").length}</div>
+  </div>
+</div>
 
         <div className="users-table-container">
           <table className="users-table">
