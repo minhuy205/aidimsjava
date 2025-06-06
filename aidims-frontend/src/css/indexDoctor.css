@@ -1,145 +1,123 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f7fa;
-    padding: 20px;
-}
-
-.services-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.service-card {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.service-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.icon-container {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #2196F3, #1976D2);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.icon {
-    width: 32px;
-    height: 32px;
-    fill: white;
-}
-
-.service-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 16px;
-    line-height: 1.4;
-}
-
-.service-description {
-    color: #666;
-    line-height: 1.6;
-    font-size: 14px;
-    margin-bottom: 20px;
-}
-.expand-icon {
-    width: 16px;
-    height: 16px;
-    stroke: #666;
-    transition: stroke 0.3s ease;
-}
-
-.highlight {
-    color: #2196F3;
-    font-weight: 600;
-}
-
-@media (max-width: 768px) {
-    .services-container {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
-    .service-card {
-        padding: 20px;
-    }
-}
-/* Fix cho navbar fixed che nội dung */
-.navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Thêm padding-top cho body để tránh bị che */
+/* Doctor Page Styles */
 .doctor-page {
-    padding-top: 80px; /* Điều chỉnh theo chiều cao navbar */
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-/* Style cho dashboard section */
 .doctor-dashboard {
-    background: linear-gradient(135deg,#f5f7fa 100%);
-    color: rgb(0, 0, 0);
-    text-align: center;
-    padding: 4rem 2rem;
+  background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+  color: white;
+  text-align: center;
+  padding: 4rem 2rem;
 }
 
 .doctor-dashboard h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    font-weight: 700;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.brand {
+  color: #ffd700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .doctor-dashboard p {
-    font-size: 1.2rem;
-    opacity: 0.9;
-    max-width: 600px;
-    margin: 0 auto;
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-/* Style cho medical services section */
+/* Medical Services Section */
 .medical-services-section {
-    padding: 4rem 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
+  padding: 4rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .medical-services-section h2 {
-    text-align: center;
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 3rem;
+  text-align: center;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 3rem;
 }
 
 .services-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.service-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  border: 2px solid transparent;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border-color: #0066cc;
+}
+
+.icon-container {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #0066cc, #004499);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.icon {
+  width: 30px;
+  height: 30px;
+  fill: white;
+}
+
+.service-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.service-description {
+  color: #666;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.highlight {
+  color: #0066cc;
+  font-weight: 700;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .services-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .service-card {
+    padding: 1.5rem;
+  }
+
+  .doctor-dashboard h1 {
+    font-size: 2rem;
+  }
+
+  .doctor-dashboard p {
+    font-size: 1rem;
+  }
 }
