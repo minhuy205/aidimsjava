@@ -8,6 +8,9 @@ import About from './pages/Guest/about.js';
 import Contact from './pages/Guest/Contact.js';
 import Feature from './pages/Guest/Feature.js';
 import PatientProfile from './pages/Doctor/PatientProfile.js';
+import IndexReceptionist from './pages/nhanvientiepnhan/IndexReceptionist.js';
+import PatientForm from './pages/nhanvientiepnhan/PatientForm.js';
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <BrowserRouter>
@@ -16,6 +19,8 @@ root.render(
       <Route path="/LoginRegister" element={<LoginRegister />} />
         <Route path="/LoginRegister" element={<LoginRegister />} />
       <Route path="/IndexDoctor" element={<IndexDoctor />} />
+      <Route path="/IndexReceptionist" element={<IndexReceptionist />} />
+      <Route path="/patient" element={<PatientForm />} />
       <Route path="/About" element={<About />} />
       <Route path="/Contact" element={<Contact />} />
       <Route path="/Feature" element={<Feature />} />

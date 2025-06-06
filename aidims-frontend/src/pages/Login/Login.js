@@ -21,7 +21,7 @@ function LoginRegister() {
             Chưa có tài khoản? <a href="#" onClick={showRegister}>Đăng ký</a>
           </p>
           <p className="center-text">
-            <a href="/">Nhân viên tiếp nhận</a>
+            <a href="/IndexReceptionist">Nhân viên tiếp nhận</a>
           </p>
           <p className="center-text">
             <a href="/IndexDoctor">Bác sĩ</a>
