@@ -1,0 +1,311 @@
+/* Import DICOM Page Styles */
+.import-dicom-page {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.page-header h2 {
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Upload Container */
+.upload-container {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 3rem;
+}
+
+.upload-container h3 {
+  color: #0066cc;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e6f0ff;
+}
+
+.upload-area {
+  border: 2px dashed #0066cc;
+  border-radius: 10px;
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 2rem;
+  background: #f8fafc;
+}
+
+.upload-area:hover {
+  background: #e6f0ff;
+  border-color: #0052a3;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: #0066cc;
+  margin-bottom: 1rem;
+}
+
+.upload-text {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.upload-subtext {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.upload-input {
+  display: none;
+}
+
+/* Form Section */
+.form-section {
+  margin-top: 2rem;
+}
+
+.form-section h4 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+  outline: none;
+}
+
+/* File List */
+.file-list {
+  margin-top: 2rem;
+}
+
+.file-list h4 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  border-left: 4px solid #0066cc;
+}
+
+.file-icon {
+  font-size: 1.5rem;
+  color: #0066cc;
+  margin-right: 1rem;
+}
+
+.file-info {
+  flex: 1;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.file-meta {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-remove {
+  background: #f8d7da;
+  color: #dc3545;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-remove:hover {
+  background: #f5c2c7;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn-primary {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary:hover {
+  background: #0052a3;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 102, 204, 0.2);
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+/* Recent Imports Section */
+.recent-imports {
+  margin-top: 3rem;
+}
+
+.recent-imports h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #eee;
+}
+
+.imports-table-container {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.imports-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.imports-table th {
+  background: linear-gradient(135deg, #0066cc, #004499);
+  color: white;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.imports-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-success {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #664d03;
+}
+
+.status-error {
+  background: #f8d7da;
+  color: #842029;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .import-dicom-page {
+    padding: 0 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .upload-area {
+    padding: 2rem 1rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
