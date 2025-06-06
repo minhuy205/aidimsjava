@@ -2,6 +2,7 @@
 .doctor-page {
   min-height: 100vh;
   background: #f8f9fa;
+  padding-top: 80px; /* Thêm padding-top để tránh bị header che */
 }
 
 .patient-list-container {
@@ -133,6 +134,7 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 1rem; /* Thêm padding để modal không dính sát màn hình */
 }
 
 .medical-record-modal {
@@ -143,6 +145,7 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  margin: auto; /* Đảm bảo modal được căn giữa */
 }
 
 .modal-header {
@@ -180,6 +183,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.3s;
 }
 
 .close-btn:hover {
@@ -362,6 +366,14 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .doctor-page {
+    padding-top: 70px; /* Giảm padding-top cho mobile */
+  }
+  
+  .patient-list-container {
+    padding: 0 1rem;
+  }
+
   .patient-stats {
     grid-template-columns: 1fr;
   }
@@ -402,4 +414,36 @@
   .patient-table td {
     padding: 0.5rem;
   }
+  
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+  
+  .medical-record-modal {
+    width: 95%;
+    max-height: 95vh;
+  }
 }
+
+@media (max-width: 480px) {
+  .doctor-page {
+    padding-top: 60px;
+  }
+  
+  .page-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .page-header p {
+    font-size: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+}
+

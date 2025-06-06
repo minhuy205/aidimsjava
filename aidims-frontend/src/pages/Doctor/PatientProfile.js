@@ -143,16 +143,16 @@ const PatientProfile = () => {
 
           <div className="patient-stats">
             <div className="stat-card">
-              <div className="stat-number">{patients.length}</div>
               <div className="stat-label">Tổng bệnh nhân</div>
+              <div className="stat-number">{patients.length}</div>
             </div>
             <div className="stat-card">
-              <div className="stat-number">{patients.filter((p) => p.priority === "Khẩn cấp").length}</div>
               <div className="stat-label">Khẩn cấp</div>
+              <div className="stat-number">{patients.filter((p) => p.priority === "Khẩn cấp").length}</div>
             </div>
             <div className="stat-card">
-              <div className="stat-number">{patients.filter((p) => p.status === "Chờ chụp").length}</div>
               <div className="stat-label">Chờ chụp</div>
+              <div className="stat-number">{patients.filter((p) => p.status === "Chờ chụp").length}</div>
             </div>
           </div>
 
