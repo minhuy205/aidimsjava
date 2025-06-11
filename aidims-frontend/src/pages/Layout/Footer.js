@@ -25,7 +25,7 @@ const Footer = () => (
                   <h4>Hỗ trợ</h4>
                   <ul>
                     <li>
-                      <a href="#help">Trợ giúp</a>
+                      <a href="/User">Trợ giúp</a>
                     </li>
                     <li>
                       <a href="#docs">Tài liệu</a>
