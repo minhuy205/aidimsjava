@@ -21,6 +21,7 @@ import SystemSettings from "./pages/Admin/SystemSettings.js"
 import About from "./pages/Guest/about.js"
 import Contact from "./pages/Guest/Contact.js"
 import Feature from "./pages/Guest/Feature.js"
+import User from "./pages/User.js"
 
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
@@ -60,6 +61,8 @@ root.render(
       <Route path="/About" element={<About />} />
       <Route path="/Contact" element={<Contact />} />
       <Route path="/Feature" element={<Feature />} />
+      <Route path="/User" element={<User />} />
+      {/* Catch-all route */}
     </Routes>
   </BrowserRouter>,
 )

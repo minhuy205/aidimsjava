@@ -5,6 +5,8 @@ import "../../css/index.css"; // Đảm bảo đúng đường dẫn theo cấu 
 import "../../css/about.css"; // Đảm bảo đúng đường dẫn theo cấu trúc dự án của bạn
 import "../../css/feature.css"; // Đảm bảo đúng đường dẫn theo cấu trúc dự án của bạn
 
+
+
 const Feature = () => {
     return (
         <Layout>
