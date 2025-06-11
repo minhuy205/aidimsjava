@@ -54,7 +54,7 @@ const Feature = () => {
   </div>
 
   <div className="role-block">
-    <h3>🤖 Hệ thống xử lý tự động <span className="bonus-tag">(điểm cộng)</span></h3>
+    <h3>🤖 Hệ thống xử lý tự động <span className="bonus-tag">(comming soon)</span></h3>
     <ul>
       <li>Tự động phân tích ảnh bằng AI ngay khi có ảnh mới.</li>
       <li>Gửi thông báo về kết quả hoặc trường hợp khẩn cấp.</li>

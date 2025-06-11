@@ -360,6 +360,11 @@
   color: #388e3c;
 }
 
+.quick-btn.admin {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  color: #f57c00;
+}
+
 .quick-btn:hover {
   transform: translateY(-2px);
   border-color: currentColor;

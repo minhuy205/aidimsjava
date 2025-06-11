@@ -103,7 +103,7 @@ const HomePage = () => {
                   <span>Hoàn tiền nếu không hài lòng</span>
                 </div>
               </div>
-              <a className="btn-cta" href="#register">
+              <a className="btn-cta" href="/LoginRegister">
                 Đăng ký ngay
               </a>
             </div>

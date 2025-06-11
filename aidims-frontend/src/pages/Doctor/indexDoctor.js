@@ -9,7 +9,7 @@ const IndexDoctor = () => {
       <div className="doctor-page">
         <section className="doctor-dashboard">
           <h1>
-            👨‍⚕️ Chào mừng Bác sĩ đến với <span className="brand">AIDIMS</span>
+            👨‍⚕️ Chào mừng Bác sĩ đến với <span className="brand3">AIDIMS</span>
           </h1>
           <p>
             🏥 Quản lý hồ sơ bệnh nhân và phân tích hình ảnh y tế một cách <b>chuyên nghiệp</b> và <b>chính xác</b>
