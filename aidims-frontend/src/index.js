@@ -5,6 +5,7 @@ import Login from "./pages/Login/Login.js"
 import Register from "./pages/Register/Register.js"
 import IndexDoctor from "./pages/Doctor/indexDoctor.js"
 import PatientProfile from "./pages/Doctor/PatientProfile.js"
+import DiagnosticReport from "./pages/Doctor/DiagnosticReport";
 import IndexReceptionist from "./pages/Receptionist/IndexReceptionist.js"
 import PatientForm from "./pages/Receptionist/PatientForm.js"
 import SymptomRecord from "./pages/Receptionist/SymptomRecord.js"
@@ -33,6 +34,9 @@ root.render(
       <Route path="/IndexDoctor" element={<IndexDoctor />} />
       <Route path="/doctor/patients" element={<PatientProfile />} />
       <Route path="/PatientProfile" element={<PatientProfile />} /> {/* Redirect cũ */}
+      <Route path="/doctor/reports" element={<DiagnosticReport />} />
+      <Route path="DiagnosticReport" element={<DiagnosticReport />} />
+
       {/* Receptionist Routes */}
       <Route path="/IndexReceptionist" element={<IndexReceptionist />} />
       <Route path="/receptionist" element={<IndexReceptionist />} />
