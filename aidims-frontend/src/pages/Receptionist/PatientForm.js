@@ -1,188 +1,190 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Layout from "../Layout/Layout"
-import "../../css/patientForm.css"
+import { useState, useEffect } from "react";
+import Layout from "../Layout/Layout";
+import "../../css/patientForm.css";
 
 const PatientForm = () => {
-  const [patients, setPatients] = useState([])
+  const [patients, setPatients] = useState([]);
   const [form, setForm] = useState({
-    patientCode: "",
-    fullName: "",
-    dateOfBirth: "",
+    patient_code: "",
+    full_name: "",
+    date_of_birth: "",
     gender: "Nam",
     phone: "",
     email: "",
     address: "",
-    identityNumber: "",
-    insuranceNumber: "",
-    emergencyContactName: "",
-    emergencyContactPhone: "",
-    bloodType: "",
+    identity_number: "",
+    insurance_number: "",
+    emergency_contact_name: "",
+    emergency_contact_phone: "",
+    blood_type: "",
     allergies: "",
-    medicalHistory: "",
-  })
-  const [editId, setEditId] = useState(null)
-  const [selectedPatient, setSelectedPatient] = useState(null)
-  const [showModal, setShowModal] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
+    medical_history: "",
+  });
+  const [editId, setEditId] = useState(null);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Load patients from localStorage on component mount
+  // Lấy danh sách bệnh nhân từ backend khi load trang
   useEffect(() => {
-    const savedPatients = localStorage.getItem("patients")
-    if (savedPatients) {
-      setPatients(JSON.parse(savedPatients))
-    } else {
-      // Initialize with sample data
-      const samplePatients = [
-        {
-          id: 1,
-          patientCode: "BN001",
-          fullName: "Nguyễn Văn Nam",
-          dateOfBirth: "1985-03-15",
-          gender: "Nam",
-          phone: "0912345678",
-          email: "nvnam@email.com",
-          address: "123 Nguyễn Huệ, Q.1, TP.HCM",
-          identityNumber: "123456789",
-          insuranceNumber: "SV123456789",
-          emergencyContactName: "Nguyễn Thị Lan",
-          emergencyContactPhone: "0987654321",
-          bloodType: "A+",
-          allergies: "Không có",
-          medicalHistory: "Tiền sử cao huyết áp",
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          patientCode: "BN002",
-          fullName: "Trần Thị Hoa",
-          dateOfBirth: "1990-07-22",
-          gender: "Nữ",
-          phone: "0923456789",
-          email: "tthoa@email.com",
-          address: "456 Lê Lợi, Q.3, TP.HCM",
-          identityNumber: "987654321",
-          insuranceNumber: "SV987654321",
-          emergencyContactName: "Trần Văn Minh",
-          emergencyContactPhone: "0901234567",
-          bloodType: "B+",
-          allergies: "Dị ứng penicillin",
-          medicalHistory: "Không có tiền sử bệnh lý",
-          createdAt: new Date().toISOString(),
-        },
-      ]
-      setPatients(samplePatients)
-      localStorage.setItem("patients", JSON.stringify(samplePatients))
-    }
-  }, [])
-
-  // Save patients to localStorage whenever patients array changes
-  useEffect(() => {
-    localStorage.setItem("patients", JSON.stringify(patients))
-  }, [patients])
+    fetch("http://localhost:8080/api/receptionist/patients")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("API DATA:", data); // Thêm dòng này để kiểm tra
+        setPatients(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setPatients([]));
+  }, []);
 
   const generatePatientCode = () => {
-    const lastPatient = patients[patients.length - 1]
-    if (!lastPatient) return "BN001"
-
-    const lastCode = lastPatient.patientCode
-    const number = Number.parseInt(lastCode.substring(2)) + 1
-    return `BN${number.toString().padStart(3, "0")}`
-  }
+    if (patients.length === 0) return "BN001";
+    const codes = patients
+      .map((p) => p.patient_code)
+      .filter((code) => typeof code === "string" && code.startsWith("BN"));
+    const numbers = codes
+      .map((code) => parseInt(code.replace("BN", ""), 10))
+      .filter((num) => !isNaN(num));
+    const maxNum = numbers.length > 0 ? Math.max(...numbers) : 0;
+    return `BN${(maxNum + 1).toString().padStart(3, "0")}`;
+  };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (editId) {
-      setPatients(patients.map((p) => (p.id === editId ? { ...p, ...form } : p)))
-    } else {
-      const newPatient = {
-        ...form,
-        id: Date.now(),
-        patientCode: form.patientCode || generatePatientCode(),
-        createdAt: new Date().toISOString(),
+      // Cập nhật bệnh nhân
+      try {
+        const response = await fetch(
+          "http://localhost:8080/api/receptionist/patient",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...form, patient_id: editId }),
+          }
+        );
+        if (!response.ok) throw new Error("Cập nhật bệnh nhân thất bại!");
+        const updatedPatient = await response.json();
+        setPatients(
+          patients.map((p) => (p.patient_id === editId ? updatedPatient : p))
+        );
+      } catch (error) {
+        alert(error.message);
       }
-      setPatients([...patients, newPatient])
+    } else {
+      // Thêm mới bệnh nhân
+      try {
+        const response = await fetch(
+          "http://localhost:8080/api/receptionist/patient",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...form,
+              patient_code: form.patient_code || generatePatientCode(),
+            }),
+          }
+        );
+        if (!response.ok) throw new Error("Thêm bệnh nhân thất bại!");
+        const newPatient = await response.json();
+        setPatients([...patients, newPatient]);
+      } catch (error) {
+        alert(error.message);
+      }
     }
-
     // Reset form
     setForm({
-      patientCode: "",
-      fullName: "",
-      dateOfBirth: "",
+      patient_code: "",
+      full_name: "",
+      date_of_birth: "",
       gender: "Nam",
       phone: "",
       email: "",
       address: "",
-      identityNumber: "",
-      insuranceNumber: "",
-      emergencyContactName: "",
-      emergencyContactPhone: "",
-      bloodType: "",
+      identity_number: "",
+      insurance_number: "",
+      emergency_contact_name: "",
+      emergency_contact_phone: "",
+      blood_type: "",
       allergies: "",
-      medicalHistory: "",
-    })
-    setEditId(null)
-  }
+      medical_history: "",
+    });
+    setEditId(null);
+  };
 
   const handleEdit = (patient) => {
     setForm({
-      patientCode: patient.patientCode,
-      fullName: patient.fullName,
-      dateOfBirth: patient.dateOfBirth,
-      gender: patient.gender,
-      phone: patient.phone,
-      email: patient.email,
-      address: patient.address,
-      identityNumber: patient.identityNumber,
-      insuranceNumber: patient.insuranceNumber,
-      emergencyContactName: patient.emergencyContactName,
-      emergencyContactPhone: patient.emergencyContactPhone,
-      bloodType: patient.bloodType,
-      allergies: patient.allergies,
-      medicalHistory: patient.medicalHistory,
-    })
-    setEditId(patient.id)
-  }
+      patient_code: patient.patient_code || "",
+      full_name: patient.full_name || "",
+      date_of_birth: patient.date_of_birth || "",
+      gender: patient.gender || "Nam",
+      phone: patient.phone || "",
+      email: patient.email || "",
+      address: patient.address || "",
+      identity_number: patient.identity_number || "",
+      insurance_number: patient.insurance_number || "",
+      emergency_contact_name: patient.emergency_contact_name || "",
+      emergency_contact_phone: patient.emergency_contact_phone || "",
+      blood_type: patient.blood_type || "",
+      allergies: patient.allergies || "",
+      medical_history: patient.medical_history || "",
+    });
+    setEditId(patient.patient_id);
+  };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa hồ sơ này?")) {
-      setPatients(patients.filter((p) => p.id !== id))
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/receptionist/patient/${id}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!response.ok) throw new Error("Xóa bệnh nhân thất bại!");
+        setPatients(patients.filter((p) => p.patient_id !== id));
+      } catch (error) {
+        alert(error.message);
+      }
     }
-  }
+  };
 
   const handleRowClick = (patient) => {
-    setSelectedPatient(patient)
-    setShowModal(true)
-  }
+    setSelectedPatient(patient);
+    setShowModal(true);
+  };
 
   const closeModal = () => {
-    setShowModal(false)
-    setSelectedPatient(null)
-  }
+    setShowModal(false);
+    setSelectedPatient(null);
+  };
 
-  const calculateAge = (dateOfBirth) => {
-    const today = new Date()
-    const birthDate = new Date(dateOfBirth)
-    let age = today.getFullYear() - birthDate.getFullYear()
-    const monthDiff = today.getMonth() - birthDate.getMonth()
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--
+  const calculateAge = (date_of_birth) => {
+    if (!date_of_birth) return "";
+    const today = new Date();
+    const birthDate = new Date(date_of_birth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
     }
-    return age
-  }
+    return age;
+  };
 
   const filteredPatients = patients.filter(
     (patient) =>
-      patient.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.patientCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm),
-  )
+      (patient.full_name &&
+        patient.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (patient.patient_code &&
+        patient.patient_code
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (patient.phone && patient.phone.includes(searchTerm))
+  );
 
   return (
     <Layout>
@@ -200,26 +202,41 @@ const PatientForm = () => {
                 <label>Mã bệnh nhân:</label>
                 <input
                   type="text"
-                  name="patientCode"
-                  value={form.patientCode}
+                  name="patient_code"
+                  value={form.patient_code}
                   onChange={handleChange}
                   placeholder={editId ? "" : generatePatientCode()}
                 />
               </div>
               <div className="form-group">
                 <label>Họ và tên: *</label>
-                <input type="text" name="fullName" value={form.fullName} onChange={handleChange} required />
+                <input
+                  type="text"
+                  name="full_name"
+                  value={form.full_name || ""}
+                  onChange={handleChange}
+                />
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
                 <label>Ngày sinh: *</label>
-                <input type="date" name="dateOfBirth" value={form.dateOfBirth} onChange={handleChange} required />
+                <input
+                  type="date"
+                  name="date_of_birth"
+                  value={form.date_of_birth || ""}
+                  onChange={handleChange}
+                  required
+                />
               </div>
               <div className="form-group">
                 <label>Giới tính:</label>
-                <select name="gender" value={form.gender} onChange={handleChange}>
+                <select
+                  name="gender"
+                  value={form.gender}
+                  onChange={handleChange}
+                >
                   <option value="Nam">Nam</option>
                   <option value="Nữ">Nữ</option>
                   <option value="Khác">Khác</option>
@@ -230,27 +247,53 @@ const PatientForm = () => {
             <div className="form-row">
               <div className="form-group">
                 <label>Số điện thoại: *</label>
-                <input type="tel" name="phone" value={form.phone} onChange={handleChange} required />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={form.phone || ""}
+                  onChange={handleChange}
+                  required
+                />
               </div>
               <div className="form-group">
                 <label>Email:</label>
-                <input type="email" name="email" value={form.email} onChange={handleChange} />
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email || ""}
+                  onChange={handleChange}
+                />
               </div>
             </div>
 
             <div className="form-group full-width">
               <label>Địa chỉ:</label>
-              <input type="text" name="address" value={form.address} onChange={handleChange} />
+              <input
+                type="text"
+                name="address"
+                value={form.address || ""}
+                onChange={handleChange}
+              />
             </div>
 
             <div className="form-row">
               <div className="form-group">
                 <label>CMND/CCCD:</label>
-                <input type="text" name="identityNumber" value={form.identityNumber} onChange={handleChange} />
+                <input
+                  type="text"
+                  name="identity_number"
+                  value={form.identity_number || ""}
+                  onChange={handleChange}
+                />
               </div>
               <div className="form-group">
                 <label>Số BHYT:</label>
-                <input type="text" name="insuranceNumber" value={form.insuranceNumber} onChange={handleChange} />
+                <input
+                  type="text"
+                  name="insurance_number"
+                  value={form.insurance_number || ""}
+                  onChange={handleChange}
+                />
               </div>
             </div>
 
@@ -259,8 +302,8 @@ const PatientForm = () => {
                 <label>Người liên hệ khẩn cấp:</label>
                 <input
                   type="text"
-                  name="emergencyContactName"
-                  value={form.emergencyContactName}
+                  name="emergency_contact_name"
+                  value={form.emergency_contact_name || ""}
                   onChange={handleChange}
                 />
               </div>
@@ -268,8 +311,8 @@ const PatientForm = () => {
                 <label>SĐT người liên hệ:</label>
                 <input
                   type="tel"
-                  name="emergencyContactPhone"
-                  value={form.emergencyContactPhone}
+                  name="emergency_contact_phone"
+                  value={form.emergency_contact_phone || ""}
                   onChange={handleChange}
                 />
               </div>
@@ -278,7 +321,11 @@ const PatientForm = () => {
             <div className="form-row">
               <div className="form-group">
                 <label>Nhóm máu:</label>
-                <select name="bloodType" value={form.bloodType} onChange={handleChange}>
+                <select
+                  name="blood_type"
+                  value={form.blood_type || ""}
+                  onChange={handleChange}
+                >
                   <option value="">Chọn nhóm máu</option>
                   <option value="A+">A+</option>
                   <option value="A-">A-</option>
@@ -296,7 +343,7 @@ const PatientForm = () => {
               <label>Dị ứng:</label>
               <textarea
                 name="allergies"
-                value={form.allergies}
+                value={form.allergies || ""}
                 onChange={handleChange}
                 rows="2"
                 placeholder="Ghi rõ các loại dị ứng (nếu có)"
@@ -306,8 +353,8 @@ const PatientForm = () => {
             <div className="form-group full-width">
               <label>Tiền sử bệnh:</label>
               <textarea
-                name="medicalHistory"
-                value={form.medicalHistory}
+                name="medical_history"
+                value={form.medical_history || ""}
                 onChange={handleChange}
                 rows="3"
                 placeholder="Ghi rõ tiền sử bệnh lý"
@@ -324,21 +371,22 @@ const PatientForm = () => {
                   className="btn-secondary"
                   onClick={() => {
                     setForm({
-                      patientCode: "",                      fullName: "",
-                      dateOfBirth: "",
+                      patient_code: "",
+                      full_name: "",
+                      date_of_birth: "",
                       gender: "Nam",
                       phone: "",
                       email: "",
                       address: "",
-                      identityNumber: "",
-                      insuranceNumber: "",
-                      emergencyContactName: "",
-                      emergencyContactPhone: "",
-                      bloodType: "",
+                      identity_number: "",
+                      insurance_number: "",
+                      emergency_contact_name: "",
+                      emergency_contact_phone: "",
+                      blood_type: "",
                       allergies: "",
-                      medicalHistory: "",
-                    })
-                    setEditId(null)
+                      medical_history: "",
+                    });
+                    setEditId(null);
                   }}
                 >
                   ❌ Hủy
@@ -377,19 +425,23 @@ const PatientForm = () => {
               </thead>
               <tbody>
                 {filteredPatients.map((patient) => (
-                  <tr key={patient.id} onClick={() => handleRowClick(patient)} className="patient-row">
-                    <td className="patient-code">{patient.patientCode}</td>
-                    <td className="patient-name">{patient.fullName}</td>
-                    <td>{calculateAge(patient.dateOfBirth)}</td>
+                  <tr
+                    key={patient.patient_id}
+                    onClick={() => handleRowClick(patient)}
+                    className="patient-row"
+                  >
+                    <td className="patient-code">{patient.patient_code}</td>
+                    <td className="patient-name">{patient.full_name}</td>
+                    <td>{patient.age}</td>
                     <td>{patient.gender}</td>
                     <td>{patient.phone}</td>
                     <td className="address-cell">{patient.address}</td>
-                    <td>{patient.bloodType}</td>
+                    <td>{patient.blood_type}</td>
                     <td className="actions-cell">
                       <button
                         onClick={(e) => {
-                          e.stopPropagation()
-                          handleEdit(patient)
+                          e.stopPropagation();
+                          handleEdit(patient);
                         }}
                         className="btn-edit"
                         title="Sửa"
@@ -398,8 +450,8 @@ const PatientForm = () => {
                       </button>
                       <button
                         onClick={(e) => {
-                          e.stopPropagation()
-                          handleDelete(patient.id)
+                          e.stopPropagation();
+                          handleDelete(patient.patient_id);
                         }}
                         className="btn-delete"
                         title="Xóa"
@@ -417,13 +469,16 @@ const PatientForm = () => {
         {/* Patient Detail Modal */}
         {showModal && selectedPatient && (
           <div className="modal-overlay" onClick={closeModal}>
-            <div className="medical-record-modal" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="medical-record-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="modal-header">
                 <button className="close-btn" onClick={closeModal}>
                   ×
                 </button>
                 <h3>🏥 HỒ SƠ BỆNH NHÂN</h3>
-                <p>Mã bệnh nhân: {selectedPatient.patientCode}</p>
+                <p>Mã bệnh nhân: {selectedPatient.patient_code}</p>
               </div>
 
               <div className="modal-content">
@@ -433,63 +488,93 @@ const PatientForm = () => {
                   <div className="info-grid">
                     <div className="info-row">
                       <span className="info-label">Họ và tên:</span>
-                      <span className="info-value">{selectedPatient.fullName}</span>
+                      <span className="info-value">
+                        {selectedPatient.full_name}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Mã bệnh nhân:</span>
-                      <span className="info-value">{selectedPatient.patientCode}</span>
+                      <span className="info-value">
+                        {selectedPatient.patient_code}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Ngày sinh:</span>
-                      <span className="info-value">{selectedPatient.dateOfBirth}</span>
+                      <span className="info-value">
+                        {selectedPatient.date_of_birth}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Tuổi:</span>
-                      <span className="info-value">{calculateAge(selectedPatient.dateOfBirth)} tuổi</span>
+                      <span className="info-value">{selectedPatient.age} tuổi</span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Giới tính:</span>
-                      <span className="info-value">{selectedPatient.gender}</span>
+                      <span className="info-value">
+                        {selectedPatient.gender}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Số điện thoại:</span>
-                      <span className="info-value">{selectedPatient.phone}</span>
+                      <span className="info-value">
+                        {selectedPatient.phone}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Email:</span>
-                      <span className="info-value">{selectedPatient.email || "Chưa có"}</span>
+                      <span className="info-value">
+                        {selectedPatient.email || "Chưa có"}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Địa chỉ:</span>
-                      <span className="info-value">{selectedPatient.address}</span>
+                      <span className="info-value">
+                        {selectedPatient.address}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">CMND/CCCD:</span>
-                      <span className="info-value">{selectedPatient.identityNumber}</span>
+                      <span className="info-value">
+                        {selectedPatient.identity_number}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Số BHYT:</span>
-                      <span className="info-value">{selectedPatient.insuranceNumber}</span>
+                      <span className="info-value">
+                        {selectedPatient.insurance_number}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Nhóm máu:</span>
-                      <span className="info-value">{selectedPatient.bloodType}</span>
+                      <span className="info-value">
+                        {selectedPatient.blood_type}
+                      </span>
                     </div>
                     <div className="info-row">
-                      <span className="info-label">Người liên hệ khẩn cấp:</span>
-                      <span className="info-value">{selectedPatient.emergencyContactName}</span>
+                      <span className="info-label">
+                        Người liên hệ khẩn cấp:
+                      </span>
+                      <span className="info-value">
+                        {selectedPatient.emergency_contact_name}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">SĐT người liên hệ:</span>
-                      <span className="info-value">{selectedPatient.emergencyContactPhone}</span>
+                      <span className="info-value">
+                        {selectedPatient.emergency_contact_phone}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Dị ứng:</span>
-                      <span className="info-value">{selectedPatient.allergies || "Không có"}</span>
+                      <span className="info-value">
+                        {selectedPatient.allergies || "Không có"}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Tiền sử bệnh:</span>
-                      <span className="info-value">{selectedPatient.medicalHistory || "Không có"}</span>
+                      <span className="info-value">
+                        {selectedPatient.medical_history || "Không có"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -499,7 +584,7 @@ const PatientForm = () => {
         )}
       </div>
     </Layout>
-  )
-}
+  );
+};
 
-export default PatientForm
+export default PatientForm;
