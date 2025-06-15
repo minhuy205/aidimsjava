@@ -35,16 +35,6 @@ const IndexDoctor = () => {
               </p>
             </Link>
 
-            <Link to="/doctor/imaging-orders" className="service-card">
-              <div className="icon-container">
-                <svg className="icon" fill="white" viewBox="0 0 24 24">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
-                </svg>
-              </div>
-              <h3 className="service-title">🩻 Yêu cầu chụp hình ảnh</h3>
-              <p className="service-description">Tạo yêu cầu chụp X-quang, CT, MRI, siêu âm cho bệnh nhân</p>
-            </Link>
-
             <Link to="/doctor/dicom-viewer" className="service-card">
               <div className="icon-container">
                 <svg className="icon" fill="white" viewBox="0 0 24 24">
@@ -55,36 +45,6 @@ const IndexDoctor = () => {
                 🖼️ Xem và phân tích hình ảnh <span className="highlight">DICOM</span>
               </h3>
               <p className="service-description">Xem, phân tích hình ảnh y tế với công cụ chuyên nghiệp và hỗ trợ AI</p>
-            </Link>
-
-            <Link to="/doctor/ai-analysis" className="service-card">
-              <div className="icon-container">
-                <svg className="icon" fill="white" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                </svg>
-              </div>
-              <h3 className="service-title">🤖 Nhận kết quả phân tích AI</h3>
-              <p className="service-description">Xem kết quả phân tích từ AI và đưa ra chẩn đoán cuối cùng</p>
-            </Link>
-
-            <Link to="/doctor/annotations" className="service-card">
-              <div className="icon-container">
-                <svg className="icon" fill="white" viewBox="0 0 24 24">
-                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
-                </svg>
-              </div>
-              <h3 className="service-title">✏️ Ghi chú và chú thích</h3>
-              <p className="service-description">Thêm ghi chú, chú thích trên hình ảnh và tạo báo cáo chẩn đoán</p>
-            </Link>
-
-            <Link to="/doctor/compare-images" className="service-card">
-              <div className="icon-container">
-                <svg className="icon" fill="white" viewBox="0 0 24 24">
-                  <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-                </svg>
-              </div>
-              <h3 className="service-title">🔄 So sánh hình ảnh</h3>
-              <p className="service-description">So sánh hình ảnh mới với hình ảnh cũ của cùng một bệnh nhân</p>
             </Link>
 
             <Link to="/doctor/reports" className="service-card">
