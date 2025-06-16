@@ -23,6 +23,7 @@ import Contact from "./pages/Guest/Contact.js"
 import Feature from "./pages/Guest/Feature.js"
 import User from "./pages/User.js"
 import DicomViewer from "./pages/Doctor/DicomViewer.js"
+import CompareImages from "./pages/Doctor/CompareImages.js"
 
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
@@ -39,6 +40,7 @@ root.render(
       <Route path="/doctor/reports" element={<MedicalReportForm />} />
       <Route path="MedicalReportForm" element={<MedicalReportForm />} />
       <Route path="/doctor/dicom-viewer" element={<DicomViewer />} />
+      <Route path="/doctor/compare-images" element={<CompareImages/>}/>
 
       {/* Receptionist Routes */}
       <Route path="/IndexReceptionist" element={<IndexReceptionist />} />

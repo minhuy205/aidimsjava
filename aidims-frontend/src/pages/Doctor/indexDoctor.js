@@ -57,6 +57,16 @@ const IndexDoctor = () => {
               <p className="service-description">Tạo và quản lý báo cáo chẩn đoán chi tiết cho bệnh nhân</p>
             </Link>
 
+             <Link to="/doctor/compare-images" className="service-card">
+              <div className="icon-container">
+                <svg className="icon" fill="white" viewBox="0 0 24 24">
+                  <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                </svg>
+              </div>
+              <h3 className="service-title">🔄 So sánh hình ảnh</h3>
+              <p className="service-description">So sánh hình ảnh mới với hình ảnh cũ của cùng một bệnh nhân</p>
+            </Link>
+
             <Link to="/doctor/notifications" className="service-card">
               <div className="icon-container">
                 <svg className="icon" fill="white" viewBox="0 0 24 24">
