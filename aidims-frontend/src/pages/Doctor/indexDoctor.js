@@ -1,86 +1,107 @@
-import { memo } from "react"
-import { Link } from "react-router-dom"
-import Layout from "../Layout/Layout"
-import "../../css/indexDoctor.css"
+import { memo, useState, useEffect } from "react";
+import Layout from "../Layout/Layout";
+import { getAllDicoms, downloadDicomFile } from "../../services/DicomService";
+import "../../css/DicomViewer.css";
 
-const IndexDoctor = () => {
+const DicomViewer = () => {
+  const [dicomImages, setDicomImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    getAllDicoms()
+      .then(setDicomImages)
+      .catch((err) => console.error("Lỗi khi lấy dữ liệu DICOM:", err));
+  }, []);
+
+  const handleImageClick = (dicom) => {
+    setSelectedImage(dicom);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedImage(null);
+  };
+
   return (
     <Layout>
       <div className="doctor-page">
-        <section className="doctor-dashboard">
-          <h1>
-            👨‍⚕️ Chào mừng Bác sĩ đến với <span className="brand3">AIDIMS</span>
-          </h1>
-          <p>
-            🏥 Quản lý hồ sơ bệnh nhân và phân tích hình ảnh y tế một cách <b>chuyên nghiệp</b> và <b>chính xác</b>
-          </p>
-        </section>
-
-        <section className="medical-services-section">
-          <h2>🔧 Các chức năng chính</h2>
-          <div className="services-container">
-            <Link to="/doctor/patients" className="service-card">
-              <div className="icon-container">
-                <svg className="icon" fill="white" viewBox="0 0 24 24">
-                  <path
-                    fillRule="evenodd"
-                    d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Zm0 3v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <h3 className="service-title">📋 Xem hồ sơ bệnh nhân</h3>
-              <p className="service-description">
-                Xem thông tin chi tiết, lịch sử bệnh án và tình trạng sức khỏe của bệnh nhân
-              </p>
-            </Link>
-
-            <Link to="/doctor/dicom-viewer" className="service-card">
-              <div className="icon-container">
-                <svg className="icon" fill="white" viewBox="0 0 24 24">
-                  <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM5 17l3.5-4.5 2.5 3.01L14.5 11l4.5 6H5z" />
-                </svg>
-              </div>
-              <h3 className="service-title">
-                🖼️ Xem và phân tích hình ảnh <span className="highlight">DICOM</span>
-              </h3>
-              <p className="service-description">Xem, phân tích hình ảnh y tế với công cụ chuyên nghiệp và hỗ trợ AI</p>
-            </Link>
-
-            <Link to="/doctor/reports" className="service-card">
-              <div className="icon-container">
-                <svg className="icon" fill="white" viewBox="0 0 24 24">
-                  <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
-                </svg>
-              </div>
-              <h3 className="service-title">📄 Tạo báo cáo chẩn đoán</h3>
-              <p className="service-description">Tạo và quản lý báo cáo chẩn đoán chi tiết cho bệnh nhân</p>
-            </Link>
-
-             <Link to="/doctor/compare-images" className="service-card">
-              <div className="icon-container">
-                <svg className="icon" fill="white" viewBox="0 0 24 24">
-                  <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-                </svg>
-              </div>
-              <h3 className="service-title">🔄 So sánh hình ảnh</h3>
-              <p className="service-description">So sánh hình ảnh mới với hình ảnh cũ của cùng một bệnh nhân</p>
-            </Link>
-
-            <Link to="/doctor/notifications" className="service-card">
-              <div className="icon-container">
-                <svg className="icon" fill="white" viewBox="0 0 24 24">
-                  <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-                </svg>
-              </div>
-              <h3 className="service-title">🔔 Thông báo và nhắc nhở</h3>
-              <p className="service-description">Nhận thông báo về kết quả AI và các ca cần ưu tiên xem xét</p>
-            </Link>
+        <div className="dicom-list-container">
+          <div className="page-header">
+            <h2>🖼️ Danh sách ảnh DICOM</h2>
+            <p>Xem và phân tích ảnh y tế DICOM của bệnh nhân</p>
           </div>
-        </section>
+
+          <div className="table-container">
+            <table className="dicom-table">
+              <thead>
+                <tr>
+                  <th>Họ và tên BN</th>
+                  <th>Mã DICOM</th>
+                  <th>Tên file</th>
+                  <th>Mô tả</th>
+                  <th>Modality</th>
+                  <th>Ngày chụp</th>
+                  <th>Mã BN</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dicomImages.map((dicom) => (
+                  <tr key={dicom.id} onClick={() => handleImageClick(dicom)} className="dicom-row">
+                    <td>{dicom.fullName}</td>
+                    <td>{dicom.id}</td>
+                    <td>{dicom.fileName}</td>
+                    <td>{dicom.description}</td>
+                    <td>{dicom.modality}</td>
+                    <td>{dicom.dateTaken}</td>
+                    <td>{dicom.patientCode}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {showModal && selectedImage && (
+          <div className="modal-overlay" onClick={closeModal}>
+            <div className="dicom-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <button className="close-btn" onClick={closeModal}>×</button>
+                <h3>🖼️ Chi tiết DICOM</h3>
+                <p>Mã DICOM: {selectedImage.id}</p>
+              </div>
+
+              <div className="modal-content">
+                <div className="dicom-info-section">
+                  <h4>📋 Thông tin DICOM</h4>
+                  <div className="info-grid">
+                    <div className="info-row"><span className="info-label">Tên file:</span><span className="info-value">{selectedImage.fileName}</span></div>
+                    <div className="info-row"><span className="info-label">Mô tả:</span><span className="info-value">{selectedImage.description}</span></div>
+                    <div className="info-row"><span className="info-label">Modality:</span><span className="info-value">{selectedImage.modality}</span></div>
+                    <div className="info-row"><span className="info-label">Ngày chụp:</span><span className="info-value">{selectedImage.dateTaken}</span></div>
+                    <div className="info-row"><span className="info-label">Mã BN:</span><span className="info-value">{selectedImage.patientCode}</span></div>
+                    <div className="info-row"><span className="info-label">Họ và tên BN:</span><span className="info-value">{selectedImage.fullName}</span></div>
+                  </div>
+                </div>
+
+                <div className="dicom-info-section">
+                  <h4>🖼️ Hình ảnh DICOM</h4>
+                  <img src={selectedImage.imageUrl} alt="DICOM Preview" style={{ width: '100%', borderRadius: '10px' }} />
+                </div>
+
+                <div className="modal-actions">
+                  <button className="btn btn-primary">🔍 Phân tích AI</button>
+                  <button className="btn btn-secondary" onClick={() => downloadDicomFile(selectedImage.dicomFilePath)}>💾 Tải về</button>
+                  <button className="btn btn-success" onClick={closeModal}>✅ Xong</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
-  )
-}
+  );
+};
 
-export default memo(IndexDoctor)
+export default memo(DicomViewer);
