@@ -59,7 +59,27 @@ public class Patient {
 
     @Column(name = "age")
     private Integer age;
-    // Getters and setters
+
+    // THÊM CÁC FIELD SINH HIỆU
+    @Column(name = "temperature")
+    private Double temperature;
+
+    @Column(name = "heart_rate")
+    private Integer heart_rate;
+
+    @Column(name = "blood_pressure")
+    private String blood_pressure;
+
+    @Column(name = "respiratory_rate")
+    private Integer respiratory_rate;
+
+    @Column(name = "oxygen_saturation")
+    private Integer oxygen_saturation;
+
+    // Default constructor
+    public Patient() {}
+
+    // Getters and setters (giữ nguyên các getter/setter cũ và thêm mới)
     public Long getPatient_id() { return patient_id; }
     public void setPatient_id(Long patient_id) { this.patient_id = patient_id; }
 
@@ -108,4 +128,19 @@ public class Patient {
     public Integer getAge() { return age; }
     public void setAge(Integer age) { this.age = age; }
 
+    // THÊM GETTERS/SETTERS CHO SINH HIỆU
+    public Double getTemperature() { return temperature; }
+    public void setTemperature(Double temperature) { this.temperature = temperature; }
+
+    public Integer getHeart_rate() { return heart_rate; }
+    public void setHeart_rate(Integer heart_rate) { this.heart_rate = heart_rate; }
+
+    public String getBlood_pressure() { return blood_pressure; }
+    public void setBlood_pressure(String blood_pressure) { this.blood_pressure = blood_pressure; }
+
+    public Integer getRespiratory_rate() { return respiratory_rate; }
+    public void setRespiratory_rate(Integer respiratory_rate) { this.respiratory_rate = respiratory_rate; }
+
+    public Integer getOxygen_saturation() { return oxygen_saturation; }
+    public void setOxygen_saturation(Integer oxygen_saturation) { this.oxygen_saturation = oxygen_saturation; }
 }

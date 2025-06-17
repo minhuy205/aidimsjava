@@ -9,14 +9,19 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/patients")
+@CrossOrigin(origins = "http://localhost:3000")
 public class PatientController {
 
     @Autowired
     private PatientRepository patientRepository;
 
     @GetMapping
-    @CrossOrigin(origins = "http://localhost:3000")
     public List<Patient> getAllPatients() {
         return patientRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public Patient getPatientById(@PathVariable Long id) {
+        return patientRepository.findById(id).orElse(null);
     }
 }

@@ -14,17 +14,16 @@ const PatientProfile = () => {
   const [error, setError] = useState(null)
 
   // Load patients from database
-  // Thay thế useEffect hiện tại
   useEffect(() => {
     const fetchPatients = async () => {
       try {
         setLoading(true)
         const patientsData = await patientService.getAllPatients()
 
-        // Map dữ liệu từ database
+        // Transform data từ database sang format của component
         const transformedPatients = patientsData.map(patient => ({
           id: patient.patient_id,
-          patientCode: patient.patient_code,
+          patientCode: patient.patient_code || `BN${String(patient.patient_id).padStart(3, '0')}`,
           fullName: patient.full_name,
           dateOfBirth: patient.date_of_birth,
           gender: patient.gender,
@@ -36,24 +35,28 @@ const PatientProfile = () => {
           bloodType: patient.blood_type,
           allergies: patient.allergies || "Không có",
           medicalHistory: patient.medical_history || "Chưa có thông tin",
-          // Các field mặc định cho UI
-          chiefComplaint: "Chưa khám",
+
+          // Các field mặc định cho UI (có thể customize sau)
+          chiefComplaint: "Chưa có thông tin triệu chứng",
+          vitalSigns: {
+            temperature: patient.temperature || 36.5,
+            bloodPressure: patient.blood_pressure || "120/80",
+            heartRate: patient.heart_rate || 72,
+            respiratoryRate: patient.respiratory_rate || 16,
+            oxygenSaturation: patient.oxygen_saturation || 98,
+          },
           specialty: "Tổng quát",
           status: "Chờ khám",
           priority: "Bình thường",
           visitDate: new Date().toISOString().split('T')[0],
-          vitalSigns: {
-            temperature: 36.5,
-            bloodPressure: "120/80",
-            heartRate: 72,
-            respiratoryRate: 16,
-            oxygenSaturation: 98,
-          }
         }))
 
         setPatients(transformedPatients)
+        setError(null)
       } catch (err) {
-        console.error('Lỗi:', err)
+        console.error('Error loading patients:', err)
+        setError('Không thể tải danh sách bệnh nhân. Vui lòng thử lại.')
+        // Fallback to empty array if error
         setPatients([])
       } finally {
         setLoading(false)
@@ -210,7 +213,7 @@ const PatientProfile = () => {
             </div>
           </div>
 
-
+          {/* Medical Record Modal - giữ nguyên như cũ */}
           {showModal && selectedPatient && (
               <div className="modal-overlay" onClick={closeModal}>
                 <div className="medical-record-modal" onClick={(e) => e.stopPropagation()}>
