@@ -25,7 +25,7 @@ public interface ImagingResultRepository extends JpaRepository<ImagingResult, Lo
         JOIN imaging_requests ir ON r.request_id = ir.request_id
         JOIN imaging_types t ON ir.imaging_type_id = t.type_id
         JOIN medical_records mr ON ir.record_id = mr.record_id
-        JOIN patients p ON mr.patient_id = p.patient_id
+        JOIN patient p ON mr.patient_id = p.patient_id
     """, nativeQuery = true)
     List<Map<String, Object>> fetchDicomInfoWithPatient();
 }
