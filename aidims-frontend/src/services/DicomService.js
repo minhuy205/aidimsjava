@@ -1,5 +1,3 @@
-// src/services/DicomService.js
-
 const API_BASE = "http://localhost:8080/api/dicom";
 
 export async function getAllDicoms() {

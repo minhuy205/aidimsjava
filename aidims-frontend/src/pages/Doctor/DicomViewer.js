@@ -1,42 +1,17 @@
 import { memo, useState, useEffect } from "react";
 import Layout from "../Layout/Layout";
-import "../../css/DicomViewer.css"; // Dùng CSS mới tách biệt
+import { getAllDicoms, downloadDicomFile } from "../../services/DicomService";
+import "../../css/DicomViewer.css";
 
 const DicomViewer = () => {
   const [dicomImages, setDicomImages] = useState([]);
-  const [patients, setPatients] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const mockPatients = [
-      { patientCode: "BN001", fullName: "Nguyễn Văn Nam" },
-      { patientCode: "BN002", fullName: "Trần Thị Hoa" },
-      { patientCode: "BN003", fullName: "Lê Minh Tuấn" },
-    ];
-    setPatients(mockPatients);
-
-    const mockDicoms = [
-      {
-        id: "DICOM001",
-        fileName: "CT-Head-01.dcm",
-        description: "Chụp CT vùng đầu - nghi ngờ tai biến",
-        modality: "CT",
-        dateTaken: "2024-12-12",
-        patientCode: "BN001",
-        imageUrl: "https://via.placeholder.com/400x400.png?text=DICOM+CT+HEAD"
-      },
-      {
-        id: "DICOM002",
-        fileName: "XRay-Chest-01.dcm",
-        description: "Chụp X-quang phổi - kiểm tra ho kéo dài",
-        modality: "X-Ray",
-        dateTaken: "2024-12-13",
-        patientCode: "BN002",
-        imageUrl: "https://via.placeholder.com/400x400.png?text=DICOM+XRay+CHEST"
-      }
-    ];
-    setDicomImages(mockDicoms);
+    getAllDicoms()
+      .then(setDicomImages)
+      .catch((err) => console.error("Lỗi khi lấy dữ liệu DICOM:", err));
   }, []);
 
   const handleImageClick = (dicom) => {
@@ -47,11 +22,6 @@ const DicomViewer = () => {
   const closeModal = () => {
     setShowModal(false);
     setSelectedImage(null);
-  };
-
-  const getPatientName = (code) => {
-    const patient = patients.find(p => p.patientCode === code);
-    return patient ? patient.fullName : "Không rõ";
   };
 
   return (
@@ -67,7 +37,7 @@ const DicomViewer = () => {
             <table className="dicom-table">
               <thead>
                 <tr>
-                  <th>Họ và tên BN</th> {/* Đã đưa lên đầu */}
+                  <th>Họ và tên BN</th>
                   <th>Mã DICOM</th>
                   <th>Tên file</th>
                   <th>Mô tả</th>
@@ -79,7 +49,7 @@ const DicomViewer = () => {
               <tbody>
                 {dicomImages.map((dicom) => (
                   <tr key={dicom.id} onClick={() => handleImageClick(dicom)} className="dicom-row">
-                    <td>{getPatientName(dicom.patientCode)}</td> {/* Đưa tên BN lên trước */}
+                    <td>{dicom.fullName}</td>
                     <td>{dicom.id}</td>
                     <td>{dicom.fileName}</td>
                     <td>{dicom.description}</td>
@@ -111,7 +81,7 @@ const DicomViewer = () => {
                     <div className="info-row"><span className="info-label">Modality:</span><span className="info-value">{selectedImage.modality}</span></div>
                     <div className="info-row"><span className="info-label">Ngày chụp:</span><span className="info-value">{selectedImage.dateTaken}</span></div>
                     <div className="info-row"><span className="info-label">Mã BN:</span><span className="info-value">{selectedImage.patientCode}</span></div>
-                    <div className="info-row"><span className="info-label">Họ và tên BN:</span><span className="info-value">{getPatientName(selectedImage.patientCode)}</span></div>
+                    <div className="info-row"><span className="info-label">Họ và tên BN:</span><span className="info-value">{selectedImage.fullName}</span></div>
                   </div>
                 </div>
 
@@ -122,7 +92,7 @@ const DicomViewer = () => {
 
                 <div className="modal-actions">
                   <button className="btn btn-primary">🔍 Phân tích AI</button>
-                  <button className="btn btn-secondary">💾 Tải về</button>
+                  <button className="btn btn-secondary" onClick={() => downloadDicomFile(selectedImage.dicomFilePath)}>💾 Tải về</button>
                   <button className="btn btn-success" onClick={closeModal}>✅ Xong</button>
                 </div>
               </div>
