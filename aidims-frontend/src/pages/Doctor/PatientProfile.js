@@ -4,7 +4,6 @@ import { memo, useState, useEffect } from "react"
 import Layout from "../Layout/Layout"
 import { patientService } from "../../services/patientService" // Import service
 import "../../css/PatientProfile.css"
-
 const PatientProfile = () => {
   const [patients, setPatients] = useState([])
   const [selectedPatient, setSelectedPatient] = useState(null)
@@ -12,6 +11,7 @@ const PatientProfile = () => {
   const [activeTab, setActiveTab] = useState("general")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
 
   // Load patients from database
   useEffect(() => {

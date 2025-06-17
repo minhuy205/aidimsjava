@@ -24,6 +24,7 @@ import Feature from "./pages/Guest/Feature.js"
 import User from "./pages/User.js"
 import DicomViewer from "./pages/Doctor/DicomViewer.js"
 import CompareImages from "./pages/Doctor/CompareImages.js"
+import SymptomDisplayLayout from "./pages/Doctor/SymptomDisplay.js"
 
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
@@ -41,6 +42,8 @@ root.render(
       <Route path="MedicalReportForm" element={<MedicalReportForm />} />
       <Route path="/doctor/dicom-viewer" element={<DicomViewer />} />
       <Route path="/doctor/compare-images" element={<CompareImages/>}/>
+      <Route path="/doctor/symptom" element={<SymptomDisplayLayout />} />
+      <Route path="/SymptomDisplay" element={<SymptomDisplayLayout />} />
 
       {/* Receptionist Routes */}
       <Route path="/IndexReceptionist" element={<IndexReceptionist />} />
