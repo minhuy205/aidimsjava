@@ -38,6 +38,53 @@
   border-bottom: 2px solid #e6f0ff;
 }
 
+/* Section Headers */
+.section-header {
+  grid-column: span 2;
+  margin: 2rem 0 1rem 0;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-left: 4px solid #0066cc;
+  border-radius: 8px;
+}
+
+.section-header h4 {
+  margin: 0;
+  color: #0066cc;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Form Tabs */
+.form-tabs {
+  display: flex;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.3s;
+  border-bottom: 3px solid transparent;
+  font-weight: 500;
+}
+
+.tab-item.active {
+  border-bottom-color: #0066cc;
+  color: #0066cc;
+  background: #f8f9fa;
+}
+
+.tab-icon {
+  font-size: 1.2rem;
+}
+
+/* Patient Form Grid */
 .patient-form-grid {
   display: grid;
   gap: 1.5rem;
@@ -83,11 +130,30 @@
   outline: none;
 }
 
+/* Vital Signs Section */
+.vital-section {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.vital-section h4 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.2rem;
+  border-bottom: 2px solid #0066cc;
+  padding-bottom: 0.5rem;
+}
+
 /* Form Actions */
 .form-actions {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
+  grid-column: span 2;
 }
 
 .btn-primary {
@@ -104,10 +170,16 @@
   gap: 0.5rem;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: #0052a3;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 102, 204, 0.2);
+}
+
+.btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-secondary {
@@ -168,6 +240,14 @@
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.loading-message,
+.empty-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 1.1rem;
 }
 
 .patients-table {
@@ -261,8 +341,9 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
+/* Modal Header - giống như trong ảnh */
 .modal-header {
-  background: linear-gradient(135deg, #0066cc, #004499);
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: white;
   padding: 1.5rem;
   border-radius: 15px 15px 0 0;
@@ -308,6 +389,60 @@
   padding: 2rem;
 }
 
+/* Modal Tabs */
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 2rem;
+  background: #f8f9fa;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+}
+
+.modal-tab-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.3s;
+  border-bottom: 3px solid transparent;
+  font-weight: 500;
+  background: #f8f9fa;
+  flex: 1;
+  justify-content: center;
+}
+
+.modal-tab-item:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+.modal-tab-item.active {
+  border-bottom-color: #0066cc;
+  color: #0066cc;
+  background: white;
+  font-weight: 600;
+}
+
+.modal-tab-item .tab-icon {
+  font-size: 1.2rem;
+}
+
+/* No vital data message */
+.no-vital-data {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
+}
+
+.no-vital-data p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
 .patient-info-section {
   background: #f8f9fa;
   border: 1px solid #dee2e6;
@@ -337,15 +472,105 @@
   margin-bottom: 0.75rem;
 }
 
+.info-row.full-width {
+  grid-column: span 2;
+}
+
 .info-label {
   font-weight: 600;
   color: #333;
   font-size: 0.9rem;
 }
 
+.info-label.vital-header {
+  font-size: 1.1rem;
+  color: #0066cc;
+  border-bottom: 1px solid #0066cc;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
 .info-value {
   color: #666;
   font-size: 0.95rem;
+}
+
+/* Patient Details Grid - layout 2 cột như trong ảnh */
+.patient-details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.detail-row.full-width {
+  grid-template-columns: 1fr;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.detail-value {
+  color: #212529;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Vital Signs Display */
+.vital-signs-display {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.vital-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #0066cc;
+}
+
+.vital-icon {
+  font-size: 1.5rem;
+  width: 2rem;
+  text-align: center;
+}
+
+.vital-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+  min-width: 80px;
+}
+
+.vital-value {
+  font-weight: 700;
+  color: #0066cc;
+  font-size: 1rem;
 }
 
 /* Responsive Design */
@@ -363,6 +588,21 @@
     grid-column: span 1;
   }
 
+  .form-tabs {
+    flex-direction: column;
+  }
+
+  .tab-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+    border-right: none;
+  }
+
+  .tab-item.active {
+    border-bottom-color: #dee2e6;
+    border-left: 3px solid #0066cc;
+  }
+
   .list-header {
     flex-direction: column;
     gap: 1rem;
@@ -376,11 +616,48 @@
   .info-grid {
     grid-template-columns: 1fr;
   }
+
+  .detail-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .vital-signs-display {
+    grid-template-columns: 1fr;
+  }
+
+  .vital-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .vital-label {
+    min-width: auto;
+  }
 }
 
 @media (max-width: 480px) {
   .form-actions {
     flex-direction: column;
     gap: 1rem;
+  }
+}
+
+/* Responsive cho modal tabs */
+@media (max-width: 768px) {
+  .modal-tabs {
+    flex-direction: column;
+  }
+
+  .modal-tab-item {
+    border-bottom: 1px solid #dee2e6;
+    border-right: none;
+    justify-content: flex-start;
+  }
+
+  .modal-tab-item.active {
+    border-bottom-color: #dee2e6;
+    border-left: 3px solid #0066cc;
   }
 }
