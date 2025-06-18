@@ -16,6 +16,36 @@ class PatientService {
     }
   }
 
+  // FIXED: Lấy bệnh nhân theo ID - thử nhiều endpoint
+  async getPatientById(patientId) {
+    const endpoints = [
+      `${API_BASE_URL}/receptionist/patients/${patientId}`,
+      `${API_BASE_URL}/receptionist/patient/${patientId}`,
+      `${API_BASE_URL}/patients/${patientId}`,
+      `${API_BASE_URL}/patient/${patientId}`
+    ]
+
+    for (const endpoint of endpoints) {
+      try {
+        console.log(`Trying endpoint: ${endpoint}`)
+        const response = await fetch(endpoint)
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log(`Success with endpoint: ${endpoint}`)
+          console.log("Patient data:", data)
+          return data
+        } else {
+          console.log(`Failed ${endpoint}: ${response.status}`)
+        }
+      } catch (error) {
+        console.log(`Error with ${endpoint}:`, error.message)
+      }
+    }
+
+    throw new Error(`All patient endpoints failed for ID: ${patientId}`)
+  }
+
   // Tạo hoặc cập nhật bệnh nhân
   async createOrUpdatePatient(patientData) {
     try {
@@ -56,17 +86,29 @@ class PatientService {
     }
   }
 
-  // Lấy bệnh nhân theo ID
-  async getPatientById(patientId) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/receptionist/patient/${patientId}`)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+  // THÊM: Test các endpoint có sẵn
+  async testPatientEndpoints() {
+    const testEndpoints = [
+      `${API_BASE_URL}/receptionist/patients`,
+      `${API_BASE_URL}/patients`,
+      `${API_BASE_URL}/receptionist/patient/2`,
+      `${API_BASE_URL}/patient/2`
+    ]
+
+    console.log("Testing patient endpoints...")
+
+    for (const endpoint of testEndpoints) {
+      try {
+        const response = await fetch(endpoint)
+        console.log(`${endpoint} -> Status: ${response.status}`)
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log(`${endpoint} -> Data:`, data)
+        }
+      } catch (error) {
+        console.log(`${endpoint} -> Error:`, error.message)
       }
-      return await response.json()
-    } catch (error) {
-      console.error("Error fetching patient by ID:", error)
-      throw error
     }
   }
 }
