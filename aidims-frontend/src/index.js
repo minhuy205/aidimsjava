@@ -26,6 +26,10 @@ import DicomViewer from "./pages/Doctor/DicomViewer.js"
 import CompareImages from "./pages/Doctor/CompareImages.js"
 import SymptomDisplayLayout from "./pages/Doctor/SymptomDisplay.js"
 
+import DoctorLogin from "./pages/Login/DoctorLogin.js"
+import ReceptionistLogin from "./pages/Login/ReceptionistLogin.js"
+import TechnicianLogin from "./pages/Login/TechnicianLogin.js"
+import AdminLogin from "./pages/Login/AdminLogin.js"
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
   <BrowserRouter>
@@ -70,6 +74,11 @@ root.render(
       <Route path="/Feature" element={<Feature />} />
       <Route path="/User" element={<User />} />
       {/* Catch-all route */}
+
+      <Route path="/login/doctor" element={<DoctorLogin />} />
+      <Route path="/login/receptionist" element={<ReceptionistLogin />} />
+      <Route path="/login/technician" element={<TechnicianLogin />} />
+      <Route path="/login/admin" element={<AdminLogin />} />
     </Routes>
   </BrowserRouter>,
 )

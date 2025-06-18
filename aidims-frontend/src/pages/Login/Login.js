@@ -61,16 +61,16 @@ function Login() {
         setTimeout(() => {
           switch (user.role) {
             case "admin":
-              navigate("/admin")
+              navigate("/login/admin")
               break
             case "doctor":
-              navigate("/IndexDoctor")
+              navigate("/login/doctor")
               break
             case "receptionist":
-              navigate("/receptionist")
+              navigate("/login/receptionist")
               break
             case "technician":
-              navigate("/technician")
+              navigate("/login/technician")
               break
             default:
               navigate("/")
@@ -166,16 +166,16 @@ function Login() {
           </div>
 
           <div className="quick-access">
-            <a href="/IndexDoctor" className="quick-btn doctor">
+            <a href="/login/doctor" className="quick-btn doctor">
               👨‍⚕️ Bác sĩ
             </a>
-            <a href="/receptionist" className="quick-btn receptionist">
+            <a href="/login/receptionist" className="quick-btn receptionist">
               👩‍💼 Tiếp nhận
             </a>
-            <a href="/technician" className="quick-btn technician">
+            <a href="/login/technician" className="quick-btn technician">
               👨‍🔬 Kỹ thuật viên
             </a>
-            <a href="/admin" className="quick-btn admin">
+            <a href="/login/admin" className="quick-btn admin">
               👨‍💼 Quản trị viên
             </a>
           </div>
@@ -191,4 +191,4 @@ function Login() {
   )
 }
 
-export default Login
+export default Login;
