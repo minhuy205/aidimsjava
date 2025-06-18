@@ -196,6 +196,46 @@ class SymptomService {
             throw error
         }
     }
+
+    // Tạo triệu chứng từ form React
+async createSymptomRecord(symptomData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/symptom-record/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(symptomData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log("Created record:", result); // Kiểm tra dữ liệu trả về
+    return result;
+  } catch (error) {
+    console.error("Error creating symptom record:", error);
+    throw error;
+  }
 }
+
+ // Lấy tất cả triệu chứng
+    async getAllSymptoms() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/symptom-record`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error("Error fetching all symptoms:", error);
+            return [];
+        }
+    }
+}
+
 
 export const symptomService = new SymptomService()

@@ -20,6 +20,20 @@ public class SymptomRecordController {
     private SymptomRecordService symptomRecordService;
 
     /**
+     * Lấy tất cả triệu chứng
+     */
+    @GetMapping
+    public ResponseEntity<List<SymptomRecord>> getAllSymptoms() {
+        try {
+            List<SymptomRecord> symptoms = symptomRecordService.getAllSymptoms();
+            return ResponseEntity.ok(symptoms);
+        } catch (Exception e) {
+            System.err.println("Error getting all symptoms: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
      * Test endpoint
      */
     @GetMapping("/test")
@@ -45,7 +59,6 @@ public class SymptomRecordController {
             return ResponseEntity.ok(symptoms);
         } catch (Exception e) {
             System.err.println("Error getting symptom records for patient " + patientId + ": " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -167,4 +180,44 @@ public class SymptomRecordController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    /**
+     * Tạo triệu chứng từ form React
+     */
+    @PostMapping("/create")
+    public ResponseEntity<SymptomRecord> createSymptomRecord(@RequestBody Map<String, Object> requestData) {
+        try {
+            Long patientId = Long.valueOf(requestData.get("patient_id").toString());
+            String chiefComplaint = (String) requestData.get("chief_complaint");
+            String severityLevel = (String) requestData.get("severity_level");
+            String priorityLevel = (String) requestData.get("priority_level");
+            String onsetTime = (String) requestData.get("onset_time");
+            String duration = (String) requestData.get("duration");
+            Integer painScale = requestData.get("pain_scale") != null ? Integer.valueOf(requestData.get("pain_scale").toString()) : null;
+            String additionalNotes = (String) requestData.get("additional_notes");
+            String recordedBy = (String) requestData.get("recorded_by");
+            
+            SymptomRecord symptom = new SymptomRecord();
+            symptom.setPatientId(patientId);
+            symptom.setMainSymptom(chiefComplaint);
+            symptom.setDetailedSymptoms("Severity: " + severityLevel + 
+                                      "\nOnset: " + onsetTime + 
+                                      "\nDuration: " + duration + 
+                                      "\nPain Scale: " + painScale);
+            symptom.setOtherSymptoms("Priority: " + priorityLevel + 
+                                   "\nAdditional Notes: " + additionalNotes + 
+                                   "\nRecorded By: " + recordedBy);
+            
+            SymptomRecord savedSymptom = symptomRecordService.saveSymptom(symptom);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedSymptom);
+        } catch (NumberFormatException e) {
+            System.err.println("Error parsing numeric values: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            System.err.println("Error creating symptom record: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+
 }

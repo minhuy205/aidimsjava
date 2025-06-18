@@ -1,4 +1,3 @@
-// SymptomRecordRepository.java
 package com.aidims.aidimsbackend.repository;
 
 import com.aidims.aidimsbackend.entity.SymptomRecord;
