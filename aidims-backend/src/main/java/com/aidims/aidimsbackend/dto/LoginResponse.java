@@ -1,61 +1,29 @@
 package com.aidims.aidimsbackend.dto;
 
-public class LoginResponse {
+import java.util.Map;
 
+public class LoginResponse {
     private boolean success;
     private String message;
-    private Object data;
+    private Map<String, Object> data;
 
-    // Constructors
-    public LoginResponse() {}
-
-    public LoginResponse(boolean success, String message, Object data) {
-        this.success = success;
-        this.message = message;
-        this.data = data;
+    public static LoginResponse success(Map<String, Object> data) {
+        LoginResponse response = new LoginResponse();
+        response.success = true;
+        response.message = "Đăng nhập thành công";
+        response.data = data;
+        return response;
     }
 
-    // Static factory methods
-    public static LoginResponse success(Object data) {
-        return new LoginResponse(true, "Đăng nhập thành công", data);
+    public static LoginResponse error(String message) {
+        LoginResponse response = new LoginResponse();
+        response.success = false;
+        response.message = message;
+        return response;
     }
 
-    public static LoginResponse error(String msg) {
-        return new LoginResponse(false, msg, null);
-    }
-
-    // Getters and Setters
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
-    }
-
-    // Optional: toString for logging/debugging
-    @Override
-    public String toString() {
-        return "LoginResponse{" +
-                "success=" + success +
-                ", message='" + message + '\'' +
-                ", data=" + data +
-                '}';
-    }
+    // Getters
+    public boolean isSuccess() { return success; }
+    public String getMessage() { return message; }
+    public Map<String, Object> getData() { return data; }
 }

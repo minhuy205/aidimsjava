@@ -1,48 +1,41 @@
 package com.aidims.aidimsbackend.entity;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "roles", 
+       indexes = {@Index(name = "idx_role_name", columnList = "role_name")})
 public class Role {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long role_id;
+    @Column(name = "role_id")
+    private Integer roleId;
+    
+    @Column(name = "role_name", nullable = false, unique = true, length = 50)
+    private String roleName;
+    
+    @Column(name = "role_description", columnDefinition = "TEXT")
+    private String roleDescription;
+    
+    @OneToMany(mappedBy = "role")
+    private List<User> users;
 
-    @Column(nullable = false, unique = true)
-    private String name;
-
-    // Constructors
+    // Constructors, getters, setters
     public Role() {}
-
-    public Role(String name) {
-        this.name = name;
+    
+    public Role(String roleName, String roleDescription) {
+        this.roleName = roleName;
+        this.roleDescription = roleDescription;
     }
 
-    // Getters và Setters
-    public Long getRole_id() {
-        return role_id;
-    }
-
-    public void setRole_id(Long role_id) {
-        this.role_id = role_id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    // Optional: override toString for debug
-    @Override
-    public String toString() {
-        return "Role{" +
-                "role_id=" + role_id +
-                ", name='" + name + '\'' +
-                '}';
-    }
+    // Getters and Setters
+    public Integer getRoleId() { return roleId; }
+    public void setRoleId(Integer roleId) { this.roleId = roleId; }
+    public String getRoleName() { return roleName; }
+    public void setRoleName(String roleName) { this.roleName = roleName; }
+    public String getRoleDescription() { return roleDescription; }
+    public void setRoleDescription(String roleDescription) { this.roleDescription = roleDescription; }
+    public List<User> getUsers() { return users; }
+    public void setUsers(List<User> users) { this.users = users; }
 }
