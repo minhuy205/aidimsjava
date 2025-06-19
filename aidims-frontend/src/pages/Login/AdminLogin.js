@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import authService from '../../services/authService';
+import { authService} from '../../services/authService';
 import '../../css/auth.css';
+import '../../css/loginchung.css';
 
 const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
@@ -59,7 +60,7 @@ const AdminLogin = () => {
         
         // Chuyển hướng sau 1 giây
         setTimeout(() => {
-          navigate("/admin/dashboard");
+          navigate("/admin/");
         }, 1000);
       } else {
         setMessage(response.message || "❌ Đăng nhập thất bại");

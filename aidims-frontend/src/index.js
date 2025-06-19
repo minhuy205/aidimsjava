@@ -50,6 +50,7 @@ root.render(
       <Route path="/SymptomDisplay" element={<SymptomDisplayLayout />} />
 
       {/* Receptionist Routes */}
+      <Route path="/login/receptionist" element={<ReceptionistLogin />} />
       <Route path="/IndexReceptionist" element={<IndexReceptionist />} />
       <Route path="/receptionist" element={<IndexReceptionist />} />
       <Route path="/receptionist/patients" element={<PatientForm />} />
@@ -76,7 +77,7 @@ root.render(
       {/* Catch-all route */}
 
       <Route path="/login/doctor" element={<DoctorLogin />} />
-      <Route path="/login/receptionist" element={<ReceptionistLogin />} />
+      
       <Route path="/login/technician" element={<TechnicianLogin />} />
       <Route path="/login/admin" element={<AdminLogin />} />
     </Routes>
