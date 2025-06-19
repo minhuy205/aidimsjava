@@ -1,0 +1,314 @@
+/* loginchung.css - Cập nhật căn giữa form */
+
+/* Biến màu sắc dùng chung */
+:root {
+  --primary-color: #6e8efb;
+  --secondary-color: #a777e3;
+  --text-color: #333;
+  --light-gray: #f5f7ff;
+  --medium-gray: #ddd;
+  --dark-gray: #777;
+  --white: #fff;
+  --error-color: #ff4757;
+}
+
+/* Reset và font chữ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  height: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--light-gray);
+}
+
+/* Layout chính - Căn giữa toàn bộ */
+.receptionist-login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.login-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  z-index: -1;
+}
+
+.reception-pattern {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(
+    circle at 10% 20%,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 20%
+  );
+}
+
+/* Card đăng nhập - Căn giữa */
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  background: var(--white);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Animation hiệu ứng */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Phần header */
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.receptionist-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--light-gray);
+  border-radius: 50%;
+  color: var(--primary-color);
+}
+
+.receptionist-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.login-header h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.login-header p {
+  color: var(--dark-gray);
+  font-size: 0.9rem;
+}
+
+/* Form đăng nhập */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper input,
+.input-wrapper select {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid var(--medium-gray);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-wrapper input:focus,
+.input-wrapper select:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(110, 142, 251, 0.2);
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--dark-gray);
+}
+
+.input-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--dark-gray);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Nút đăng nhập */
+.login-btn {
+  padding: 0.75rem;
+  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.login-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Spinner loading */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--white);
+  animation: spin 1s ease-in-out infinite;
+}
+
+/* Quick actions */
+.quick-actions {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.quick-actions h3 {
+  font-size: 1rem;
+  color: var(--dark-gray);
+  margin-bottom: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--light-gray);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.action-btn:hover {
+  background: #e0e5ff;
+}
+
+.action-btn span {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Footer */
+.login-footer {
+  margin-top: auto;
+  text-align: center;
+  padding-top: 1rem;
+}
+
+.back-home {
+  color: var(--dark-gray);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.3s ease;
+}
+
+.back-home:hover {
+  color: var(--primary-color);
+}
+
+/* Hiệu ứng cho select */
+.input-wrapper select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 12px;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .action-btn {
+    width: 100%;
+  }
+}
