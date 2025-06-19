@@ -424,7 +424,7 @@ const PatientProfile = () => {
                       <button className="btn btn-primary">📝 Tạo yêu cầu chụp</button>
                       {/* THAY ĐỔI: Truyền patientId qua URL params */}
                       <Link to={`/SymptomDisplay?patientId=${selectedPatient.id}`}>
-                        <button className="btn btn-secondary">📄 Xem báo cáo</button>
+                        <button className="btn btn-secondary">📄 Xem triệu chứng</button>
                       </Link>
                       <button className="btn btn-success">✅ Hoàn thành khám</button>
                     </div>

@@ -1,12 +1,13 @@
 package com.aidims.aidimsbackend.repository;
 
-import com.aidims.aidimsbackend.entity.SymptomRecord;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.aidims.aidimsbackend.entity.SymptomRecord;
 
 @Repository
 public interface SymptomRecordRepository extends JpaRepository<SymptomRecord, Long> {
@@ -23,4 +24,8 @@ public interface SymptomRecordRepository extends JpaRepository<SymptomRecord, Lo
 
     // Đếm số lượng triệu chứng của bệnh nhân
     long countByPatientId(Long patientId);
+
+    // Kiểm tra bản ghi trùng lặp trong vòng 5 phút cho cùng bệnh nhân và triệu chứng chính (native query)
+    @Query(value = "SELECT COUNT(*) > 0 FROM symptom WHERE patient_id = :patientId AND main_symptom = :mainSymptom AND created_at >= NOW() - INTERVAL 5 MINUTE", nativeQuery = true)
+    boolean existsRecentDuplicate(@Param("patientId") Long patientId, @Param("mainSymptom") String mainSymptom);
 }

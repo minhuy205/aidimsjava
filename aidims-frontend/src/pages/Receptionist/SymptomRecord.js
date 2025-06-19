@@ -25,11 +25,26 @@ const SymptomRecord = () => {
   const [selectedRecord, setSelectedRecord] = useState(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
 
+  // Helper function để parse text
+  const extractFromText = (text, key) => {
+    if (!text || !text.includes(key)) return ""
+    const lines = text.split("\n")
+    for (const line of lines) {
+      if (line.startsWith(key)) {
+        return line.replace(key, "").trim()
+      }
+    }
+    return ""
+  }
+
   // Load data on component mount
   useEffect(() => {
-    loadPatients()
-    loadSymptomRecords()
-    initializeSymptoms()
+    const loadAll = async () => {
+      await loadPatients()
+      await loadSymptomRecords() // Load ngay lập tức
+      initializeSymptoms()
+    }
+    loadAll()
   }, [])
 
   const loadPatients = async () => {
@@ -45,26 +60,45 @@ const SymptomRecord = () => {
 
   const loadSymptomRecords = async () => {
     try {
+      setLoading(true)
       console.log("🔍 Loading symptom records...")
+
+      // Backend đã trả về dữ liệu kèm thông tin bệnh nhân
       const data = await symptomService.getAllSymptoms()
       console.log("📊 Raw symptom data received:", data)
       console.log("📊 Number of records:", data.length)
 
-      // Log từng record để debug
-      data.forEach((record, index) => {
-        console.log(`Record ${index + 1}:`, {
-          symptom_id: record.symptom_id,
-          patient_code: record.patient_code,
-          patient_name: record.patient_name,
-          chief_complaint: record.chief_complaint,
-          recorded_at: record.recorded_at,
-        })
-      })
+      // Không cần map thêm vì backend đã trả về đầy đủ thông tin
+      const mappedRecords = data.map((record) => ({
+        id: record.id,
+        patient_id: record.patient_id,
+        patient_code: record.patient_code || `BN${record.patient_id}`,
+        patient_name: record.patient_name || "Không xác định",
+        patient_phone: record.patient_phone || "N/A",
+        patient_gender: record.patient_gender || record.gender || "N/A",
+        patient_age: record.patient_age || record.age || "N/A",
+        main_symptom: record.main_symptom || "Chưa có thông tin",
+        detailed_symptoms: record.detailed_symptoms || "Chưa xác định",
+        other_symptoms: record.other_symptoms || "Bình thường",
+        created_at: record.created_at,
+        // Parse detailed_symptoms để lấy thông tin chi tiết
+        severity_level: extractFromText(record.detailed_symptoms, "Severity:") || "Chưa xác định",
+        priority_level: extractFromText(record.other_symptoms, "Priority:") || "Bình thường",
+        onset_time: extractFromText(record.detailed_symptoms, "Onset:") || "",
+        duration: extractFromText(record.detailed_symptoms, "Duration:") || "",
+        pain_scale: extractFromText(record.detailed_symptoms, "Pain Scale:") || "",
+        additional_notes: extractFromText(record.other_symptoms, "Additional Notes:") || "",
+        recorded_by: extractFromText(record.other_symptoms, "Recorded By:") || "",
+        status: "Đã ghi nhận",
+      }))
 
-      setRecords(data)
+      console.log("✅ Final mapped records:", mappedRecords)
+      setRecords(mappedRecords)
     } catch (error) {
       console.error("❌ Error loading symptom records:", error)
       setRecords([])
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -157,19 +191,20 @@ const SymptomRecord = () => {
         duration: duration,
         pain_scale: painScale ? Number.parseInt(painScale) : null,
         additional_notes: additionalNotes,
-        recorded_by: "Huy - Nhân viên tiếp nhận", // Có thể lấy từ session
+        recorded_by: "Huy - Nhân viên tiếp nhận",
         priority_level: priorityLevel,
       }
 
       console.log("Submitting symptom data:", symptomData)
 
-      await symptomService.createSymptomRecord(symptomData)
+      const result = await symptomService.createSymptomRecord(symptomData)
+      console.log("✅ Symptom created successfully:", result)
 
-      // Reload records
-      await loadSymptomRecords()
-
-      // Reset form
+      // Reset form trước
       resetForm()
+
+      // Reload records sau khi tạo thành công
+      await loadSymptomRecords()
 
       alert("Đã ghi nhận triệu chứng thành công!")
     } catch (error) {
@@ -195,6 +230,7 @@ const SymptomRecord = () => {
   }
 
   const handleViewDetail = (record) => {
+    console.log("👁️ Viewing detail for record:", record)
     setSelectedRecord(record)
     setShowDetailModal(true)
   }
@@ -308,7 +344,7 @@ const SymptomRecord = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Th��i gian khởi phát:</label>
+                  <label>Thời gian khởi phát:</label>
                   <select value={onsetTime} onChange={(e) => setOnsetTime(e.target.value)}>
                     <option value="">-- Chọn thời gian --</option>
                     <option value="Đột ngột">Đột ngột</option>
@@ -396,7 +432,9 @@ const SymptomRecord = () => {
         <div className="records-section">
           <h3>📋 Lịch sử ghi nhận triệu chứng ({records.length})</h3>
           <div className="records-table-container">
-            {records.length === 0 ? (
+            {loading ? (
+              <div className="loading-message">🔄 Đang tải dữ liệu...</div>
+            ) : records.length === 0 ? (
               <div className="empty-message">📝 Chưa có ghi nhận triệu chứng nào</div>
             ) : (
               <table className="records-table">
@@ -414,16 +452,16 @@ const SymptomRecord = () => {
                 </thead>
                 <tbody>
                   {records.map((record, index) => (
-                    <tr key={record.symptom_id || index}>
-                      <td>{record.patient_code || "N/A"}</td>
-                      <td>{record.patient_name || "Không xác định"}</td>
-                      <td className="chief-complaint-cell">{record.chief_complaint || "Chưa có thông tin"}</td>
+                    <tr key={record.id || index}>
+                      <td>{record.patient_code}</td>
+                      <td>{record.patient_name}</td>
+                      <td className="chief-complaint-cell">{record.main_symptom}</td>
                       <td>
                         <span
                           className="severity-badge"
                           style={{ backgroundColor: getSeverityColor(record.severity_level) }}
                         >
-                          {record.severity_level || "Chưa xác định"}
+                          {record.severity_level}
                         </span>
                       </td>
                       <td>
@@ -431,16 +469,14 @@ const SymptomRecord = () => {
                           className="priority-badge"
                           style={{ backgroundColor: getPriorityColor(record.priority_level) }}
                         >
-                          {record.priority_level || "Bình thường"}
+                          {record.priority_level}
                         </span>
                       </td>
                       <td>
-                        {record.recorded_at
-                          ? new Date(record.recorded_at).toLocaleDateString("vi-VN")
-                          : "Chưa xác định"}
+                        {record.created_at ? new Date(record.created_at).toLocaleDateString("vi-VN") : "Chưa xác định"}
                       </td>
                       <td>
-                        <span className="status-badge">{record.status || "Đã ghi nhận"}</span>
+                        <span className="status-badge">{record.status}</span>
                       </td>
                       <td>
                         <button className="btn-view" title="Xem chi tiết" onClick={() => handleViewDetail(record)}>
@@ -479,6 +515,16 @@ const SymptomRecord = () => {
                       <span className="detail-label">Mã bệnh nhân:</span>
                       <span className="detail-value">{selectedRecord.patient_code}</span>
                     </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Số điện thoại:</span>
+                      <span className="detail-value">{selectedRecord.patient_phone}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Tuổi/Giới tính:</span>
+                      <span className="detail-value">
+                        {selectedRecord.patient_age} tuổi - {selectedRecord.patient_gender}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -487,7 +533,7 @@ const SymptomRecord = () => {
                   <div className="detail-grid">
                     <div className="detail-item full-width">
                       <span className="detail-label">Triệu chứng chính:</span>
-                      <span className="detail-value">{selectedRecord.chief_complaint}</span>
+                      <span className="detail-value">{selectedRecord.main_symptom}</span>
                     </div>
                     <div className="detail-item">
                       <span className="detail-label">Mức độ nghiêm trọng:</span>
@@ -528,27 +574,6 @@ const SymptomRecord = () => {
                   </div>
                 </div>
 
-                {selectedRecord.selected_symptoms && (
-                  <div className="detail-section">
-                    <h4>📋 Triệu chứng đã chọn</h4>
-                    <div className="selected-symptoms-display">
-                      {JSON.parse(selectedRecord.selected_symptoms).map((symptom, index) => (
-                        <div key={index} className="symptom-tag">
-                          <span className="symptom-code">{symptom.code}</span>
-                          <span className="symptom-name">{symptom.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedRecord.custom_symptoms && (
-                  <div className="detail-section">
-                    <h4>📝 Triệu chứng khác</h4>
-                    <p className="custom-symptoms">{selectedRecord.custom_symptoms}</p>
-                  </div>
-                )}
-
                 {selectedRecord.additional_notes && (
                   <div className="detail-section">
                     <h4>📄 Ghi chú bổ sung</h4>
@@ -566,7 +591,7 @@ const SymptomRecord = () => {
                     <div className="detail-item">
                       <span className="detail-label">Thời gian:</span>
                       <span className="detail-value">
-                        {new Date(selectedRecord.recorded_at).toLocaleString("vi-VN")}
+                        {new Date(selectedRecord.created_at).toLocaleString("vi-VN")}
                       </span>
                     </div>
                     <div className="detail-item">

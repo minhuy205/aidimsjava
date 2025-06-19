@@ -1,12 +1,13 @@
 package com.aidims.aidimsbackend.service;
 
-import com.aidims.aidimsbackend.entity.SymptomRecord;
-import com.aidims.aidimsbackend.repository.SymptomRecordRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import com.aidims.aidimsbackend.entity.SymptomRecord;
+import com.aidims.aidimsbackend.repository.SymptomRecordRepository;
 
 @Service
 public class SymptomRecordService {
@@ -45,7 +46,9 @@ public class SymptomRecordService {
 
     public long countSymptomsByPatientId(Long patientId) {
         return symptomRecordRepository.countByPatientId(patientId);
-    }    public SymptomRecord createSymptomForPatient(Long patientId, String mainSymptom,
+    }
+
+    public SymptomRecord createSymptomForPatient(Long patientId, String mainSymptom,
                                                String detailedSymptoms, String otherSymptoms) {
         SymptomRecord symptom = new SymptomRecord();
         symptom.setPatientId(patientId);
@@ -53,5 +56,9 @@ public class SymptomRecordService {
         symptom.setDetailedSymptoms(detailedSymptoms);
         symptom.setOtherSymptoms(otherSymptoms);
         return symptomRecordRepository.save(symptom);
+    }
+
+    public boolean isRecentDuplicate(Long patientId, String mainSymptom) {
+        return symptomRecordRepository.existsRecentDuplicate(patientId, mainSymptom);
     }
 }

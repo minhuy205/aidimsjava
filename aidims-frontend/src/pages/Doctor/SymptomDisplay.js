@@ -49,92 +49,24 @@ const SymptomDisplayLayout = () => {
             try {
                 setLoading(true)
                 const patientId = getPatientIdFromUrl()
-
-                console.log("Starting fetch data process...")
-                console.log("Patient ID from URL:", patientId)
-
-                if (!patientId) {
-                    setError("Không tìm thấy ID bệnh nhân trong URL")
-                    setDebugInfo(prev => ({ ...prev, patientId: null }))
-                    return
-                }
-
-                setDebugInfo(prev => ({ ...prev, patientId }))
-
-                // Test API connection trước
-                const apiWorking = await testApiConnection()
-                if (!apiWorking) {
-                    setError("Không thể kết nối đến API server. Vui lòng kiểm tra backend có đang chạy không.")
-                    return
-                }
-
-                console.log("Fetching patient info...")
-                // Fetch patient info với fallback
-                let patientInfo
-                try {
-                    patientInfo = await patientService.getPatientById(patientId)
-                    console.log("Patient info received:", patientInfo)
-                    setDebugInfo(prev => ({ ...prev, patientFetch: "success", patientInfo }))
-                } catch (err) {
-                    console.error("Error fetching patient info:", err)
-                    setDebugInfo(prev => ({ ...prev, patientFetch: "failed", patientError: err.message }))
-
-                    // FALLBACK: Tạo patient data giả lập
-                    console.log("Using fallback patient data...")
-                    patientInfo = {
-                        patient_id: parseInt(patientId),
-                        patient_code: `BN${patientId.padStart(3, '0')}`,
-                        full_name: `Bệnh nhân #${patientId}`,
-                        date_of_birth: "1990-01-01",
-                        gender: "Nam",
-                        phone: "0123456789",
-                        address: "Địa chỉ không xác định"
-                    }
-                    setDebugInfo(prev => ({ ...prev, usingFallback: true }))
-                }
-
-                console.log("Fetching symptoms...")
-                // Fetch symptoms
-                let symptoms
-                try {
+                // Lấy danh sách bệnh nhân
+                const patients = await patientService.getAllPatients()
+                const patient = patients.find(p => String(p.patient_id) === String(patientId))
+                setPatientData(patient)
+                // Lấy triệu chứng
+                let symptoms = []
+                if (patientId) {
                     symptoms = await symptomService.getSymptomsByPatientId(patientId)
-                    console.log("Symptoms received:", symptoms)
-                    setDebugInfo(prev => ({ ...prev, symptomsFetch: "success", symptoms }))
-                } catch (err) {
-                    console.error("Error fetching symptoms:", err)
-                    setDebugInfo(prev => ({ ...prev, symptomsFetch: "failed", symptomsError: err.message }))
-                    symptoms = []
+                } else {
+                    symptoms = await symptomService.getAllSymptoms()
                 }
-
-                // Transform patient data
-                const transformedPatient = {
-                    id: patientInfo.patient_id,
-                    name: patientInfo.full_name,
-                    code: patientInfo.patient_code,
-                    age: calculateAge(patientInfo.date_of_birth),
-                    gender: patientInfo.gender,
-                    phone: patientInfo.phone,
-                    address: patientInfo.address,
-                    examDate: new Date().toISOString().split('T')[0],
-                    examTime: new Date().toLocaleTimeString('vi-VN', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    })
-                }
-
-                setPatientData(transformedPatient)
                 setSymptomsData(symptoms)
-                setDebugInfo(prev => ({ ...prev, transformedPatient, finalSymptoms: symptoms }))
-
             } catch (err) {
-                console.error("General error in fetchData:", err)
-                setError("Có lỗi xảy ra khi tải dữ liệu: " + err.message)
-                setDebugInfo(prev => ({ ...prev, generalError: err.message }))
+                setSymptomsData([])
             } finally {
                 setLoading(false)
             }
         }
-
         fetchData()
     }, [location.search])
 
@@ -298,114 +230,84 @@ const SymptomDisplayLayout = () => {
                 <div className="doctor-page">
                     <div className="patient-list-container">
                         <div className="symptom-display-container">
-                            {/* Header */}
-                            <div className="symptom-header">
-                                <h1 className="symptom-title">
-                                    🩺 Thông tin Triệu chứng Bệnh nhân
-                                </h1>
-                                <p className="exam-info">
-                                    Ngày khám: {patientData.examDate} - {patientData.examTime}
-                                </p>
-                                {debugInfo.usingFallback && (
-                                    <p style={{color: "orange", fontSize: "14px"}}>
-                                        ⚠️ Đang sử dụng dữ liệu fallback vì không thể tải thông tin bệnh nhân
-                                    </p>
-                                )}
-                            </div>
-
                             {/* Thông tin bệnh nhân */}
-                            <div className="patient-info-section">
-                                <h2 className="section-title">
-                                    👤 Thông tin bệnh nhân
-                                </h2>
-                                <div className="info-grid">
-                                    <div className="info-row">
-                                        <span className="info-label">Mã bệnh nhân:</span>
-                                        <div className="info-value">{patientData.code}</div>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="info-label">Họ và tên:</span>
-                                        <div className="info-value">{patientData.name}</div>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="info-label">Tuổi/Giới tính:</span>
-                                        <div className="info-value">{patientData.age} tuổi - {patientData.gender}</div>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="info-label">Số điện thoại:</span>
-                                        <div className="info-value">{patientData.phone}</div>
-                                    </div>
+                            <div className="symptom-patient-info" style={{marginBottom: '2rem'}}>
+                              <h2 style={{marginBottom: '1rem'}}>🩺 Thông tin bệnh nhân</h2>
+                              <div style={{color:'#888', marginBottom:'1rem'}}>Ngày khám: {new Date().toLocaleDateString('vi-VN')} - {new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})}</div>
+                              <div style={{display:'flex', gap:'2rem', background:'#f8f9fa', borderRadius:'10px', padding:'1.5rem 2rem', marginBottom:'1.5rem'}}>
+                                <div style={{flex:1}}>
+                                  <div><b>Mã bệnh nhân:</b> {patientData?.patient_code || 'N/A'}</div>
+                                  <div><b>Tuổi/Giới tính:</b> {patientData?.age || 'N/A'} tuổi - {patientData?.gender || 'N/A'}</div>
                                 </div>
+                                <div style={{flex:1}}>
+                                  <div><b>Họ và tên:</b> {patientData?.full_name || 'N/A'}</div>
+                                  <div><b>Số điện thoại:</b> {patientData?.phone || 'N/A'}</div>
+                                </div>
+                              </div>
                             </div>
 
                             {/* Hiển thị triệu chứng từ database */}
                             <div className="symptoms-section">
-                                <h2 className="section-title">
-                                    📋 Triệu chứng từ cơ sở dữ liệu ({symptomsData.length} bản ghi)
-                                </h2>
-
-                                {symptomsData.length > 0 ? (
-                                    <div className="symptoms-database">
-                                        {symptomsData.map((symptom, index) => (
-                                            <div key={symptom.id || index} className="symptom-database-card">
-                                                <div className="symptom-card-header">
-                                                    <div className="symptom-card-title">
-                                                        📝 Bản ghi triệu chứng #{symptom.id}
-                                                    </div>
-                                                    <div className="symptom-card-date">
-                                                        {formatDate(symptom.createdAt)} - {formatTime(symptom.createdAt)}
-                                                    </div>
-                                                </div>
-
-                                                <div className="symptom-card-content">
-                                                    {/* Triệu chứng chính */}
-                                                    {symptom.mainSymptom && (
-                                                        <div className="symptom-field">
-                                                            <div className="field-label">
-                                                                🎯 Triệu chứng chính:
-                                                            </div>
-                                                            <div className="field-value main-symptom">
-                                                                {symptom.mainSymptom}
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Triệu chứng chi tiết */}
-                                                    {symptom.detailedSymptoms && (
-                                                        <div className="symptom-field">
-                                                            <div className="field-label">
-                                                                📋 Triệu chứng chi tiết:
-                                                            </div>
-                                                            <div className="field-value detailed-symptoms">
-                                                                {symptom.detailedSymptoms}
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Triệu chứng khác */}
-                                                    {symptom.otherSymptoms && (
-                                                        <div className="symptom-field">
-                                                            <div className="field-label">
-                                                                📝 Triệu chứng khác:
-                                                            </div>
-                                                            <div className="field-value other-symptoms">
-                                                                {symptom.otherSymptoms}
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="no-symptoms">
-                                        <div className="no-symptoms-icon">📝</div>
-                                        <div className="no-symptoms-title">Chưa có triệu chứng nào được ghi nhận</div>
-                                        <div className="no-symptoms-desc">
-                                            Bệnh nhân chưa có thông tin triệu chứng trong hệ thống
-                                        </div>
-                                    </div>
-                                )}
+                              <h3>Lịch sử triệu chứng ({symptomsData.length} bản ghi)</h3>
+                              <table className="records-table">
+                                <thead>
+                                  <tr>
+                                    <th>Mã BN</th>
+                                    <th>Họ tên</th>
+                                    <th>Tuổi</th>
+                                    <th>Triệu chứng chính</th>
+                                    <th>Chi tiết triệu chứng</th>
+                                    <th>Khác</th>
+                                    <th>Ngày ghi nhận</th>
+                                    <th>Trạng thái</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {symptomsData.length > 0 ? (
+                                    symptomsData.map((s, idx) => {
+                                      // Tách thông tin nhân viên ghi nhận khỏi other_symptoms
+                                      let other = s.other_symptoms || '';
+                                      let nhanVien = '';
+                                      const lines = other.split('\n');
+                                      const filtered = lines.filter(line => {
+                                        if (line.trim().toLowerCase().startsWith('recorded by')) {
+                                          nhanVien = line.replace('Recorded By:', '').trim();
+                                          return false;
+                                        }
+                                        return true;
+                                      });
+                                      return (
+                                        <tr key={s.id || idx}>
+                                          <td>{s.patient_code || 'N/A'}</td>
+                                          <td>{s.patient_name || 'Không xác định'}</td>
+                                          <td>{s.patient_age || 'N/A'}</td>
+                                          <td>{s.main_symptom || 'Không có thông tin'}</td>
+                                          <td>{s.detailed_symptoms ? s.detailed_symptoms.split('\n').map((line, i) => <div key={i}>{line.replace('Severity:', 'Mức độ:').replace('Onset:', 'Khởi phát:').replace('Duration:', 'Thời gian:').replace('Pain Scale:', 'Thang điểm đau:')}</div>) : 'Không có chi tiết'}</td>
+                                          <td>{filtered.length > 0 ? filtered.map((line, i) => <div key={i}>{line.replace('Priority:', 'Ưu tiên').replace('Additional Notes:', 'Ghi chú')}</div>) : 'Không có ghi chú'}</td>
+                                          <td>{s.created_at ? new Date(s.created_at).toLocaleString('vi-VN') : 'Chưa xác định'}</td>
+                                          <td>Đã ghi nhận</td>
+                                        </tr>
+                                      )
+                                    })
+                                  ) : (
+                                    <tr><td colSpan={8}>Chưa có ghi nhận triệu chứng nào.</td></tr>
+                                  )}
+                                </tbody>
+                              </table>
+                              {/* Hiển thị nhân viên tiếp nhận nếu có */}
+                              {symptomsData.length > 0 && (() => {
+                                // Lấy nhân viên ghi nhận mới nhất
+                                let nhanVien = '';
+                                const other = symptomsData[symptomsData.length-1].other_symptoms || '';
+                                other.split('\n').forEach(line => {
+                                  if (line.trim().toLowerCase().startsWith('recorded by')) {
+                                    nhanVien = line.replace('Recorded By:', '').trim();
+                                  }
+                                });
+                                return nhanVien ? (
+                                  <div style={{marginTop:'10px', fontStyle:'italic', color:'#444'}}>Nhân viên tiếp nhận: <b>{nhanVien}</b></div>
+                                ) : null;
+                              })()}
                             </div>
 
                             {/* Tóm tắt */}
@@ -422,7 +324,7 @@ const SymptomDisplayLayout = () => {
                                         <span className="summary-label">Bản ghi mới nhất:</span>
                                         <div className="summary-value">
                                             {symptomsData.length > 0
-                                                ? formatDate(symptomsData[symptomsData.length - 1]?.createdAt)
+                                                ? (symptomsData[symptomsData.length - 1]?.created_at ? formatDate(symptomsData[symptomsData.length - 1]?.created_at) : 'Chưa xác định')
                                                 : "Chưa có"
                                             }
                                         </div>

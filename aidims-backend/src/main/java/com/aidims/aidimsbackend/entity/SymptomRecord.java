@@ -1,9 +1,17 @@
 // SymptomRecord.java - Entity mới riêng biệt
 package com.aidims.aidimsbackend.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "symptom")
@@ -30,7 +38,9 @@ public class SymptomRecord {
     private LocalDateTime createdAt;
 
     // Constructors
-    public SymptomRecord() {}
+    public SymptomRecord() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     public SymptomRecord(Long patientId, String mainSymptom, String detailedSymptoms, String otherSymptoms) {
         this.patientId = patientId;
@@ -94,9 +104,7 @@ public class SymptomRecord {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
-        if (mainSymptom == null || mainSymptom.trim().isEmpty()) {
-            mainSymptom = "Chưa xác định";
-        }
+        // Không set mainSymptom mặc định ở đây nữa để tránh lưu bản ghi trống
     }
 
     @Override
