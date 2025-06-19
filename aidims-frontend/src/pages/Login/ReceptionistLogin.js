@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import authService from '../../services/authService';
+import { authService} from '../../services/authService';
 import '../../css/auth.css';
+import '../../css/loginchung.css';
 
 const ReceptionistLogin = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [shift, setShift] = useState("morning");
   const navigate = useNavigate();
 
   const [loginData, setLoginData] = useState({
@@ -14,7 +16,6 @@ const ReceptionistLogin = () => {
     password: "",
   });
 
-  // Khôi phục thông tin đăng nhập đã lưu
   useEffect(() => {
     const savedUsername = localStorage.getItem("rememberedUsername");
     const savedPassword = localStorage.getItem("rememberedPassword");
@@ -42,13 +43,13 @@ const ReceptionistLogin = () => {
     try {
       const response = await authService.receptionistLogin(
         loginData.username,
-        loginData.password
+        loginData.password,
+        shift
       );
 
       if (response.success) {
         setMessage("✅ Đăng nhập thành công");
         
-        // Lưu thông tin đăng nhập nếu chọn "Ghi nhớ"
         if (rememberMe) {
           localStorage.setItem("rememberedUsername", loginData.username);
           localStorage.setItem("rememberedPassword", loginData.password);
@@ -57,9 +58,10 @@ const ReceptionistLogin = () => {
           localStorage.removeItem("rememberedPassword");
         }
         
-        // Chuyển hướng sau 1 giây
+        localStorage.setItem('receptionistShift', shift);
+        
         setTimeout(() => {
-          navigate("/receptionist/dashboard");
+          navigate("/receptionist");
         }, 1000);
       } else {
         setMessage(response.message || "❌ Đăng nhập thất bại");
@@ -78,8 +80,8 @@ const ReceptionistLogin = () => {
         <div className="auth-card">
           <div className="auth-header">
             <div className="auth-icon">👩‍💼</div>
-            <h1>Đăng nhập Nhân viên Tiếp nhận</h1>
-            <p>Truy cập hệ thống AIDIMS</p>
+            <h1>Đăng nhập Nhân viên tiếp nhận</h1>
+            <p>Quản lý tiếp nhận bệnh nhân</p>
           </div>
 
           {message && (
@@ -115,6 +117,21 @@ const ReceptionistLogin = () => {
               />
             </div>
 
+            {/* <div className="form-group">
+              <label htmlFor="shift">Ca làm việc</label>
+              <select
+                id="shift"
+                name="shift"
+                value={shift}
+                onChange={(e) => setShift(e.target.value)}
+                required
+              >
+                <option value="morning">Ca sáng (6:00 - 14:00)</option>
+                <option value="afternoon">Ca chiều (14:00 - 22:00)</option>
+                <option value="night">Ca đêm (22:00 - 6:00)</option>
+              </select>
+            </div> */}
+
             <div className="form-group checkbox-group">
               <label className="checkbox-label">
                 <input 
@@ -138,16 +155,10 @@ const ReceptionistLogin = () => {
                   Đang đăng nhập...
                 </>
               ) : (
-                "Đăng nhập"
+                "Bắt đầu ca làm việc"
               )}
             </button>
           </form>
-
-          <div className="auth-links">
-            <a href="/forgot-password" className="link-secondary">
-              Quên mật khẩu?
-            </a>
-          </div>
 
           <div className="auth-footer">
             <a href="/" className="back-home">

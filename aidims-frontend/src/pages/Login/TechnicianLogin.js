@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import authService from '../../services/authService';
+import { authService} from '../../services/authService';
 import '../../css/auth.css';
+import '../../css/loginchung.css';
 
 const TechnicianLogin = () => {
   const [loading, setLoading] = useState(false);
@@ -14,7 +15,6 @@ const TechnicianLogin = () => {
     password: "",
   });
 
-  // Khôi phục thông tin đăng nhập đã lưu
   useEffect(() => {
     const savedUsername = localStorage.getItem("rememberedUsername");
     const savedPassword = localStorage.getItem("rememberedPassword");
@@ -34,21 +34,23 @@ const TechnicianLogin = () => {
     });
   };
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
     try {
-      const response = await authService.receptionistLogin(
+      // Sửa từ authService.nurseLogin thành authService.technicianLogin
+      const response = await authService.login(
         loginData.username,
-        loginData.password
+        loginData.password,
+        'technician' // Thêm role nếu cần
       );
 
       if (response.success) {
         setMessage("✅ Đăng nhập thành công");
         
-        // Lưu thông tin đăng nhập nếu chọn "Ghi nhớ"
         if (rememberMe) {
           localStorage.setItem("rememberedUsername", loginData.username);
           localStorage.setItem("rememberedPassword", loginData.password);
@@ -57,9 +59,8 @@ const TechnicianLogin = () => {
           localStorage.removeItem("rememberedPassword");
         }
         
-        // Chuyển hướng sau 1 giây
         setTimeout(() => {
-          navigate("/receptionist/dashboard");
+          navigate("/technician");
         }, 1000);
       } else {
         setMessage(response.message || "❌ Đăng nhập thất bại");
@@ -77,9 +78,9 @@ const TechnicianLogin = () => {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <div className="auth-icon">👩‍💼</div>
-            <h1>Đăng nhập Kỹ Thuật Viên</h1>
-            <p>Truy cập hệ thống AIDIMS</p>
+            <div className="auth-icon">👩‍⚕️</div>
+            <h1>Đăng nhập Kỹ thuật viên</h1>
+            <p>Truy cập hệ thống chăm sóc bệnh nhân</p>
           </div>
 
           {message && (
@@ -95,7 +96,7 @@ const TechnicianLogin = () => {
                 type="text"
                 id="username"
                 name="username"
-                placeholder="Nhập tên đăng nhập"
+                placeholder="Nhập mã kỹ thuật viên"
                 value={loginData.username}
                 onChange={handleChange}
                 required
@@ -142,12 +143,6 @@ const TechnicianLogin = () => {
               )}
             </button>
           </form>
-
-          <div className="auth-links">
-            <a href="/forgot-password" className="link-secondary">
-              Quên mật khẩu?
-            </a>
-          </div>
 
           <div className="auth-footer">
             <a href="/" className="back-home">

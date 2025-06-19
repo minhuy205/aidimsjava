@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import authService from "../../services/authService"
+import {authService} from "../../services/authService"
 import "../../css/auth.css"
 
 function Login() {
