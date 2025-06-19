@@ -1,4 +1,4 @@
-package com.aidims.aidimsbackend.controller;
+/* package com.aidims.aidimsbackend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +29,7 @@ public class DoctorAuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> doctorLogin(@RequestBody LoginRequest request) {
         request.setRole("doctor");
-        LoginResponse response = authService.login(request);
+        LoginResponse response = authService.login(request, "receptionist");
         return ResponseEntity.ok(response);
     }
     
@@ -38,3 +38,4 @@ public class DoctorAuthController {
         return ResponseEntity.ok("Doctor access validated");
     }
 }
+ */

@@ -1,4 +1,4 @@
-package com.aidims.aidimsbackend.controller;
+/* package com.aidims.aidimsbackend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class AdminAuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> adminLogin(@RequestBody LoginRequest request) {
         request.setRole("admin");
-        LoginResponse response = authService.login(request);
+        LoginResponse response = authService.login(request, "receptionist");
         return ResponseEntity.ok(response);
     }
     
@@ -32,4 +32,4 @@ public class AdminAuthController {
     public ResponseEntity<String> validateAdminAccess() {
         return ResponseEntity.ok("Admin access validated");
     }
-}
+} */
