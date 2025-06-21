@@ -23,8 +23,10 @@ import com.aidims.aidimsbackend.service.DiagnosticReportService;
  */
 @RestController
 @RequestMapping("/api/diagnostic-reports")
-@CrossOrigin("*")
-
+@CrossOrigin(origins = "*",
+        allowedHeaders = {"Content-Type", "Authorization", "X-Requested-With"},
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
+        allowCredentials = "false")
 public class DiagnosticReportController {
 
     @Autowired
@@ -34,12 +36,17 @@ public class DiagnosticReportController {
     public DiagnosticReportController() {
         System.out.println("🏗️ DiagnosticReportController created!");
     }
+
+    /**
+     * Handle preflight OPTIONS requests
+     */
     @RequestMapping(method = RequestMethod.OPTIONS)
     public ResponseEntity<Void> handleOptions() {
         return ResponseEntity.ok()
-                .header("Access-Control-Allow-Origin", "")
+                .header("Access-Control-Allow-Origin", "*")
                 .header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
-                .header("Access-Control-Allow-Headers", "")
+                .header("Access-Control-Allow-Headers", "Content-Type,Authorization,X-Requested-With")
+                .header("Access-Control-Max-Age", "3600")
                 .build();
     }
 
@@ -89,7 +96,7 @@ public class DiagnosticReportController {
     /**
      * Debug endpoint to test POST without data
      */
-    @PostMapping("/test-post")  // Thay vì /debug
+    @PostMapping("/test-post")
     public ResponseEntity<String> debugPost() {
         System.out.println("🐛 POST /test-post called");
         return ResponseEntity.ok("POST endpoint is working!");
@@ -101,11 +108,14 @@ public class DiagnosticReportController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<DiagnosticReport>>> getAllReports() {
         try {
+            System.out.println("📋 GET / called - Getting all reports");
             List<DiagnosticReport> reports = diagnosticReportService.getAllReports();
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Lấy danh sách báo cáo thành công", reports
             ));
         } catch (Exception e) {
+            System.err.println("❌ Error getting all reports: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Lỗi khi lấy danh sách báo cáo: " + e.getMessage(), null
             ));
@@ -118,6 +128,7 @@ public class DiagnosticReportController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<DiagnosticReport>> getReportById(@PathVariable Integer id) {
         try {
+            System.out.println("🔍 GET /" + id + " called - Getting report by ID");
             Optional<DiagnosticReport> report = diagnosticReportService.getReportById(id);
             if (report.isPresent()) {
                 return ResponseEntity.ok(new ApiResponse<>(
@@ -129,6 +140,8 @@ public class DiagnosticReportController {
                 ));
             }
         } catch (Exception e) {
+            System.err.println("❌ Error getting report by ID: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Lỗi khi lấy báo cáo: " + e.getMessage(), null
             ));
@@ -141,11 +154,14 @@ public class DiagnosticReportController {
     @GetMapping("/statistics")
     public ResponseEntity<ApiResponse<DiagnosticReportService.ReportStatistics>> getReportStatistics() {
         try {
+            System.out.println("📊 GET /statistics called");
             DiagnosticReportService.ReportStatistics stats = diagnosticReportService.getReportStatistics();
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Lấy thống kê báo cáo thành công", stats
             ));
         } catch (Exception e) {
+            System.err.println("❌ Error getting statistics: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Lỗi khi lấy thống kê: " + e.getMessage(), null
             ));
@@ -153,16 +169,45 @@ public class DiagnosticReportController {
     }
 
     /**
-     * Generate new report code
+     * Generate new report code - GET method
      */
     @GetMapping("/generate-code")
     public ResponseEntity<ApiResponse<String>> generateReportCode() {
         try {
+            System.out.println("🔢 GET /generate-code called");
+
             String reportCode = diagnosticReportService.generateReportCode();
+            System.out.println("✅ Generated report code: " + reportCode);
+
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Tạo mã báo cáo thành công", reportCode
             ));
         } catch (Exception e) {
+            System.err.println("❌ Error generating report code (GET): " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Lỗi khi tạo mã báo cáo: " + e.getMessage(), null
+            ));
+        }
+    }
+
+    /**
+     * Generate new report code - POST method
+     */
+    @PostMapping("/generate-code")
+    public ResponseEntity<ApiResponse<String>> generateReportCodePost() {
+        try {
+            System.out.println("🔢 POST /generate-code called");
+
+            String reportCode = diagnosticReportService.generateReportCode();
+            System.out.println("✅ Generated report code: " + reportCode);
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Tạo mã báo cáo thành công", reportCode
+            ));
+        } catch (Exception e) {
+            System.err.println("❌ Error generating report code (POST): " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Lỗi khi tạo mã báo cáo: " + e.getMessage(), null
             ));
@@ -184,13 +229,37 @@ public class DiagnosticReportController {
         }
 
         // Getters and Setters
-        public boolean isSuccess() { return success; }
-        public void setSuccess(boolean success) { this.success = success; }
+        public boolean isSuccess() {
+            return success;
+        }
 
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
 
-        public T getData() { return data; }
-        public void setData(T data) { this.data = data; }
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public T getData() {
+            return data;
+        }
+
+        public void setData(T data) {
+            this.data = data;
+        }
+
+        @Override
+        public String toString() {
+            return "ApiResponse{" +
+                    "success=" + success +
+                    ", message='" + message + '\'' +
+                    ", data=" + data +
+                    '}';
+        }
     }
 }
