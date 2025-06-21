@@ -20,12 +20,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/**",
-<<<<<<< HEAD
                     "/api/receptionist/**",
                     "/api/symptom-record/**" // Cho phép public API ghi nhận triệu chứng
-=======
-                    "/api/receptionist/**"  // Thêm đường dẫn API cần public
->>>>>>> 4cf2e755ff39fd62b6af421ba2c4b88208fc320d
                 ).permitAll()
                 .anyRequest().authenticated()
             )
