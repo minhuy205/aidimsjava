@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.aidims.aidimsbackend.entity.Assignment;
+import com.aidims.aidimsbackend.entity.Doctor;
 import com.aidims.aidimsbackend.entity.Patient;
 import com.aidims.aidimsbackend.entity.Symptom;
 import com.aidims.aidimsbackend.service.ReceptionistService;
@@ -47,9 +48,14 @@ public class AssignmentController {
     public ResponseEntity<List<Assignment>> getAllAssignments() {
         return ResponseEntity.ok(receptionistService.getAllAssignments());
     }
+    
     @GetMapping("/patients")
-public ResponseEntity<List<Patient>> getAllPatients() {
-    return ResponseEntity.ok(receptionistService.getAllPatients());
-}
+    public ResponseEntity<List<Patient>> getAllPatients() {
+        return ResponseEntity.ok(receptionistService.getAllPatients());
+    }
 
+    @GetMapping("/doctors")
+    public ResponseEntity<List<Doctor>> getAllDoctors() {
+        return ResponseEntity.ok(receptionistService.getAllDoctors());
+    }
 }

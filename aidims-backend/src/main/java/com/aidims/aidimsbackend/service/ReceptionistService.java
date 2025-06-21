@@ -60,4 +60,7 @@ public Patient createOrUpdatePatient(Patient patient) {
     }
     return patientRepo.save(patient);
 }
+public List<Doctor> getAllDoctors() {
+    return doctorRepo.findAll();
+}
 }

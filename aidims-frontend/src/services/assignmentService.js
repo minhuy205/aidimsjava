@@ -17,24 +17,30 @@ class AssignmentService {
   }
 
   // Tạo mới chuyển hồ sơ
-  async createAssignment(assignmentData) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/doctor-assignments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(assignmentData),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  async createAssignment({ patientId, doctorId, department }) {
+    // Gọi đúng API backend dạng query string, thêm header Accept để nhận lỗi chi tiết
+    const url = `${API_BASE_URL}/receptionist/assign?patientId=${patientId}&doctorId=${doctorId}&department=${encodeURIComponent(department)}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json"
       }
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error("Error creating assignment:", error);
-      throw error;
+    });
+    if (!response.ok) {
+      let errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}\n${errorText}`);
     }
+    return await response.json();
+  }
+
+  // Lấy danh sách bác sĩ từ backend
+  async getAllDoctors() {
+    const response = await fetch(`${API_BASE_URL}/receptionist/doctors`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
   }
 }
 

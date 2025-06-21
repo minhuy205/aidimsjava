@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Layout from "../Layout/Layout"
 import { patientService } from "../../services/patientService"
+import { assignmentService } from "../../services/assignmentService"
 import '../../css/assignDoctor.css'
 
 const AssignDoctor = () => {
@@ -24,14 +25,21 @@ const AssignDoctor = () => {
       .then((data) => setPatients(data))
       .catch(() => setPatients([]))
 
+    // Lấy danh sách bác sĩ từ backend, nếu không có thì dùng mock để demo
+    assignmentService.getAllDoctors()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setDoctors(data)
+        } else {
+          // Nếu backend không có bác sĩ, cho phép chọn mock nhưng cảnh báo khi lưu
+          setDoctors([
+            { id: 9999, name: "(Demo) BS. Demo", department: specialties[0]?.name || "Chẩn đoán hình ảnh" }
+          ])
+        }
+      })
+      .catch(() => setDoctors([]))
 
-    // Load assignments
-    const savedAssignments = localStorage.getItem("doctorAssignments")
-    if (savedAssignments) {
-      setAssignments(JSON.parse(savedAssignments))
-    }
-
-    // Initialize specialties
+    // Initialize specialties (có thể lấy từ backend nếu backend có bảng chuyên khoa)
     const mockSpecialties = [
       { id: 1, name: "Chẩn đoán hình ảnh", code: "CDHA" },
       { id: 2, name: "Tim mạch", code: "TM" },
@@ -45,93 +53,65 @@ const AssignDoctor = () => {
       { id: 10, name: "Nhi khoa", code: "NK" },
     ]
     setSpecialties(mockSpecialties)
-
-    // Initialize doctors
-    const mockDoctors = [
-      {
-        id: 1,
-        name: "BS. Nguyễn Văn A",
-        specialtyId: 1,
-        specialtyName: "Chẩn đoán hình ảnh",
-        phone: "0902345678",
-        email: "nguyen@hospital.com",
-        experience: "10 năm",
-        status: "Đang làm việc",
-      },
-      {
-        id: 2,
-        name: "BS. Trần Thị B",
-        specialtyId: 2,
-        specialtyName: "Tim mạch",
-        phone: "0903456789",
-        email: "tran@hospital.com",
-        experience: "8 năm",
-        status: "Đang làm việc",
-      },
-      {
-        id: 3,
-        name: "BS. Lê Văn C",
-        specialtyId: 3,
-        specialtyName: "Hô hấp",
-        phone: "0904567890",
-        email: "le@hospital.com",
-        experience: "12 năm",
-        status: "Đang làm việc",
-      },
-      {
-        id: 4,
-        name: "BS. Phạm Thị D",
-        specialtyId: 4,
-        specialtyName: "Tiêu hóa",
-        phone: "0905678901",
-        email: "pham@hospital.com",
-        experience: "6 năm",
-        status: "Đang làm việc",
-      },
-      {
-        id: 5,
-        name: "BS. Hoàng Văn E",
-        specialtyId: 5,
-        specialtyName: "Thần kinh",
-        phone: "0906789012",
-        email: "hoang@hospital.com",
-        experience: "15 năm",
-        status: "Đang làm việc",
-      },
-    ]
-    setDoctors(mockDoctors)
   }, [])
 
+  // Lọc bác sĩ theo chuyên khoa (dựa vào trường department của bác sĩ backend)
   const filteredDoctors = selectedSpecialty
-    ? doctors.filter((doctor) => doctor.specialtyId === Number.parseInt(selectedSpecialty))
+    ? doctors.filter((doctor) => {
+        const specialty = specialties.find((s) => s.id === Number.parseInt(selectedSpecialty))
+        return doctor.department === (specialty ? specialty.name : "")
+      })
     : doctors
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-
     if (!selectedPatient || !selectedDoctor) {
       alert("Vui lòng chọn đầy đủ thông tin bệnh nhân và bác sĩ")
       return
     }
-
-    const patient = patients.find((p) => p.id === Number.parseInt(selectedPatient))
     const doctor = doctors.find((d) => d.id === Number.parseInt(selectedDoctor))
+    if (doctor && doctor.id >= 9999) {
+      alert("Bạn đang chọn bác sĩ demo, vui lòng thêm bác sĩ thật vào hệ thống để lưu vào CSDL!")
+      return
+    }
+    const patient = patients.find((p) => p.patient_id === Number.parseInt(selectedPatient));
+    if (!patient) {
+      alert("Không tìm thấy thông tin bệnh nhân!");
+      return;
+    }
     const specialty = specialties.find((s) => s.id === Number.parseInt(selectedSpecialty))
 
     const newAssignment = {
       id: Date.now(),
       patientId: Number.parseInt(selectedPatient),
-      patientName: patient.fullName,
-      patientCode: patient.patientCode,
+      patientName: patient.full_name,
+      patientCode: patient.patient_code,
       doctorId: Number.parseInt(selectedDoctor),
       doctorName: doctor.name,
       specialtyId: Number.parseInt(selectedSpecialty),
-      specialtyName: specialty.name,
+      specialtyName: specialty ? specialty.name : doctor.department,
       priority,
       notes,
       assignedDate: new Date().toISOString(),
       status: "Đã chuyển",
       assignedBy: "Nhân viên tiếp nhận",
+    }
+
+    // Gọi API backend để lưu vào CSDL
+    try {
+      await assignmentService.createAssignment({
+        patientId: Number(newAssignment.patientId),
+        doctorId: Number(newAssignment.doctorId),
+        department: doctor.department // lấy đúng chuyên khoa từ backend
+      });
+    } catch (error) {
+      // Log chi tiết lỗi trả về từ backend
+      if (error instanceof Error) {
+        alert("Lỗi khi lưu chuyển hồ sơ vào CSDL!\n" + error.message);
+      } else {
+        alert("Lỗi khi lưu chuyển hồ sơ vào CSDL!");
+      }
+      return;
     }
 
     const updatedAssignments = [...assignments, newAssignment]
@@ -219,7 +199,7 @@ const AssignDoctor = () => {
                   <option value="">-- Chọn bác sĩ --</option>
                   {filteredDoctors.map((doctor) => (
                     <option key={doctor.id} value={doctor.id}>
-                      {doctor.name} - {doctor.experience} kinh nghiệm
+                      {doctor.name} - {doctor.department}
                     </option>
                   ))}
                 </select>
@@ -229,7 +209,7 @@ const AssignDoctor = () => {
                 <div className="doctor-info">
                   {(() => {
                     const doctor = doctors.find((d) => d.id === Number.parseInt(selectedDoctor))
-                    return (
+                    return doctor ? (
                       <div className="doctor-card">
                         <h4>👨‍⚕️ Thông tin bác sĩ</h4>
                         <div className="doctor-details">
@@ -237,23 +217,11 @@ const AssignDoctor = () => {
                             <strong>Tên:</strong> {doctor.name}
                           </p>
                           <p>
-                            <strong>Chuyên khoa:</strong> {doctor.specialtyName}
-                          </p>
-                          <p>
-                            <strong>Kinh nghiệm:</strong> {doctor.experience}
-                          </p>
-                          <p>
-                            <strong>Điện thoại:</strong> {doctor.phone}
-                          </p>
-                          <p>
-                            <strong>Email:</strong> {doctor.email}
-                          </p>
-                          <p>
-                            <strong>Trạng thái:</strong> <span className="status-active">{doctor.status}</span>
+                            <strong>Chuyên khoa:</strong> {doctor.department}
                           </p>
                         </div>
                       </div>
-                    )
+                    ) : null
                   })()}
                 </div>
               )}
