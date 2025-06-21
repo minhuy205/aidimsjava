@@ -1,10 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import Layout from "../Layout/Layout"
-import "../../css/assignDoctor.css"
+import { patientService } from "../../services/patientService"
+import '../../css/assignDoctor.css'
 
 const AssignDoctor = () => {
+  const navigate = useNavigate()
   const [patients, setPatients] = useState([])
   const [doctors, setDoctors] = useState([])
   const [specialties, setSpecialties] = useState([])
@@ -16,11 +19,11 @@ const AssignDoctor = () => {
   const [assignments, setAssignments] = useState([])
 
   useEffect(() => {
-    // Load patients
-    const savedPatients = localStorage.getItem("patients")
-    if (savedPatients) {
-      setPatients(JSON.parse(savedPatients))
-    }
+    // Lấy danh sách bệnh nhân từ API (tạo/cập nhật hồ sơ)
+    patientService.getAllPatients()
+      .then((data) => setPatients(data))
+      .catch(() => setPatients([]))
+
 
     // Load assignments
     const savedAssignments = localStorage.getItem("doctorAssignments")
@@ -128,7 +131,7 @@ const AssignDoctor = () => {
       notes,
       assignedDate: new Date().toISOString(),
       status: "Đã chuyển",
-      assignedBy: "Nhân viên tiếp nhận", // In real app, get from current user
+      assignedBy: "Nhân viên tiếp nhận",
     }
 
     const updatedAssignments = [...assignments, newAssignment]
@@ -173,8 +176,8 @@ const AssignDoctor = () => {
                 <select value={selectedPatient} onChange={(e) => setSelectedPatient(e.target.value)} required>
                   <option value="">-- Chọn bệnh nhân --</option>
                   {patients.map((patient) => (
-                    <option key={patient.id} value={patient.id}>
-                      {patient.patientCode} - {patient.fullName} - {patient.phone}
+                    <option key={patient.patient_id} value={patient.patient_id}>
+                      {patient.patient_code} - {patient.full_name} - {patient.phone}
                     </option>
                   ))}
                 </select>
@@ -189,7 +192,7 @@ const AssignDoctor = () => {
                   value={selectedSpecialty}
                   onChange={(e) => {
                     setSelectedSpecialty(e.target.value)
-                    setSelectedDoctor("") // Reset doctor selection
+                    setSelectedDoctor("")
                   }}
                   required
                 >
@@ -336,6 +339,27 @@ const AssignDoctor = () => {
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div className="back-to-home-btn-wrapper">
+          <button className="back-to-home-btn" onClick={() => navigate("/receptionist")}>
+            <svg 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path 
+                d="M15 18L9 12L15 6" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+            Quay lại trang chủ
+          </button>
         </div>
       </div>
     </Layout>

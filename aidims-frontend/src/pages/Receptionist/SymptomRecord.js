@@ -1,12 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import Layout from "../Layout/Layout"
 import { patientService } from "../../services/patientService"
 import { symptomService } from "../../services/symptomService"
 import "../../css/symptomRecord.css"
 
 const SymptomRecord = () => {
+  const navigate = useNavigate()
+
   const [patients, setPatients] = useState([])
   const [selectedPatient, setSelectedPatient] = useState("")
   const [selectedPatientData, setSelectedPatientData] = useState(null)
@@ -604,6 +607,28 @@ const SymptomRecord = () => {
             </div>
           </div>
         )}
+
+          <div className="back-to-home-btn-wrapper">
+          <button className="back-to-home-btn" onClick={() => navigate("/receptionist")}>
+            <svg 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path 
+                d="M15 18L9 12L15 6" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+            Quay lại trang chủ
+          </button>
+        </div>
+        
       </div>
     </Layout>
   )

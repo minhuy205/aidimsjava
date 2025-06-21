@@ -488,6 +488,38 @@
   margin: 0;
 }
 
+/* Back to home button */
+.back-to-home-btn-wrapper {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.back-to-home-btn {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-to-home-btn:hover {
+  background: #e0e0e0;
+  border-color: #ccc;
+}
+
+.back-to-home-btn svg {
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.back-to-home-btn:hover svg {
+  transform: translateX(-3px);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .symptom-record-page {
