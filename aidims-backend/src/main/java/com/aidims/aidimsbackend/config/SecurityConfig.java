@@ -23,7 +23,8 @@ public class SecurityConfig {
                                 "/api/receptionist/**",
                                 "/api/symptom-record/**",
                                 "/api/diagnostic-reports/**",
-                                "/api/request-photo/**"  // ⭐ THÊM DÒNG NÀY
+                                "/api/request-photo/**",
+                                "/api/chat/**"// ⭐ THÊM DÒNG NÀY
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
