@@ -16,19 +16,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // ✅ NEW SYNTAX: Sử dụng lambda thay vì deprecated methods
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Bật CORS với cấu hình riêng
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/receptionist/**",
-                                "/api/symptom-record/**", // Cho phép public API ghi nhận triệu chứng
-                                "/api/diagnostic-reports/**" // ✅ THÊM: Cho phép tất cả diagnostic reports endpoints
+                                "/api/symptom-record/**",
+                                "/api/diagnostic-reports/**",
+                                "/api/request-photo/**"  // ⭐ THÊM DÒNG NÀY
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.disable()) // Tạm thời vô hiệu hóa CSRF cho API
-                .httpBasic(httpBasic -> httpBasic.disable()); // Thêm dòng này để tắt http basic auth
+                .csrf(csrf -> csrf.disable())
+                .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();
     }

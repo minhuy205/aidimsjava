@@ -421,7 +421,9 @@ const PatientProfile = () => {
                     )}
 
                     <div className="modal-actions">
-                      <button className="btn btn-primary">📝 Tạo yêu cầu chụp</button>
+                      <Link to={`/CreateImagingRequest?patientId=${selectedPatient.id}`}>
+                        <button className="btn btn-primary">📝 Tạo yêu cầu chụp</button>
+                      </Link>
                       {/* THAY ĐỔI: Truyền patientId qua URL params */}
                       <Link to={`/SymptomDisplay?patientId=${selectedPatient.id}`}>
                         <button className="btn btn-secondary">📄 Xem triệu chứng</button>
