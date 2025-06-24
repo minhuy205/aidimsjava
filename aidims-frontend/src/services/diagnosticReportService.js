@@ -123,13 +123,11 @@ const diagnosticReportService = {
         const birthInfo = formData.dateOfBirth ? `Ngày sinh: ${formData.dateOfBirth}` : '';
         const genderInfo = formData.gender ? `Giới tính: ${formData.gender}` : '';
         const addressInfo = formData.address ? `Địa chỉ: ${formData.address}` : '';
-        const doctorInfo = formData.referringDoctor ? `Bác sĩ: ${formData.referringDoctor}` : '';
-        const specialtyInfo = formData.doctorSpecialty ? `Chuyên khoa: ${formData.doctorSpecialty}` : '';
         const symptomsInfo = symptomsText ? `Triệu chứng: ${symptomsText}` : '';
         const clinicalInfo = formData.clinicalHistory ? `Lịch sử lâm sàng: ${formData.clinicalHistory}` : '';
 
         // Combine all info
-        const allInfo = [patientInfo, birthInfo, genderInfo, addressInfo, doctorInfo, specialtyInfo, symptomsInfo, clinicalInfo]
+        const allInfo = [patientInfo, birthInfo, genderInfo, addressInfo,  symptomsInfo, clinicalInfo]
             .filter(Boolean)
             .join('\n');
 
@@ -138,22 +136,12 @@ const diagnosticReportService = {
             findings: formData.diagnosis || 'Chưa có kết quả chẩn đoán',
             impression: allInfo || 'Chưa có thông tin',
             recommendations: formData.recommendations || 'Chưa có khuyến nghị',
-            radiologistId: 4
+            radiologistId: 4,
+            // THÊM MỚI: Referring doctor information
+            referringDoctorName: formData.referringDoctor || null,
+            referringDoctorSpecialty: formData.doctorSpecialty || null
             // BỎ reportType và status - để service tự set default
         };
-    },
-
-    /**
-     * Check API connection
-     */
-    async checkConnection() {
-        try {
-            const response = await apiClient.get('/statistics');
-            return response.status === 200;
-        } catch (error) {
-            console.error('API Connection Failed:', error);
-            return false;
-        }
     }
 };
 

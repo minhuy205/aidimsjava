@@ -445,58 +445,8 @@ const MedicalReportForm = () => {
                             >
                                 {loading ? 'Đang tạo...' : 'Tạo báo cáo'}
                             </button>
-
-                            <button
-                                type="button"
-                                className="submit-button view-button"
-                                onClick={handleViewReports}
-                            >
-                                Xem báo cáo
-                            </button>
-
-                            {!loading && (
-                                <button
-                                    type="button"
-                                    className="submit-button reset-button"
-                                    onClick={resetForm}
-                                >
-                                    Làm mới
-                                </button>
-                            )}
                         </div>
                     </form>
-
-                    {/* Reports List Section */}
-                    {showReportsList && (
-                        <div className="reports-list-section">
-                            <h2>📋 Danh sách báo cáo</h2>
-                            <div className="reports-grid">
-                                <div className="report-card">
-                                    <h3>BC20241211001</h3>
-                                    <p><strong>Bệnh nhân:</strong> Nguyễn Văn A</p>
-                                    <p><strong>Ngày tạo:</strong> 11/12/2024</p>
-                                    <p><strong>Trạng thái:</strong> <span className="status completed">Hoàn thành</span></p>
-                                    <div className="report-actions">
-                                        <button className="action-btn view">Xem</button>
-                                        <button className="action-btn edit">Sửa</button>
-                                        <button className="action-btn delete">Xóa</button>
-                                    </div>
-                                </div>
-
-                                <div className="report-card">
-                                    <h3>BC20241211002</h3>
-                                    <p><strong>Bệnh nhân:</strong> Trần Thị B</p>
-                                    <p><strong>Ngày tạo:</strong> 11/12/2024</p>
-                                    <p><strong>Trạng thái:</strong> <span className="status draft">Bản nháp</span></p>
-                                    <div className="report-actions">
-                                        <button className="action-btn view">Xem</button>
-                                        <button className="action-btn edit">Sửa</button>
-                                        <button className="action-btn delete">Xóa</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </section>
             </div>
         </Layout>
