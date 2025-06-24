@@ -1,6 +1,6 @@
 "use client"
 import { memo, useState, useEffect, useRef } from "react"
-import { useLocation } from "react-router-dom"
+import {Link, useLocation} from "react-router-dom"
 import Layout from "../Layout/Layout"
 import Header from "../Layout/Header"
 import { symptomService } from "../../services/symptomService"
@@ -310,19 +310,7 @@ const MiniChatbot = () => {
                         }}></div>
                     </div>
 
-                    {/* Connection Warning */}
-                    {connectionStatus === 'disconnected' && (
-                        <div style={{
-                            backgroundColor: '#fff3cd',
-                            color: '#856404',
-                            padding: '12px',
-                            fontSize: '12px',
-                            borderBottom: '1px solid #ffeaa7',
-                            textAlign: 'center'
-                        }}>
-                            ⚠️ Chế độ offline - Tư vấn cơ bản
-                        </div>
-                    )}
+
 
                     {/* Messages */}
                     <div
@@ -552,6 +540,7 @@ const MiniChatbot = () => {
 };
 
 const SymptomDisplayLayout = () => {
+    const [selectedPatient, setSelectedPatient] = useState(null)
     const location = useLocation()
     const [patientData, setPatientData] = useState(null)
     const [symptomsData, setSymptomsData] = useState([])
@@ -592,10 +581,12 @@ const SymptomDisplayLayout = () => {
             try {
                 setLoading(true)
                 const patientId = getPatientIdFromUrl()
+
                 // Lấy danh sách bệnh nhân
                 const patients = await patientService.getAllPatients()
                 const patient = patients.find(p => String(p.patient_id) === String(patientId))
                 setPatientData(patient)
+                setSelectedPatient(patient)
                 // Lấy triệu chứng
                 let symptoms = []
                 if (patientId) {
@@ -896,9 +887,12 @@ const SymptomDisplayLayout = () => {
                                     ← Quay lại
                                 </button>
 
-                                <button className="btn btn-success">
-                                    📊 Tạo báo cáo
-                                </button>
+
+                                <Link to={`/MedicalReportForm?patientId=${selectedPatient?.patient_id}`}>
+                                    <button className="btn btn-secondary">📄 Tạo báo cáo</button>
+                                </Link>
+
+
                             </div>
 
                             {/* Debug section */}
