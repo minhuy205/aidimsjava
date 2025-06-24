@@ -396,20 +396,7 @@ const CreateImagingRequest = () => {
                                         ← Quay lại
                                     </button>
                                 </Link>
-
-                                {/* Debug button - chỉ để test */}
-                                <button
-                                    type="button"
-                                    className="btn"
-                                    style={{backgroundColor: '#ffa500', color: 'white'}}
-                                    onClick={async () => {
-                                        console.log('Running debug...')
-                                        await requestPhotoService.debugConnection()
-                                    }}
-                                >
-                                    🔍 Debug Connection
-                                </button>
-
+                                
                                 <button type="submit" className="btn btn-primary" disabled={submitting}>
                                     {submitting ? (
                                         <>🔄 Đang gửi...</>
