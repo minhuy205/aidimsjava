@@ -68,10 +68,19 @@ const diagnosticReportService = {
      */
     async generateReportCode() {
         try {
+            console.log("🔢 Calling API to generate report code...");
             const response = await apiClient.get('/generate-code');
-            return response.data;
+            console.log("🔢 API response:", response.data);
+
+            // API trả về { success: true, message: "...", data: "BC20250624001" }
+            if (response.data && response.data.success && response.data.data) {
+                return response.data; // Trả về full response để frontend xử lý
+            } else {
+                throw new Error('Invalid response format from server');
+            }
         } catch (error) {
-            throw new Error('Không thể tạo mã báo cáo');
+            console.error('❌ Error generating report code:', error);
+            throw new Error('Không thể tạo mã báo cáo từ server');
         }
     },
 

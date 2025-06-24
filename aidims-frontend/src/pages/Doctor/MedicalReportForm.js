@@ -1,9 +1,13 @@
 import { memo, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "../Layout/Layout";
 import "../../css/MedicalReportForm.css";
 import diagnosticReportService from '../../services/diagnosticReportService';
+import { patientService } from "../../services/patientService";
 
 const MedicalReportForm = () => {
+    const [searchParams] = useSearchParams();
+
     const [formData, setFormData] = useState({
         // Nhận dạng bệnh nhân
         firstName: '',
@@ -27,34 +31,107 @@ const MedicalReportForm = () => {
     });
 
     const [loading, setLoading] = useState(false);
+    const [patientLoading, setPatientLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [reportCode, setReportCode] = useState('BC20241211001');
     const [showReportsList, setShowReportsList] = useState(false);
+    const [selectedPatientInfo, setSelectedPatientInfo] = useState(null);
 
-    // Generate report code when component mounts
+    // BƯỚC QUAN TRỌNG: Auto-fill khi component load
     useEffect(() => {
-        generateNewReportCode();
-    }, []);
+        const patientId = searchParams.get('patientId');
+        console.log("URL patientId:", patientId);
 
-    const generateNewReportCode = async () => {
+        if (patientId) {
+            loadPatientData(patientId);
+        }
+
+        generateNewReportCode();
+    }, [searchParams]);
+
+    const loadPatientData = async (patientId) => {
         try {
-            const response = await diagnosticReportService.generateReportCode();
-            if (response.success) {
-                setReportCode(response.data);
-            } else {
-                // Fallback to generated code
-                const newCode = `BC${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
-                setReportCode(newCode);
+            setPatientLoading(true);
+
+            // Fetch patient data from API
+            const patientData = await patientService.getPatientById(patientId);
+
+            if (patientData) {
+                fillPatientData(patientData);
+                setSelectedPatientInfo(patientData);
+                setMessage({
+                    type: 'success',
+                    text: `Đã tự động điền thông tin bệnh nhân: ${patientData.full_name}`
+                });
             }
         } catch (error) {
-            console.error('Error generating report code:', error);
-            // Fallback to generated code
-            const newCode = `BC${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
-            setReportCode(newCode);
-            setMessage({ type: 'error', text: 'Không thể tạo mã báo cáo từ server, sử dụng mã tạm thời' });
+            console.error('Error loading patient data:', error);
+            setMessage({
+                type: 'error',
+                text: 'Không thể tải thông tin bệnh nhân. Vui lòng nhập thủ công.'
+            });
+        } finally {
+            setPatientLoading(false);
         }
     };
 
+    const fillPatientData = (patientData) => {
+        // Split full name into first and last name
+        const fullName = patientData.full_name || patientData.fullName || '';
+        const nameParts = fullName.trim().split(' ');
+        const firstName = nameParts.pop() || ''; // Last word as first name
+        const lastName = nameParts.join(' ') || ''; // Rest as last name
+
+        setFormData(prev => ({
+            ...prev,
+            firstName: firstName,
+            lastName: lastName,
+            dateOfBirth: patientData.date_of_birth || patientData.dateOfBirth || '',
+            gender: patientData.gender || '',
+            address: patientData.address || '',
+            // You can also pre-fill other fields if available
+            clinicalHistory: patientData.medical_history || patientData.medicalHistory || ''
+        }));
+    };
+
+    const generateNewReportCode = async () => {
+        try {
+            console.log("🔢 Generating new report code...");
+            const response = await diagnosticReportService.generateReportCode();
+            console.log("🔢 Generate code response:", response);
+
+            // Kiểm tra response structure từ DiagnosticReportController
+            if (response && response.data) {
+                // API trả về { success: true, message: "...", data: "BC20250624001" }
+                setReportCode(response.data);
+                console.log("✅ Generated report code from API:", response.data);
+            } else if (response && typeof response === 'string') {
+                // Trường hợp trả về trực tiếp string
+                setReportCode(response);
+                console.log("✅ Generated report code (direct):", response);
+            } else {
+                // Fallback nếu API response không đúng format
+                throw new Error("Invalid API response format");
+            }
+        } catch (error) {
+            console.error('❌ Error generating report code from API:', error);
+            console.log("🔄 Using fallback method...");
+
+            // Fallback: tạo mã báo cáo ngẫu nhiên
+            const today = new Date();
+            const dateStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+            const randomNum = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+            const fallbackCode = `BC${dateStr}${randomNum}`;
+
+            setReportCode(fallbackCode);
+            console.log("✅ Generated fallback report code:", fallbackCode);
+
+            setMessage({
+                type: 'warning',
+                text: `⚠️ Sử dụng mã báo cáo tạm thời: ${fallbackCode}`
+            });
+        }
+    };
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -79,8 +156,8 @@ const MedicalReportForm = () => {
         setMessage({ type: '', text: '' });
 
         try {
-            // Validate required fields
-            if (!formData.firstName || !formData.lastName) {
+            // Validate required fields - SỬA: cho phép lastName trống nếu firstName có
+            if (!formData.firstName || (!formData.lastName && formData.firstName.length < 2)) {
                 throw new Error('Vui lòng nhập đầy đủ họ tên');
             }
 
@@ -88,25 +165,24 @@ const MedicalReportForm = () => {
                 throw new Error('Vui lòng nhập kết quả chẩn đoán');
             }
 
-            // Transform form data to API format
+            // Sử dụng transformFormDataToApi() có sẵn
             const apiData = diagnosticReportService.transformFormDataToApi(formData);
             apiData.reportCode = reportCode;
 
             console.log('🚀 Sending data to API:', apiData);
 
-            // Call real API
+            // Sử dụng createReport() có sẵn
             const response = await diagnosticReportService.createReport(apiData);
 
-            if (response.success) {
-                setMessage({ type: 'success', text: `Báo cáo ${response.data.reportCode} đã được lưu thành công vào cơ sở dữ liệu!` });
+            if (response) {
+                setMessage({ type: 'success', text: `Báo cáo ${reportCode} đã được lưu thành công vào cơ sở dữ liệu!` });
 
-                // Reset form after successful submission
                 setTimeout(() => {
                     resetForm();
                     generateNewReportCode();
                 }, 3000);
             } else {
-                throw new Error(response.message || 'Có lỗi xảy ra khi lưu báo cáo');
+                throw new Error('Có lỗi xảy ra khi lưu báo cáo');
             }
 
         } catch (error) {
@@ -122,20 +198,38 @@ const MedicalReportForm = () => {
     };
 
     const resetForm = () => {
-        setFormData({
-            firstName: '',
-            lastName: '',
-            dateOfBirth: '',
-            gender: '',
-            address: '',
-            referringDoctor: '',
-            doctorSpecialty: '',
-            clinicalHistory: '',
-            symptoms: [],
-            diagnosis: '',
-            findings: '',
-            recommendations: ''
-        });
+        // Don't reset patient info if it was auto-filled
+        const patientId = searchParams.get('patientId');
+
+        if (patientId && selectedPatientInfo) {
+            // Keep patient info, only reset medical fields
+            setFormData(prev => ({
+                ...prev,
+                referringDoctor: '',
+                doctorSpecialty: '',
+                symptoms: [],
+                diagnosis: '',
+                findings: '',
+                recommendations: ''
+            }));
+        } else {
+            // Reset everything
+            setFormData({
+                firstName: '',
+                lastName: '',
+                dateOfBirth: '',
+                gender: '',
+                address: '',
+                referringDoctor: '',
+                doctorSpecialty: '',
+                clinicalHistory: '',
+                symptoms: [],
+                diagnosis: '',
+                findings: '',
+                recommendations: ''
+            });
+        }
+
         setMessage({ type: '', text: '' });
     };
 
@@ -144,6 +238,28 @@ const MedicalReportForm = () => {
             <div className="report-form-page">
                 <section className="report-form-section">
                     <h1>📝 Phiếu xét nghiệm bệnh lý</h1>
+
+                    {/* HIỂN THỊ: Thông tin bệnh nhân đã chọn */}
+                    {selectedPatientInfo && (
+                        <div className="patient-info-banner">
+                            <div className="patient-banner">
+                                <h3>👤 Bệnh nhân đã chọn</h3>
+                                <div className="patient-details">
+                                    <span><strong>Tên:</strong> {selectedPatientInfo.full_name || selectedPatientInfo.fullName}</span>
+                                    <span><strong>Mã BN:</strong> {selectedPatientInfo.patient_code || selectedPatientInfo.patientCode}</span>
+                                    <span><strong>Giới tính:</strong> {selectedPatientInfo.gender}</span>
+                                    <span><strong>SĐT:</strong> {selectedPatientInfo.phone}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* HIỂN THỊ: Loading bệnh nhân */}
+                    {patientLoading && (
+                        <div className="loading-banner">
+                            <div>🔄 Đang tải thông tin bệnh nhân...</div>
+                        </div>
+                    )}
 
                     {/* Message Display */}
                     {message.text && (
@@ -162,7 +278,7 @@ const MedicalReportForm = () => {
                     <form className="report-form" onSubmit={handleCreateReport}>
                         {/* Nhận dạng bệnh nhân */}
                         <fieldset className="form-group">
-                            <legend>👤 Nhận dạng bệnh nhân</legend>
+                            <legend>👤 Nhận dạng bệnh nhân {selectedPatientInfo && <span className="auto-filled">✅ Tự động điền</span>}</legend>
 
                             <div className="name-group">
                                 <label>
@@ -173,18 +289,10 @@ const MedicalReportForm = () => {
                                         placeholder="Tên"
                                         value={formData.firstName}
                                         onChange={handleInputChange}
+                                        className={selectedPatientInfo ? 'auto-filled-field' : ''}
                                     />
                                 </label>
-                                <label>
-                                    Họ
-                                    <input
-                                        type="text"
-                                        name="lastName"
-                                        placeholder="Họ"
-                                        value={formData.lastName}
-                                        onChange={handleInputChange}
-                                    />
-                                </label>
+
                             </div>
 
                             <label>
@@ -194,6 +302,7 @@ const MedicalReportForm = () => {
                                     name="dateOfBirth"
                                     value={formData.dateOfBirth}
                                     onChange={handleInputChange}
+                                    className={selectedPatientInfo ? 'auto-filled-field' : ''}
                                 />
                             </label>
 
@@ -203,6 +312,7 @@ const MedicalReportForm = () => {
                                     name="gender"
                                     value={formData.gender}
                                     onChange={handleInputChange}
+                                    className={selectedPatientInfo ? 'auto-filled-field' : ''}
                                 >
                                     <option value="">-- Chọn giới tính --</option>
                                     <option value="Nam">Nam</option>
@@ -219,11 +329,12 @@ const MedicalReportForm = () => {
                                     placeholder="123 Đường ABC, Quận XYZ"
                                     value={formData.address}
                                     onChange={handleInputChange}
+                                    className={selectedPatientInfo ? 'auto-filled-field' : ''}
                                 />
                             </label>
                         </fieldset>
 
-                        {/* Bác sĩ giới thiệu */}
+                        {/* Rest of the form remains the same */}
                         <fieldset className="form-group">
                             <legend>🩺 Bác sĩ giới thiệu</legend>
 
@@ -255,7 +366,6 @@ const MedicalReportForm = () => {
                             </label>
                         </fieldset>
 
-                        {/* Lịch sử lâm sàng */}
                         <fieldset className="form-group">
                             <legend>📋 Lịch sử lâm sàng</legend>
 
@@ -285,11 +395,11 @@ const MedicalReportForm = () => {
                                     placeholder="Ví dụ: ho kéo dài, sưng hạch cổ,..."
                                     value={formData.clinicalHistory}
                                     onChange={handleInputChange}
+                                    className={selectedPatientInfo ? 'auto-filled-field' : ''}
                                 ></textarea>
                             </label>
                         </fieldset>
 
-                        {/* Chẩn đoán */}
                         <fieldset className="form-group">
                             <legend>🔍 Chẩn đoán</legend>
 

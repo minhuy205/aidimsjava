@@ -428,6 +428,9 @@ const PatientProfile = () => {
                       <Link to={`/SymptomDisplay?patientId=${selectedPatient.id}`}>
                         <button className="btn btn-secondary">📄 Xem triệu chứng</button>
                       </Link>
+                      <Link to={`/MedicalReportForm?patientId=${selectedPatient.id}`}>
+                        <button className="btn btn-secondary">📄 Tạo báo cáo</button>
+                      </Link>
                       <button className="btn btn-success">✅ Hoàn thành khám</button>
                     </div>
                   </div>
