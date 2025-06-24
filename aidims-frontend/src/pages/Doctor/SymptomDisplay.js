@@ -14,7 +14,7 @@ const MiniChatbot = () => {
     const [messages, setMessages] = useState([
         {
             id: 1,
-            text: "Xin chào! Tôi là trợ lý AI của bệnh viện AIDIMS. Tôi có thể giúp bạn tư vấn về triệu chứng bệnh, phân tích hồ sơ bệnh án và hỗ trợ chuyên môn y tế. Bạn cần hỗ trợ gì ạ?",
+            text: "Xin chào! Tôi là trợ lý AI của bệnh viện AIDIMS.",
             sender: "bot",
             timestamp: new Date()
         }
@@ -108,11 +108,9 @@ const MiniChatbot = () => {
             console.error('❌ Error sending message:', error);
             setConnectionStatus('disconnected');
 
-            const fallbackResponse = getFallbackResponse(currentMessage);
-
             const errorMessage = {
                 id: Date.now() + 1,
-                text: fallbackResponse,
+                text: "Chuẩn đoán chưa có trên hệ thống !",
                 sender: "bot",
                 timestamp: new Date()
             };
@@ -120,40 +118,6 @@ const MiniChatbot = () => {
         } finally {
             setIsTyping(false);
         }
-    };
-
-    const getFallbackResponse = (message) => {
-        const lowerMessage = message.toLowerCase();
-
-        if (lowerMessage.includes("triệu chứng") || lowerMessage.includes("symptom")) {
-            return "📋 **Phân tích triệu chứng (Chế độ offline)**\n\n" +
-                "Tôi hiểu bạn đang quan tâm về triệu chứng. Dưới đây là hướng dẫn chung:\n\n" +
-                "🔍 **Quan sát triệu chứng:**\n" +
-                "• Thời gian xuất hiện\n" +
-                "• Mức độ nghiêm trọng (1-10)\n" +
-                "• Các yếu tố làm tăng/giảm\n" +
-                "• Triệu chứng kèm theo\n\n" +
-                "📞 **Liên hệ ngay:** (028) 1234-5678\n" +
-                "🏥 **Đến khám nếu:** Triệu chứng nặng hoặc kéo dài";
-        }
-
-        if (lowerMessage.includes("phân tích") || lowerMessage.includes("chẩn đoán")) {
-            return "🩺 **Hỗ trợ phân tích y tế (Offline)**\n\n" +
-                "• Ghi nhận triệu chứng chi tiết\n" +
-                "• So sánh với tiêu chuẩn y khoa\n" +
-                "• Đề xuất hướng điều trị\n" +
-                "• Theo dõi tiến triển\n\n" +
-                "⚠️ **Lưu ý:** Chỉ bác sĩ mới có thể chẩn đoán chính thức\n" +
-                "📞 Tư vấn: (028) 1234-5678";
-        }
-
-        return `⚠️ Hệ thống tạm thời offline.\n\n` +
-            `Câu hỏi của bạn: "${message}"\n\n` +
-            `🏥 **Hỗ trợ tức thì:**\n` +
-            `• Tổng đài: (028) 1234-5678\n` +
-            `• Cấp cứu: 24/7\n` +
-            `• Tư vấn online: aidims.com\n\n` +
-            `Tôi sẽ thử kết nối lại...`;
     };
 
     const handleKeyPress = (e) => {
@@ -168,18 +132,6 @@ const MiniChatbot = () => {
             hour: '2-digit',
             minute: '2-digit'
         });
-    };
-
-    const quickResponses = [
-        "Phân tích triệu chứng này",
-        "Mức độ nguy hiểm?",
-        "Cần khám gấp không?",
-        "Cách xử lý ban đầu",
-        "Thuốc có thể dùng?"
-    ];
-
-    const handleQuickResponse = (text) => {
-        setInputMessage(text);
     };
 
     const getConnectionStatusColor = () => {
@@ -228,9 +180,9 @@ const MiniChatbot = () => {
                     border: '3px solid white'
                 }}
             >
-        <span style={{ fontSize: '24px', color: 'white' }}>
-          {isOpen ? '✕' : '🩺'}
-        </span>
+                <span style={{ fontSize: '24px', color: 'white' }}>
+                  {isOpen ? '✕' : '🩺'}
+                </span>
                 <div style={{
                     position: 'absolute',
                     top: '-5px',
@@ -253,7 +205,7 @@ const MiniChatbot = () => {
                         bottom: '90px',
                         right: '20px',
                         width: '400px',
-                        height: '600px',
+                        height: '500px',
                         backgroundColor: 'white',
                         borderRadius: '16px',
                         boxShadow: '0 12px 48px rgba(0,0,0,0.15)',
@@ -310,7 +262,19 @@ const MiniChatbot = () => {
                         }}></div>
                     </div>
 
-
+                    {/* Connection Warning */}
+                    {connectionStatus === 'disconnected' && (
+                        <div style={{
+                            backgroundColor: '#fff3cd',
+                            color: '#856404',
+                            padding: '12px',
+                            fontSize: '12px',
+                            borderBottom: '1px solid #ffeaa7',
+                            textAlign: 'center'
+                        }}>
+                            ⚠️ Chế độ offline - Tư vấn cơ bản
+                        </div>
+                    )}
 
                     {/* Messages */}
                     <div
@@ -402,43 +366,6 @@ const MiniChatbot = () => {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Quick Responses */}
-                    <div style={{
-                        padding: '8px 16px',
-                        borderTop: '1px solid #e0e0e0',
-                        backgroundColor: 'white'
-                    }}>
-                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>Tư vấn nhanh:</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {quickResponses.map((response, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => handleQuickResponse(response)}
-                                    style={{
-                                        padding: '6px 12px',
-                                        backgroundColor: '#e8f5e8',
-                                        border: '1px solid #28a745',
-                                        borderRadius: '16px',
-                                        fontSize: '12px',
-                                        color: '#28a745',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.target.style.backgroundColor = '#28a745';
-                                        e.target.style.color = 'white';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.target.style.backgroundColor = '#e8f5e8';
-                                        e.target.style.color = '#28a745';
-                                    }}
-                                >
-                                    {response}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
                     {/* Input */}
                     <div
                         style={{
@@ -449,30 +376,30 @@ const MiniChatbot = () => {
                         }}
                     >
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-              <textarea
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Hỏi về triệu chứng, chẩn đoán..."
-                  disabled={isTyping}
-                  style={{
-                      flex: 1,
-                      border: '2px solid #e0e0e0',
-                      borderRadius: '24px',
-                      padding: '12px 16px',
-                      fontSize: '14px',
-                      resize: 'none',
-                      minHeight: '20px',
-                      maxHeight: '100px',
-                      outline: 'none',
-                      transition: 'border-color 0.2s',
-                      fontFamily: 'inherit',
-                      backgroundColor: isTyping ? '#f5f5f5' : 'white'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#28a745'}
-                  onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
-                  rows={1}
-              />
+                            <textarea
+                                value={inputMessage}
+                                onChange={(e) => setInputMessage(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                placeholder="Hỏi về triệu chứng, chẩn đoán..."
+                                disabled={isTyping}
+                                style={{
+                                    flex: 1,
+                                    border: '2px solid #e0e0e0',
+                                    borderRadius: '24px',
+                                    padding: '12px 16px',
+                                    fontSize: '14px',
+                                    resize: 'none',
+                                    minHeight: '20px',
+                                    maxHeight: '100px',
+                                    outline: 'none',
+                                    transition: 'border-color 0.2s',
+                                    fontFamily: 'inherit',
+                                    backgroundColor: isTyping ? '#f5f5f5' : 'white'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = '#28a745'}
+                                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+                                rows={1}
+                            />
                             <button
                                 onClick={sendMessage}
                                 disabled={!inputMessage.trim() || isTyping}
@@ -501,40 +428,40 @@ const MiniChatbot = () => {
 
             {/* CSS Animations */}
             <style jsx>{`
-        @keyframes bounce {
-          0%, 80%, 100% {
-            transform: scale(0);
-          } 40% {
-            transform: scale(1);
-          }
-        }
-        
-        @keyframes pulse {
-          0% {
-            transform: scale(0.8);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1.2);
-            opacity: 0.7;
-          }
-          100% {
-            transform: scale(0.8);
-            opacity: 1;
-          }
-        }
-        
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(30px) scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-      `}</style>
+                @keyframes bounce {
+                    0%, 80%, 100% {
+                        transform: scale(0);
+                    } 40% {
+                          transform: scale(1);
+                      }
+                }
+
+                @keyframes pulse {
+                    0% {
+                        transform: scale(0.8);
+                        opacity: 1;
+                    }
+                    50% {
+                        transform: scale(1.2);
+                        opacity: 0.7;
+                    }
+                    100% {
+                        transform: scale(0.8);
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(30px) scale(0.9);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+            `}</style>
         </>
     );
 };
@@ -887,12 +814,9 @@ const SymptomDisplayLayout = () => {
                                     ← Quay lại
                                 </button>
 
-
                                 <Link to={`/MedicalReportForm?patientId=${selectedPatient?.patient_id}`}>
                                     <button className="btn btn-secondary">📄 Tạo báo cáo</button>
                                 </Link>
-
-
                             </div>
 
                             {/* Debug section */}
