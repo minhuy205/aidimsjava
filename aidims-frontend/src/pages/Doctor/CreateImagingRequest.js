@@ -310,6 +310,10 @@ const CreateImagingRequest = () => {
                                         <option value="ct">CT Scan</option>
                                         <option value="mri">MRI</option>
                                         <option value="ultrasound">Siêu âm</option>
+                                        <option value="Mammography">Mammography</option>
+                                        <option value="Fluoroscopy">Fluoroscopy</option>
+                                        <option value="PET-CT">PET-CT</option>
+                                        <option value="SPECT">SPECT</option>
                                     </select>
                                 </div>
                                 <div className="form-group">
