@@ -105,6 +105,19 @@
   color: #333;
 }
 
+.form-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: middle;
+  accent-color: #0066cc;
+}
+
+.form-group label input[type="checkbox"] {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
