@@ -34,7 +34,7 @@ public class ReceptionistService {
         return symptomRepo.save(symptom);
     }
 
-    public Assignment assignDoctor(Long patientId, Long doctorId, String department) {
+    public Assignment assignDoctor(Long patientId, Long doctorId, String department, String priority, String notes) {
         Patient patient = patientRepo.findById(patientId).orElseThrow();
         Doctor doctor = doctorRepo.findById(doctorId).orElseThrow();
         Assignment a = new Assignment();
@@ -43,6 +43,8 @@ public class ReceptionistService {
         a.setDepartment(department);
         a.setAssignedAt(LocalDateTime.now());
         a.setStatus("Đang chờ");
+        a.setPriority(priority);
+        a.setNotes(notes);
         return assignmentRepo.save(a);
     }
 

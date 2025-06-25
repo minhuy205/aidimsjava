@@ -17,9 +17,9 @@ class AssignmentService {
   }
 
   // Tạo mới chuyển hồ sơ
-  async createAssignment({ patientId, doctorId, department }) {
+  async createAssignment({ patientId, doctorId, department, priority, notes }) {
     // Gọi đúng API backend dạng query string, thêm header Accept để nhận lỗi chi tiết
-    const url = `${API_BASE_URL}/receptionist/assign?patientId=${patientId}&doctorId=${doctorId}&department=${encodeURIComponent(department)}`;
+    const url = `${API_BASE_URL}/receptionist/assign?patientId=${patientId}&doctorId=${doctorId}&department=${encodeURIComponent(department)}&priority=${encodeURIComponent(priority || '')}&notes=${encodeURIComponent(notes || '')}`;
     const response = await fetch(url, {
       method: "POST",
       headers: {

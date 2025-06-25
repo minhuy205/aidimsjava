@@ -39,8 +39,13 @@ public class AssignmentController {
     }
 
     @PostMapping("/assign")
-    public ResponseEntity<Assignment> assignDoctor(@RequestParam Long patientId, @RequestParam Long doctorId, @RequestParam String department) {
-        Assignment assignment = receptionistService.assignDoctor(patientId, doctorId, department);
+    public ResponseEntity<Assignment> assignDoctor(
+            @RequestParam Long patientId,
+            @RequestParam Long doctorId,
+            @RequestParam String department,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) String notes) {
+        Assignment assignment = receptionistService.assignDoctor(patientId, doctorId, department, priority, notes);
         return ResponseEntity.ok(assignment);
     }
 

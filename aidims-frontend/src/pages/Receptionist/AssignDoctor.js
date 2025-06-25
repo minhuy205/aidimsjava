@@ -117,7 +117,9 @@ const AssignDoctor = () => {
       await assignmentService.createAssignment({
         patientId: Number(newAssignment.patientId),
         doctorId: Number(newAssignment.doctorId),
-        department: doctor.department // lấy đúng chuyên khoa từ backend
+        department: doctor.department, // lấy đúng chuyên khoa từ backend
+        priority,
+        notes
       });
       // Sau khi lưu thành công, lấy lại lịch sử từ backend
       const updatedAssignments = await assignmentService.getAllAssignments();
@@ -293,6 +295,7 @@ const AssignDoctor = () => {
                   <th>Bác sĩ</th>
                   <th>Chuyên khoa</th>
                   <th>Mức độ ưu tiên</th>
+                  <th>Ghi chú</th>
                   <th>Ngày chuyển</th>
                   <th>Trạng thái</th>
                 </tr>
@@ -309,6 +312,7 @@ const AssignDoctor = () => {
                         {assignment.priority || 'Bình thường'}
                       </span>
                     </td>
+                    <td>{assignment.notes || assignment.note || ''}</td>
                     <td>{assignment.assignedAt ? new Date(assignment.assignedAt).toLocaleDateString("vi-VN") : ''}</td>
                     <td>
                       <span className="status-badge">{assignment.status}</span>
