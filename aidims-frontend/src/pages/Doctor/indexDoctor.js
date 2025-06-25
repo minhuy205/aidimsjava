@@ -1,11 +1,11 @@
 import { memo } from "react"
 import { Link } from "react-router-dom"
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import "../../css/indexDoctor.css"
 
 const IndexDoctor = () => {
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="doctor-page">
         <section className="doctor-dashboard">
           <h1>
@@ -79,7 +79,7 @@ const IndexDoctor = () => {
           </div>
         </section>
       </div>
-    </Layout>
+    </LayoutLogin>
   )
 }
 

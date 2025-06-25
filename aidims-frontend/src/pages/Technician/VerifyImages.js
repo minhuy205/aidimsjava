@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import "../../css/verifyImages.css"
 
 const VerifyImages = () => {
@@ -173,7 +173,7 @@ const VerifyImages = () => {
   }
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="verify-images-page">
         <div className="page-header">
           <h2>✅ Kiểm tra chất lượng hình ảnh</h2>
@@ -313,7 +313,7 @@ const VerifyImages = () => {
           </div>
         )}
       </div>
-    </Layout>
+    </LayoutLogin>
   )
 }
 

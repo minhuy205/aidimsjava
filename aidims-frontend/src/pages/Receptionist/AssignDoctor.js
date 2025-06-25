@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import { patientService } from "../../services/patientService"
 import { assignmentService } from "../../services/assignmentService"
 import '../../css/assignDoctor.css'
@@ -156,7 +156,7 @@ const AssignDoctor = () => {
   }
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="assign-doctor-page">
         <div className="page-header">
           <h2>👨‍⚕️ Chuyển hồ sơ đến Bác sĩ</h2>
@@ -345,7 +345,7 @@ const AssignDoctor = () => {
           </button>
         </div>
       </div>
-    </Layout>
+    </LayoutLogin>
   )
 }
 

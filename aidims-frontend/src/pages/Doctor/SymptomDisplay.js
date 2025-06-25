@@ -1,8 +1,8 @@
 "use client"
 import { memo, useState, useEffect, useRef } from "react"
 import {Link, useLocation} from "react-router-dom"
-import Layout from "../Layout/Layout"
-import Header from "../Layout/Header"
+import LayoutLogin from "../Layout/LayoutLogin"
+import HeaderLogin from "../Layout/HeaderLogin"
 import { symptomService } from "../../services/symptomService"
 import { patientService } from "../../services/patientService"
 import "../../css/PatientProfile.css"
@@ -592,8 +592,8 @@ const SymptomDisplayLayout = () => {
     if (loading) {
         return (
             <>
-                <Header />
-                <Layout>
+                <HeaderLogin />
+                <LayoutLogin>
                     <div className="doctor-page">
                         <div className="patient-list-container">
                             <div className="symptom-display-container">
@@ -609,7 +609,7 @@ const SymptomDisplayLayout = () => {
                     </div>
                     {/* Chatbot luôn hiển thị */}
                     <MiniChatbot />
-                </Layout>
+                </LayoutLogin>
             </>
         )
     }
@@ -618,8 +618,8 @@ const SymptomDisplayLayout = () => {
     if (error) {
         return (
             <>
-                <Header />
-                <Layout>
+                <HeaderLogin />
+                <LayoutLogin>
                     <div className="doctor-page">
                         <div className="patient-list-container">
                             <div className="symptom-display-container">
@@ -660,7 +660,7 @@ const SymptomDisplayLayout = () => {
                     </div>
                     {/* Chatbot luôn hiển thị */}
                     <MiniChatbot />
-                </Layout>
+                </LayoutLogin>
             </>
         )
     }
@@ -669,8 +669,8 @@ const SymptomDisplayLayout = () => {
     if (!patientData) {
         return (
             <>
-                <Header />
-                <Layout>
+                <HeaderLogin />
+                <LayoutLogin>
                     <div className="doctor-page">
                         <div className="patient-list-container">
                             <div className="symptom-display-container">
@@ -685,15 +685,15 @@ const SymptomDisplayLayout = () => {
                     </div>
                     {/* Chatbot luôn hiển thị */}
                     <MiniChatbot />
-                </Layout>
+                </LayoutLogin>
             </>
         )
     }
 
     return (
         <>
-            <Header />
-            <Layout>
+            <HeaderLogin />
+            <LayoutLogin>
                 <div className="doctor-page">
                     <div className="patient-list-container">
                         <div className="symptom-display-container">
@@ -840,7 +840,7 @@ const SymptomDisplayLayout = () => {
 
                 {/* Mini Chatbot - Luôn hiển thị */}
                 <MiniChatbot />
-            </Layout>
+            </LayoutLogin>
         </>
     )
 }

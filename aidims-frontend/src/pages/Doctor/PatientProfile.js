@@ -2,7 +2,7 @@
 
 import { memo, useState, useEffect } from "react"
 import { Link } from 'react-router-dom';
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import { patientService } from "../../services/patientService"
 import "../../css/PatientProfile.css"
 
@@ -104,7 +104,7 @@ const PatientProfile = () => {
   // Loading state
   if (loading) {
     return (
-        <Layout>
+        <LayoutLogin>
           <div className="doctor-page">
             <div className="patient-list-container">
               <div className="page-header">
@@ -116,14 +116,14 @@ const PatientProfile = () => {
               </div>
             </div>
           </div>
-        </Layout>
+        </LayoutLogin>
     )
   }
 
   // Error state
   if (error) {
     return (
-        <Layout>
+        <LayoutLogin>
           <div className="doctor-page">
             <div className="patient-list-container">
               <div className="page-header">
@@ -138,12 +138,12 @@ const PatientProfile = () => {
               </div>
             </div>
           </div>
-        </Layout>
+        </LayoutLogin>
     )
   }
 
   return (
-      <Layout>
+      <LayoutLogin>
         <div className="doctor-page">
           <div className="patient-list-container">
             <div className="page-header">
@@ -438,7 +438,7 @@ const PatientProfile = () => {
               </div>
           )}
         </div>
-      </Layout>
+      </LayoutLogin>
   )
 }
 

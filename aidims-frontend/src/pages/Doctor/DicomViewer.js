@@ -1,5 +1,5 @@
 import { memo, useState, useEffect } from "react";
-import Layout from "../Layout/Layout";
+import LayoutLogin from "../Layout/LayoutLogin";
 import { getAllDicoms, downloadDicomFile } from "../../services/DicomService";
 import "../../css/DicomViewer.css";
 
@@ -25,7 +25,7 @@ const DicomViewer = () => {
   };
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="doctor-page">
         <div className="dicom-list-container">
           <div className="page-header">
@@ -100,7 +100,7 @@ const DicomViewer = () => {
           </div>
         )}
       </div>
-    </Layout>
+    </LayoutLogin>
   );
 };
 

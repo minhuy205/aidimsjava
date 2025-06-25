@@ -1,5 +1,5 @@
 import { memo, useState, useEffect } from "react";
-import Layout from "../Layout/Layout";
+import LayoutLogin from "../Layout/LayoutLogin";
 import "../../css/CompareImages.css"; // file css riêng
 
 const CompareImages = () => {
@@ -60,7 +60,7 @@ const CompareImages = () => {
     .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken)); // Cũ -> Mới
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="doctor-page">
         <div className="compare-container">
           <h2>🔄 So sánh ảnh DICOM</h2>
@@ -97,7 +97,7 @@ const CompareImages = () => {
           )}
         </div>
       </div>
-    </Layout>
+    </LayoutLogin>
   );
 };
 

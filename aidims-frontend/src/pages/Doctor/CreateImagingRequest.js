@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSearchParams, Link, useNavigate } from 'react-router-dom'
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import { patientService } from "../../services/patientService"
 import { requestPhotoService } from "../../services/requestPhotoService"
 import "../../css/CreateImagingRequest.css"
@@ -184,7 +184,7 @@ const CreateImagingRequest = () => {
 
     if (loading) {
         return (
-            <Layout>
+            <LayoutLogin>
                 <div className="create-imaging-page">
                     <div className="imaging-container">
                         <div className="page-header">
@@ -196,13 +196,13 @@ const CreateImagingRequest = () => {
                         </div>
                     </div>
                 </div>
-            </Layout>
+            </LayoutLogin>
         )
     }
 
     if (error && !patient) {
         return (
-            <Layout>
+            <LayoutLogin>
                 <div className="create-imaging-page">
                     <div className="imaging-container">
                         <div className="page-header">
@@ -219,12 +219,12 @@ const CreateImagingRequest = () => {
                         </div>
                     </div>
                 </div>
-            </Layout>
+            </LayoutLogin>
         )
     }
 
     return (
-        <Layout>
+        <LayoutLogin>
             <div className="create-imaging-page">
                 <div className="imaging-container">
                     <div className="page-header">
@@ -409,7 +409,7 @@ const CreateImagingRequest = () => {
                     </div>
                 </div>
             </div>
-        </Layout>
+        </LayoutLogin>
     )
 }
 

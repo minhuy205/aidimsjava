@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import Layout from "../Layout/Layout";
+import LayoutLogin from "../Layout/LayoutLogin";
 import "../../css/MedicalReportForm.css";
 import diagnosticReportService from '../../services/diagnosticReportService';
 import { patientService } from "../../services/patientService";
@@ -234,7 +234,7 @@ const MedicalReportForm = () => {
     };
 
     return (
-        <Layout>
+        <LayoutLogin>
             <div className="report-form-page">
                 <section className="report-form-section">
                     <h1>📝 Phiếu xét nghiệm bệnh lý</h1>
@@ -449,7 +449,7 @@ const MedicalReportForm = () => {
                     </form>
                 </section>
             </div>
-        </Layout>
+        </LayoutLogin>
     );
 };
 

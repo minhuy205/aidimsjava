@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import "../../css/systemSettings.css"
 
 const SystemSettings = () => {
@@ -114,7 +114,7 @@ const SystemSettings = () => {
   }
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="system-settings-page">
         <div className="page-header">
           <h2>⚙️ Cấu hình Hệ thống</h2>
@@ -450,7 +450,7 @@ const SystemSettings = () => {
           </button>
         </div>
       </div>
-    </Layout>
+    </LayoutLogin>
   )
 }
 
