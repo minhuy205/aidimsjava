@@ -63,4 +63,12 @@ public Patient createOrUpdatePatient(Patient patient) {
 public List<Doctor> getAllDoctors() {
     return doctorRepo.findAll();
 }
+public List<Doctor> getDoctorsByDepartment(String department) {
+    return doctorRepo.findAll().stream()
+        .filter(d -> d.getDepartment() != null && d.getDepartment().equalsIgnoreCase(department))
+        .toList();
+}
+public Doctor getDoctorById(Long id) {
+    return doctorRepo.findById(id).orElseThrow();
+}
 }

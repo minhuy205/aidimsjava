@@ -4,7 +4,7 @@ class AssignmentService {
   // Lấy danh sách chuyển hồ sơ (doctor assignments)
   async getAllAssignments() {
     try {
-      const response = await fetch(`${API_BASE_URL}/doctor-assignments`);
+      const response = await fetch(`${API_BASE_URL}/receptionist/assignments`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -36,6 +36,17 @@ class AssignmentService {
   // Lấy danh sách bác sĩ từ backend
   async getAllDoctors() {
     const response = await fetch(`${API_BASE_URL}/receptionist/doctors`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  }
+
+  // Lấy danh sách bác sĩ theo chuyên khoa
+  async getDoctorsByDepartment(department) {
+    const url = `${API_BASE_URL}/receptionist/doctors-by-department?department=${encodeURIComponent(department)}`;
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

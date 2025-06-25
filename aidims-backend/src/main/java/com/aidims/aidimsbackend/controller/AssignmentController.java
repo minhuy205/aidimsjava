@@ -58,4 +58,10 @@ public class AssignmentController {
     public ResponseEntity<List<Doctor>> getAllDoctors() {
         return ResponseEntity.ok(receptionistService.getAllDoctors());
     }
+
+    @GetMapping("/doctors-by-department")
+    public ResponseEntity<List<Doctor>> getDoctorsByDepartment(@RequestParam String department) {
+        List<Doctor> doctors = receptionistService.getDoctorsByDepartment(department);
+        return ResponseEntity.ok(doctors);
+    }
 }
