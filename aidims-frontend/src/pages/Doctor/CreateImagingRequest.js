@@ -326,12 +326,12 @@ const CreateImagingRequest = () => {
                                         required
                                     >
                                         <option value="">-- Chọn vị trí --</option>
-                                        <option value="chest">Ngực</option>
-                                        <option value="abdomen">Bụng</option>
-                                        <option value="head">Đầu</option>
-                                        <option value="spine">Cột sống</option>
-                                        <option value="limbs">Tứ chi</option>
-                                        <option value="pelvis">Khung chậu</option>
+                                        <option value="Ngực">Ngực</option>
+                                        <option value="Bụng">Bụng</option>
+                                        <option value="Đầu">Đầu</option>
+                                        <option value="Cột sống">Cột sống</option>
+                                        <option value="Tứ chi">Tứ chi</option>
+                                        <option value="Khung Chậu">Khung chậu</option>
                                         <option value="other">Khác</option>
                                     </select>
                                 </div>
@@ -347,9 +347,9 @@ const CreateImagingRequest = () => {
                                         onChange={handleInputChange}
                                         required
                                     >
-                                        <option value="normal">Bình thường</option>
-                                        <option value="urgent">Khẩn cấp</option>
-                                        <option value="stat">Cấp cứu</option>
+                                        <option value="Bình thường">Bình thường</option>
+                                        <option value="Khẩn cấp">Khẩn cấp</option>
+                                        <option value="Cấp cứu">Cấp cứu</option>
                                     </select>
                                 </div>
                                 <div className="form-group">
