@@ -257,7 +257,7 @@ const PatientProfile = () => {
 
                   <div className="modal-content">
                     {activeTab === "general" && (
-                        <div className="patient-info-section">
+                        <div className="medical-info-section">
                           <h4>📋 THÔNG TIN BỆNH NHÂN</h4>
 
                           <div className="info-grid">
@@ -315,7 +315,7 @@ const PatientProfile = () => {
                     )}
 
                     {activeTab === "medical" && (
-                        <div className="patient-info-section">
+                        <div className="medical-info-section">
                           <h4>🩺 THÔNG TIN Y TẾ</h4>
 
                           <div className="info-grid">
@@ -342,8 +342,8 @@ const PatientProfile = () => {
                             <div className="info-row">
                               <span className="info-label">Trạng thái:</span>
                               <span className="info-value">
-                          <span className="status-badge">{selectedPatient.status}</span>
-                        </span>
+            <span className="status-badge">{selectedPatient.status}</span>
+          </span>
                             </div>
 
                             <div className="info-row">
@@ -355,7 +355,7 @@ const PatientProfile = () => {
                     )}
 
                     {activeTab === "vital" && (
-                        <div className="patient-info-section">
+                        <div className="medical-info-section">
                           <h4>📊 SINH HIỆU (do nhân viên tiếp nhận ghi nhận)</h4>
 
                           <div className="vital-signs-grid">

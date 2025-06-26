@@ -9,6 +9,10 @@ const apiClient = axios.create({
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
+        // Thêm basic auth hoặc token nếu cần
+        // 'Authorization': 'Bearer YOUR_TOKEN_HERE'
+        // Hoặc cho development có thể thêm:
+        'X-Requested-With': 'XMLHttpRequest'
     }
 });
 
@@ -85,26 +89,81 @@ const diagnosticReportService = {
     },
 
     /**
-     * Get all reports
+     * Get all reports - FIX: Gọi endpoint không có dấu / cuối
      */
     async getAllReports() {
         try {
-            const response = await apiClient.get('/');
-            return response.data;
+            console.log('📋 Fetching all diagnostic reports...');
+            // BỎ dấu / cuối trong endpoint
+            const response = await apiClient.get(''); // Thay vì get('/')
+
+            console.log('🔍 Raw API response:', response.data);
+
+            // Backend trả về ApiResponse wrapper: { success: true, message: "...", data: [...] }
+            if (response.data && response.data.success && Array.isArray(response.data.data)) {
+                console.log('✅ Successfully fetched reports:', response.data.data.length, 'items');
+                return {
+                    success: true,
+                    data: response.data.data,
+                    message: response.data.message
+                };
+            } else {
+                console.error('❌ Unexpected response format:', response.data);
+                throw new Error('Invalid response format from server');
+            }
         } catch (error) {
-            throw new Error('Không thể lấy danh sách báo cáo');
+            console.error('❌ Error fetching reports:', error);
+            throw new Error(error.response?.data?.message || 'Không thể lấy danh sách báo cáo');
         }
     },
 
     /**
-     * Get report by ID
+     * Get report by ID - FIX: Đảm bảo URL đúng format
      */
     async getReportById(reportId) {
         try {
+            console.log(`🔍 Fetching report by ID: ${reportId}`);
+            // Đảm bảo không có dấu / thừa
             const response = await apiClient.get(`/${reportId}`);
-            return response.data;
+
+            // Backend trả về ApiResponse wrapper
+            if (response.data && response.data.success && response.data.data) {
+                console.log('✅ Successfully fetched report:', response.data.data);
+                return {
+                    success: true,
+                    data: response.data.data,
+                    message: response.data.message
+                };
+            } else {
+                throw new Error('Invalid response format from server');
+            }
         } catch (error) {
-            throw new Error(`Không thể lấy báo cáo ID ${reportId}`);
+            console.error(`❌ Error fetching report ${reportId}:`, error);
+            throw new Error(error.response?.data?.message || `Không thể lấy báo cáo ID ${reportId}`);
+        }
+    },
+
+    /**
+     * Get report statistics - THÊM MỚI
+     */
+    async getReportStatistics() {
+        try {
+            console.log('📊 Fetching report statistics...');
+            const response = await apiClient.get('/statistics');
+
+            if (response.data && response.data.success && response.data.data) {
+                console.log('✅ Successfully fetched statistics:', response.data.data);
+                return {
+                    success: true,
+                    data: response.data.data,
+                    message: response.data.message
+                };
+            } else {
+                throw new Error('Invalid response format from server');
+            }
+        } catch (error) {
+            console.error('❌ Error fetching statistics:', error);
+            throw new Error(error.response?.data?.message || 'Không thể lấy thống kê báo cáo');
         }
     },
 
@@ -127,7 +186,7 @@ const diagnosticReportService = {
         const clinicalInfo = formData.clinicalHistory ? `Lịch sử lâm sàng: ${formData.clinicalHistory}` : '';
 
         // Combine all info
-        const allInfo = [patientInfo, birthInfo, genderInfo, addressInfo,  symptomsInfo, clinicalInfo]
+        const allInfo = [patientInfo, birthInfo, genderInfo, addressInfo, symptomsInfo, clinicalInfo]
             .filter(Boolean)
             .join('\n');
 
