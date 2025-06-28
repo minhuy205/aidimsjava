@@ -5,12 +5,61 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.Duration;
 import java.util.*;
 
 @Service
 public class ChatService {
+    public String testGeminiDirectly(String message) {
+        if (geminiApiKey == null || geminiApiKey.trim().isEmpty() ||
+                geminiApiKey.equals("YOUR_GEMINI_API_KEY_HERE")) {
+            throw new RuntimeException("Gemini API key chưa được cấu hình");
+        }
+
+        try {
+            Map<String, Object> requestBody = createGeminiRequestBody("Test: " + message);
+
+            String response = webClient.post()
+                    .uri(geminiApiUrl + "?key=" + geminiApiKey)
+                    .header("Content-Type", "application/json")
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(30))
+                    .block();
+
+            JsonNode jsonResponse = objectMapper.readTree(response);
+
+            if (jsonResponse.has("candidates") &&
+                    jsonResponse.get("candidates").size() > 0) {
+
+                JsonNode candidate = jsonResponse.get("candidates").get(0);
+                if (candidate.has("content") &&
+                        candidate.get("content").has("parts") &&
+                        candidate.get("content").get("parts").size() > 0) {
+
+                    return candidate.get("content").get("parts").get(0).get("text").asText();
+                }
+            }
+
+            throw new RuntimeException("Invalid response format: " + response);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Gemini API test failed: " + e.getMessage());
+        }
+    }
+
+    public String testOpenAIDirectly(String message) {
+        // Implement tương tự cho OpenAI nếu cần
+        return "OpenAI test placeholder";
+    }
+    @Value("${gemini.api.key:}")
+    private String geminiApiKey;
+
+    @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent}")
+    private String geminiApiUrl;
 
     @Value("${openai.api.key:}")
     private String openaiApiKey;
@@ -22,13 +71,230 @@ public class ChatService {
 
     public ChatService() {
         this.webClient = WebClient.builder()
-                .baseUrl("https://api.openai.com/v1")
                 .build();
         this.objectMapper = new ObjectMapper();
         this.symptomDiagnosis = initializeSymptomDiagnosis();
         this.dicomFindings = initializeDicomFindings();
     }
 
+    public String getChatResponse(String message) {
+        return getChatResponse(message, "default");
+    }
+
+    public String getChatResponse(String message, String sessionId) {
+        // Ưu tiên sử dụng Gemini API
+        if (geminiApiKey != null && !geminiApiKey.trim().isEmpty() &&
+                !geminiApiKey.equals("YOUR_GEMINI_API_KEY_HERE")) {
+            try {
+                return getGeminiResponse(message);
+            } catch (Exception e) {
+                System.err.println("Gemini API failed: " + e.getMessage());
+                // Fallback to OpenAI if Gemini fails
+                return tryOpenAIOrFallback(message);
+            }
+        }
+
+        // Fallback to OpenAI hoặc local logic
+        return tryOpenAIOrFallback(message);
+    }
+
+    private String getGeminiResponse(String message) {
+        try {
+            // Tạo system prompt cho y tế
+            String medicalPrompt = createMedicalPrompt(message);
+
+            // Tạo request body theo format Gemini API
+            Map<String, Object> requestBody = createGeminiRequestBody(medicalPrompt);
+
+            // Gọi Gemini API
+            String response = webClient.post()
+                    .uri(geminiApiUrl + "?key=" + geminiApiKey)
+                    .header("Content-Type", "application/json")
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(30))
+                    .block();
+
+            // Parse response
+            JsonNode jsonResponse = objectMapper.readTree(response);
+
+            if (jsonResponse.has("candidates") &&
+                    jsonResponse.get("candidates").size() > 0) {
+
+                JsonNode candidate = jsonResponse.get("candidates").get(0);
+                if (candidate.has("content") &&
+                        candidate.get("content").has("parts") &&
+                        candidate.get("content").get("parts").size() > 0) {
+
+                    String aiResponse = candidate.get("content").get("parts").get(0).get("text").asText();
+                    return formatMedicalResponse(aiResponse);
+                }
+            }
+
+            throw new RuntimeException("Invalid response format from Gemini");
+
+        } catch (WebClientResponseException e) {
+            throw new RuntimeException("Gemini API Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            throw new RuntimeException("Gemini API Error: " + e.getMessage());
+        }
+    }
+
+    private Map<String, Object> createGeminiRequestBody(String prompt) {
+        Map<String, Object> requestBody = new HashMap<>();
+
+        // Tạo parts
+        Map<String, Object> part = new HashMap<>();
+        part.put("text", prompt);
+
+        // Tạo content
+        Map<String, Object> content = new HashMap<>();
+        content.put("parts", Arrays.asList(part));
+
+        // Tạo contents array
+        requestBody.put("contents", Arrays.asList(content));
+
+        // Cấu hình generation
+        Map<String, Object> generationConfig = new HashMap<>();
+        generationConfig.put("temperature", 0.3);
+        generationConfig.put("topK", 40);
+        generationConfig.put("topP", 0.95);
+        generationConfig.put("maxOutputTokens", 1024);
+
+        requestBody.put("generationConfig", generationConfig);
+
+        // Safety settings để tránh bị block
+        List<Map<String, Object>> safetySettings = new ArrayList<>();
+        String[] categories = {
+                "HARM_CATEGORY_HARASSMENT",
+                "HARM_CATEGORY_HATE_SPEECH",
+                "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "HARM_CATEGORY_DANGEROUS_CONTENT"
+        };
+
+        for (String category : categories) {
+            Map<String, Object> safety = new HashMap<>();
+            safety.put("category", category);
+            safety.put("threshold", "BLOCK_ONLY_HIGH");
+            safetySettings.add(safety);
+        }
+
+        requestBody.put("safetySettings", safetySettings);
+
+        return requestBody;
+    }
+
+    private String createMedicalPrompt(String userMessage) {
+        return "Bạn là AI chuyên khoa y tế của bệnh viện AIDIMS, hỗ trợ bác sĩ phân tích triệu chứng.\n\n" +
+                "NHIỆM VỤ:\n" +
+                "- Phân tích triệu chứng bệnh nhân\n" +
+                "- Đưa ra chẩn đoán phân biệt (top 3-5)\n" +
+                "- Đề xuất xét nghiệm cần thiết\n" +
+                "- Đánh giá mức độ ưu tiên\n" +
+                "- Giải thích DICOM findings nếu có\n\n" +
+
+                "ĐỊNH DẠNG TRẢ LỜI:\n" +
+                "🩺 **PHÂN TÍCH TRIỆU CHỨNG**\n" +
+                "- Mô tả ngắn gọn\n\n" +
+
+                "🔍 **CHẨN ĐOÁN PHÂN BIỆT:**\n" +
+                "1. [Chẩn đoán chính] - [xác suất %]\n" +
+                "2. [Chẩn đoán 2] - [xác suất %]\n" +
+                "3. [Chẩn đoán 3] - [xác suất %]\n\n" +
+
+                "📊 **XÉT NGHIỆM ĐỀ XUẤT:**\n" +
+                "- Cận lâm sàng: [...]\n" +
+                "- Hình ảnh: [...]\n" +
+                "- Khác: [...]\n\n" +
+
+                "⚡ **MỨC ĐỘ ƯU TIÊN:**\n" +
+                "🔴 Khẩn cấp / 🟡 Theo dõi / 🟢 Thấp\n\n" +
+
+                "💊 **ĐIỀU TRỊ BAN ĐẦU:**\n" +
+                "- Triệu chứng: [...]\n" +
+                "- Theo dõi: [...]\n\n" +
+
+                "LƯU Ý:\n" +
+                "- Trả lời bằng tiếng Việt\n" +
+                "- Ngắn gọn, dễ hiểu\n" +
+                "- Tối đa 300 từ\n" +
+                "- Sử dụng emoji và format markdown\n\n" +
+
+                "TRIỆU CHỨNG/CÂU HỎI CỦA BỆNH NHÂN:\n" + userMessage;
+    }
+
+    private String formatMedicalResponse(String response) {
+        // Thêm thông tin bổ sung cho response
+        StringBuilder formatted = new StringBuilder();
+        formatted.append(response);
+
+        // Thêm disclaimer
+        formatted.append("\n\n---\n");
+        formatted.append("⚠️ **LƯU Ý:** Đây chỉ là tư vấn hỗ trợ. ");
+        formatted.append("Quyết định cuối cùng thuộc về bác sĩ điều trị.\n");
+        formatted.append("📞 **Khẩn cấp:** (028) 1234-5678");
+
+        return formatted.toString();
+    }
+
+    private String tryOpenAIOrFallback(String message) {
+        // Thử OpenAI nếu có key
+        if (openaiApiKey != null && !openaiApiKey.trim().isEmpty() &&
+                !openaiApiKey.equals("your-openai-api-key-here")) {
+            try {
+                return getOpenAIResponse(message);
+            } catch (Exception e) {
+                System.err.println("OpenAI API failed: " + e.getMessage());
+            }
+        }
+
+        // Fallback về logic cứng
+        return getSymptomAnalysis(message);
+    }
+
+    private String getOpenAIResponse(String message) {
+        try {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "gpt-3.5-turbo");
+
+            List<Map<String, String>> messages = new ArrayList<>();
+
+            Map<String, String> systemMessage = new HashMap<>();
+            systemMessage.put("role", "system");
+            systemMessage.put("content", createMedicalPrompt(message));
+
+            Map<String, String> userMessage = new HashMap<>();
+            userMessage.put("role", "user");
+            userMessage.put("content", message);
+
+            messages.add(systemMessage);
+            messages.add(userMessage);
+
+            requestBody.put("messages", messages);
+            requestBody.put("max_tokens", 500);
+            requestBody.put("temperature", 0.3);
+
+            String response = webClient.post()
+                    .uri("https://api.openai.com/v1/chat/completions")
+                    .header("Authorization", "Bearer " + openaiApiKey)
+                    .header("Content-Type", "application/json")
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(30))
+                    .block();
+
+            JsonNode jsonResponse = objectMapper.readTree(response);
+            String aiResponse = jsonResponse.get("choices").get(0).get("message").get("content").asText();
+            return formatMedicalResponse(aiResponse);
+
+        } catch (Exception e) {
+            throw new RuntimeException("OpenAI Error: " + e.getMessage());
+        }
+    }
+
+    // Giữ nguyên các method cũ cho fallback
     private Map<String, String> initializeSymptomDiagnosis() {
         Map<String, String> symptoms = new HashMap<>();
 
@@ -48,7 +314,7 @@ public class ChatService {
         // Tiêu hóa
         symptoms.put("đau bụng", "🔍 **ĐÁNH GIÁ:** Appendicitis, Pancreatitis, Gallstones\n📊 **XÉT NGHIỆM:** CT abdomen, Lipase, WBC\n🟡 **THEO DÕI**");
         symptoms.put("buồn nôn", "🔍 **ĐÁNH GIÁ:** Gastritis, Pancreatitis, Pregnancy\n📊 **XÉT NGHIỆM:** βhCG, Lipase, H.pylori\n🟢 **THẤP**");
-        symptoms.put("tiêu chảy", "🔍 **ĐÁNH GIÁ:** Gastroenteritis, IBD, C.diff\n📊 **XÉT NGHIỆM:** Stool culture, Calprotectin\n🟡 **THEO DÕI**");
+        symptoms.put("tiêu chảy", "🔍 **ĐÁNH GIÁ:** Gastroenteritis, IBD, C.diff\n📊 **XÉT NGHIỆM:** Stool culture, Calprotectin\n🟡 **THEO DỚI**");
         symptoms.put("táo bón", "🔍 **ĐÁNH GIÁ:** IBS, Medication, Diet\n📊 **XÉT NGHIỆM:** Colonoscopy nếu >50 tuổi\n🟢 **THẤP**");
         symptoms.put("vàng da", "🔍 **ĐÁNH GIÁ:** Hepatitis, Gallstones, Hemolysis\n📊 **XÉT NGHIỆM:** LFT, Bilirubin, MRCP\n🟡 **THEO DÕI**");
 
@@ -95,69 +361,6 @@ public class ChatService {
         findings.put("hydrocephalus", "🧠 **Hydrocephalus:**\nVentricular enlargement\n**Acute:** Emergent shunt");
 
         return findings;
-    }
-
-    public String getChatResponse(String message) {
-        return getChatResponse(message, "default");
-    }
-
-    public String getChatResponse(String message, String sessionId) {
-        if (openaiApiKey != null && !openaiApiKey.trim().isEmpty() &&
-                !openaiApiKey.equals("your-openai-api-key-here")) {
-            try {
-                return getOpenAIResponse(message);
-            } catch (Exception e) {
-                return getSymptomAnalysis(message);
-            }
-        }
-        return getSymptomAnalysis(message);
-    }
-
-    private String getOpenAIResponse(String message) {
-        try {
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", "gpt-3.5-turbo");
-
-            List<Map<String, String>> messages = new ArrayList<>();
-
-            Map<String, String> systemMessage = new HashMap<>();
-            systemMessage.put("role", "system");
-            systemMessage.put("content",
-                    "Bạn là AI y tế hỗ trợ bác sĩ. Phân tích triệu chứng ngắn gọn:\n" +
-                            "- Chẩn đoán phân biệt top 3\n" +
-                            "- Xét nghiệm cần làm\n" +
-                            "- Mức độ ưu tiên (🔴🟡🟢)\n" +
-                            "- DICOM findings nếu có\n" +
-                            "Trả lời tối đa 200 từ, bằng tiếng Việt."
-            );
-
-            Map<String, String> userMessage = new HashMap<>();
-            userMessage.put("role", "user");
-            userMessage.put("content", message);
-
-            messages.add(systemMessage);
-            messages.add(userMessage);
-
-            requestBody.put("messages", messages);
-            requestBody.put("max_tokens", 300);
-            requestBody.put("temperature", 0.3);
-
-            String response = webClient.post()
-                    .uri("/chat/completions")
-                    .header("Authorization", "Bearer " + openaiApiKey)
-                    .header("Content-Type", "application/json")
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .timeout(Duration.ofSeconds(20))
-                    .block();
-
-            JsonNode jsonResponse = objectMapper.readTree(response);
-            return jsonResponse.get("choices").get(0).get("message").get("content").asText();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Lỗi AI: " + e.getMessage());
-        }
     }
 
     private String getSymptomAnalysis(String message) {
@@ -208,22 +411,18 @@ public class ChatService {
 
         if (foundSymptoms.isEmpty() && foundDicom.isEmpty()) {
             response.append("🤖 **TƯ VẤN Y TẾ AIDIMS**\n\n");
-            response.append("Tôi chưa nhận diện được triệu chứng cụ thể.\n\n");
-            response.append("**Cách sử dụng:**\n");
-            response.append("• Nhập triệu chứng: \"đau ngực + khó thở\"\n");
-            response.append("• DICOM findings: \"ground glass + fever\"\n");
-            response.append("• Kết hợp: \"đau bụng + sốt + WBC cao\"\n\n");
-            response.append("**Triệu chứng có sẵn:**\n");
-            response.append("Tim mạch, Hô hấp, Tiêu hóa, Thần kinh, Nhiễm trùng\n\n");
-            response.append("📞 **Tổng đài:** (028) 1234-5678");
+            response.append("Xin chào! Tôi là AI hỗ trợ y tế. Vui lòng mô tả triệu chứng cụ thể.\n\n");
+            response.append("**Ví dụ:**\n");
+            response.append("• \"Đau ngực + khó thở từ sáng nay\"\n");
+            response.append("• \"Sốt + ho có đờm 3 ngày\"\n");
+            response.append("• \"Đau bụng dưới bên phải\"\n\n");
+            response.append("📞 **Khẩn cấp:** (028) 1234-5678");
         }
 
         return response.toString();
     }
 
     private String analyzeCombination(List<String> symptoms) {
-        String combo = String.join(" + ", symptoms);
-
         // Common combinations
         if (symptoms.contains("đau ngực") && symptoms.contains("khó thở")) {
             return "⚡ **ACS vs PE vs Pneumothorax**\nECG + Troponin + D-dimer + CTPA\n🔴 **KHẨN CẤP**";
@@ -245,6 +444,7 @@ public class ChatService {
             return "💧 **Heart Failure**\nBNP + Echo + CXR\n🟡 **NHẬP VIỆN**";
         }
 
+        String combo = String.join(" + ", symptoms);
         return "🔍 **Đa triệu chứng:** " + combo + "\n📋 **Cần đánh giá toàn diện**";
     }
 }

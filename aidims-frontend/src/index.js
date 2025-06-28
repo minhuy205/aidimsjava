@@ -26,7 +26,7 @@ import DicomViewer from "./pages/Doctor/DicomViewer.js"
 import CompareImages from "./pages/Doctor/CompareImages.js"
 import SymptomDisplayLayout from "./pages/Doctor/SymptomDisplay.js"
 import CreateImagingRequest from "./pages/Doctor/CreateImagingRequest.js"
-
+import MiniChatBot from "./pages/Doctor/MiniChatBot.js"
 import DoctorLogin from "./pages/Login/DoctorLogin.js"
 import ReceptionistLogin from "./pages/Login/ReceptionistLogin.js"
 import TechnicianLogin from "./pages/Login/TechnicianLogin.js"
@@ -51,6 +51,7 @@ root.render(
         <Route path="/SymptomDisplay" element={<SymptomDisplayLayout />} />
         <Route path="/doctor/imagereport" element={<CreateImagingRequest />} />
         <Route path="/CreateImagingRequest" element={<CreateImagingRequest />} />
+        <Route path="/MiniChatBot" element={<MiniChatBot />} />
 
         {/* Receptionist Routes */}
         <Route path="/login/receptionist" element={<ReceptionistLogin />} />
