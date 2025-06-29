@@ -2,6 +2,7 @@ package com.aidims.aidimsbackend.controller;
 
 import com.aidims.aidimsbackend.dto.ChatRequest;
 import com.aidims.aidimsbackend.dto.ChatResponse;
+import com.aidims.aidimsbackend.dto.ImageAnalysisRequest;
 import com.aidims.aidimsbackend.service.ChatService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +21,11 @@ public class ChatController {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
-    @Autowired
-    private ChatService chatService;
+    private final ChatService chatService;
+    public ChatController(ChatService chatService) {
+        this.chatService = chatService;
+    }
+
     @GetMapping("/test-gemini")
     public ResponseEntity<String> testGemini(@RequestParam(defaultValue = "đau ngực") String message) {
         try {
@@ -57,6 +61,7 @@ public class ChatController {
         result.put("timestamp", new Date());
         return ResponseEntity.ok(result);
     }
+
     @PostMapping("/message")
     public ResponseEntity<ChatResponse> sendMessage(@RequestBody ChatRequest request) {
         logger.info("Received chat message: {}", request.getMessage());
@@ -69,6 +74,46 @@ public class ChatController {
             logger.error("Error processing chat message: ", e);
             return ResponseEntity.status(500)
                     .body(new ChatResponse("Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.", "error"));
+        }
+    }
+
+    @PostMapping("/analyze-image")
+    public ResponseEntity<ChatResponse> analyzeImage(@RequestBody ImageAnalysisRequest request) {
+        logger.info("Received image analysis request with {} images",
+                request.getImages() != null ? request.getImages().size() : 0);
+
+        try {
+            if (request.getImages() == null || request.getImages().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ChatResponse("Không có hình ảnh nào được gửi", "error"));
+            }
+
+            if (request.getImages().size() > 5) {
+                return ResponseEntity.badRequest()
+                        .body(new ChatResponse("Tối đa 5 hình ảnh mỗi lần", "error"));
+            }
+
+            for (var image : request.getImages()) {
+                if (image.getSize() > 10 * 1024 * 1024) {
+                    return ResponseEntity.badRequest()
+                            .body(new ChatResponse("Hình ảnh " + image.getName() + " quá lớn (>10MB)", "error"));
+                }
+            }
+
+            String response = chatService.analyzeImages(request);
+            logger.info("Generated image analysis response");
+
+            return ResponseEntity.ok(new ChatResponse(response, "success"));
+
+        } catch (Exception e) {
+            logger.error("Error analyzing images: ", e);
+            return ResponseEntity.status(500)
+                    .body(new ChatResponse(
+                            "❌ **Lỗi phân tích hình ảnh**\n\n" +
+                                    "Không thể phân tích hình ảnh lúc này:\n" +
+                                    "• " + e.getMessage() + "\n\n" +
+                                    "📞 **Hỗ trợ:** (028) 1234-5678",
+                            "error"));
         }
     }
 

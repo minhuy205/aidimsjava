@@ -1,5 +1,5 @@
 package com.aidims.aidimsbackend.service;
-
+import com.aidims.aidimsbackend.dto.ImageAnalysisRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,7 +63,8 @@ public class ChatService {
 
     @Value("${openai.api.key:}")
     private String openaiApiKey;
-
+    @Value("${gemini.vision.api.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent}")
+    private String geminiVisionApiUrl;
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
     private final Map<String, String> symptomDiagnosis;
@@ -446,5 +447,196 @@ public class ChatService {
 
         String combo = String.join(" + ", symptoms);
         return "🔍 **Đa triệu chứng:** " + combo + "\n📋 **Cần đánh giá toàn diện**";
+    }
+    public String analyzeImages(ImageAnalysisRequest request) {
+        if (geminiApiKey == null || geminiApiKey.trim().isEmpty() ||
+                geminiApiKey.equals("YOUR_GEMINI_API_KEY_HERE")) {
+            throw new RuntimeException("Gemini API key chưa được cấu hình");
+        }
+
+        try {
+            // Create medical image analysis prompt
+            String medicalPrompt = createMedicalImagePrompt(request.getMessage());
+
+            // Create multimodal request body for Gemini Vision
+            Map<String, Object> requestBody = createGeminiVisionRequestBody(medicalPrompt, request.getImages());
+
+            // Call Gemini Vision API
+            String response = webClient.post()
+                    .uri(geminiVisionApiUrl + "?key=" + geminiApiKey)
+                    .header("Content-Type", "application/json")
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(45)) // Longer timeout for image analysis
+                    .block();
+
+            // Parse response
+            JsonNode jsonResponse = objectMapper.readTree(response);
+
+            if (jsonResponse.has("candidates") &&
+                    jsonResponse.get("candidates").size() > 0) {
+
+                JsonNode candidate = jsonResponse.get("candidates").get(0);
+                if (candidate.has("content") &&
+                        candidate.get("content").has("parts") &&
+                        candidate.get("content").get("parts").size() > 0) {
+
+                    String aiResponse = candidate.get("content").get("parts").get(0).get("text").asText();
+                    return formatMedicalImageResponse(aiResponse, request.getImages().size());
+                }
+            }
+
+            throw new RuntimeException("Invalid response format from Gemini Vision");
+
+        } catch (WebClientResponseException e) {
+            throw new RuntimeException("Gemini Vision API Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            throw new RuntimeException("Gemini Vision API Error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Tạo request body cho Gemini Vision API với text và images
+     */
+    private Map<String, Object> createGeminiVisionRequestBody(String prompt, List<ImageAnalysisRequest.ImageData> images) {
+        Map<String, Object> requestBody = new HashMap<>();
+
+        // Create parts array with text and images
+        List<Map<String, Object>> parts = new ArrayList<>();
+
+        // Add text part
+        Map<String, Object> textPart = new HashMap<>();
+        textPart.put("text", prompt);
+        parts.add(textPart);
+
+        // Add image parts
+        for (ImageAnalysisRequest.ImageData image : images) {
+            Map<String, Object> imagePart = new HashMap<>();
+            Map<String, Object> inlineData = new HashMap<>();
+
+            // Remove data URL prefix if present (data:image/jpeg;base64,)
+            String base64Data = image.getData();
+            if (base64Data.contains(",")) {
+                base64Data = base64Data.split(",")[1];
+            }
+
+            inlineData.put("mime_type", image.getType());
+            inlineData.put("data", base64Data);
+            imagePart.put("inline_data", inlineData);
+            parts.add(imagePart);
+        }
+
+        // Create content
+        Map<String, Object> content = new HashMap<>();
+        content.put("parts", parts);
+
+        // Create contents array
+        requestBody.put("contents", Arrays.asList(content));
+
+        // Generation config for image analysis
+        Map<String, Object> generationConfig = new HashMap<>();
+        generationConfig.put("temperature", 0.2); // Lower temperature for medical analysis
+        generationConfig.put("topK", 32);
+        generationConfig.put("topP", 0.9);
+        generationConfig.put("maxOutputTokens", 2048); // More tokens for detailed analysis
+
+        requestBody.put("generationConfig", generationConfig);
+
+        // Safety settings
+        List<Map<String, Object>> safetySettings = new ArrayList<>();
+        String[] categories = {
+                "HARM_CATEGORY_HARASSMENT",
+                "HARM_CATEGORY_HATE_SPEECH",
+                "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "HARM_CATEGORY_DANGEROUS_CONTENT"
+        };
+
+        for (String category : categories) {
+            Map<String, Object> safety = new HashMap<>();
+            safety.put("category", category);
+            safety.put("threshold", "BLOCK_ONLY_HIGH");
+            safetySettings.add(safety);
+        }
+
+        requestBody.put("safetySettings", safetySettings);
+
+        return requestBody;
+    }
+
+    /**
+     * Tạo prompt chuyên dụng cho phân tích hình ảnh y tế
+     */
+    private String createMedicalImagePrompt(String userMessage) {
+        return "Bạn là AI chuyên gia phân tích hình ảnh y tế của bệnh viện AIDIMS.\n\n" +
+                "NHIỆM VỤ PHÂN TÍCH HÌNH ẢNH Y TẾ:\n" +
+                "- Mô tả chi tiết những gì nhìn thấy trong hình ảnh\n" +
+                "- Xác định loại hình ảnh y tế (X-quang, CT, MRI, siêu âm, etc.)\n" +
+                "- Phân tích các cấu trúc giải phẫu bình thường\n" +
+                "- Chỉ ra các bất thường nếu có\n" +
+                "- Đưa ra chẩn đoán phân biệt dựa trên hình ảnh\n" +
+                "- Đề xuất thêm xét nghiệm nếu cần\n\n" +
+
+                "ĐỊNH DẠNG TRẢ LỜI:\n" +
+                "📸 **LOẠI HÌNH ẢNH:** [X-quang/CT/MRI/etc.]\n\n" +
+
+                "🔍 **MÔ TẢ HÌNH ẢNH:**\n" +
+                "- Vùng chụp: [...]\n" +
+                "- Tư thế: [...]\n" +
+                "- Chất lượng ảnh: [...]\n\n" +
+
+                "✅ **CẤU TRÚC BÌNH THƯỜNG:**\n" +
+                "- [...]\n" +
+                "- [...]\n\n" +
+
+                "⚠️ **PHÁT HIỆN BẤT THƯỜNG:**\n" +
+                "- [...]\n" +
+                "- [...]\n\n" +
+
+                "🩺 **CHẨN ĐOÁN PHÂN BIỆT:**\n" +
+                "1. [Chẩn đoán chính] - [độ tin cậy]\n" +
+                "2. [Chẩn đoán 2] - [độ tin cậy]\n" +
+                "3. [Chẩn đoán 3] - [độ tin cậy]\n\n" +
+
+                "📊 **ĐỀ XUẤT THÊM:**\n" +
+                "- Xét nghiệm: [...]\n" +
+                "- Hình ảnh bổ sung: [...]\n" +
+                "- Tư vấn chuyên khoa: [...]\n\n" +
+
+                "⚡ **MỨC ĐỘ ƯU TIÊN:**\n" +
+                "🔴 Khẩn cấp / 🟡 Theo dõi / 🟢 Bình thường\n\n" +
+
+                "LƯU Ý QUAN TRỌNG:\n" +
+                "- Phân tích khách quan dựa trên hình ảnh\n" +
+                "- Không đưa ra chẩn đoán chắc chắn\n" +
+                "- Luôn khuyến cáo tham khảo bác sĩ chuyên khoa\n" +
+                "- Trả lời bằng tiếng Việt, rõ ràng, dễ hiểu\n\n" +
+
+                "CÂU HỎI CỦA NGƯỜI DÙNG:\n" + (userMessage != null ? userMessage : "Phân tích hình ảnh y tế này");
+    }
+
+    /**
+     * Format response cho phân tích hình ảnh y tế
+     */
+    private String formatMedicalImageResponse(String response, int imageCount) {
+        StringBuilder formatted = new StringBuilder();
+
+        // Add header
+        formatted.append("🔬 **KẾT QUẢ PHÂN TÍCH HÌNH ẢNH Y TẾ**\n");
+        formatted.append("📊 *Đã phân tích ").append(imageCount).append(" hình ảnh*\n\n");
+
+        formatted.append(response);
+
+        // Add important disclaimers
+        formatted.append("\n\n---\n");
+        formatted.append("⚠️ **QUAN TRỌNG:**\n");
+        formatted.append("• Đây chỉ là hỗ trợ phân tích sơ bộ\n");
+        formatted.append("• Quyết định chẩn đoán cuối cùng thuộc về bác sĩ chuyên khoa\n");
+        formatted.append("• Cần kết hợp với triệu chứng lâm sàng và tiền sử bệnh\n");
+        formatted.append("• Nếu có triệu chứng nghiêm trọng, hãy đến bệnh viện ngay\n\n");
+        formatted.append("📞 **Khẩn cấp:** (028) 1234-5678\n");
+        formatted.append("🏥 **Bệnh viện AIDIMS** - Chuyên khoa Chẩn đoán Hình ảnh");
+
+        return formatted.toString();
     }
 }
