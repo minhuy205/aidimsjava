@@ -174,7 +174,7 @@ const MiniChatbot = () => {
 
             const errorMessage = {
                 id: Date.now() + 1,
-                text: "❌ **Lỗi phân tích hình ảnh**\n\nKhông thể phân tích hình ảnh lúc này. Vui lòng:\n• Kiểm tra kết nối mạng\n• Thử lại với hình ảnh khác\n• Liên hệ IT nếu lỗi tiếp diễn\n\n📞 **Hỗ trợ:** (028) 1234-5678",
+                text: "❌ **Lỗi phân tích hình ảnh**\n\nKhông thể phân tích hình ảnh lúc này. Vui lòng:\n• Kiểm tra kết nối mạng\n• Thử lại với hình ảnh khác\n• Liên hệ IT nếu lỗi tiếp diễn\n\n📞 **Hỗ trợ:** 0777815075",
                 sender: "bot",
                 timestamp: new Date()
             };
@@ -188,7 +188,7 @@ const MiniChatbot = () => {
         try {
             console.log('🤖 Testing Gemini API...');
 
-            const response = await fetch('http://localhost:8080/api/chat/test-gemini?message=đau ngực', {
+            const response = await fetch('http://localhost:8080/api/chat/test-gemini?', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -497,15 +497,7 @@ const MiniChatbot = () => {
                             🤖 Test Gemini
                         </button>
 
-                        <button
-                            onClick={() => {
-                                const sampleMessage = "đau ngực + khó thở";
-                                setInputMessage(sampleMessage);
-                            }}
-                            className="test-btn sample"
-                        >
-                            💡 Mẫu câu hỏi
-                        </button>
+
 
                         {/* Image Upload Button */}
                         <button

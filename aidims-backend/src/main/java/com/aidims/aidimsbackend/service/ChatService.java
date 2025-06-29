@@ -234,7 +234,7 @@ public class ChatService {
         formatted.append("\n\n---\n");
         formatted.append("⚠️ **LƯU Ý:** Đây chỉ là tư vấn hỗ trợ. ");
         formatted.append("Quyết định cuối cùng thuộc về bác sĩ điều trị.\n");
-        formatted.append("📞 **Khẩn cấp:** (028) 1234-5678");
+        formatted.append("📞 **Khẩn cấp:** 0777815075");
 
         return formatted.toString();
     }
@@ -414,10 +414,7 @@ public class ChatService {
             response.append("🤖 **TƯ VẤN Y TẾ AIDIMS**\n\n");
             response.append("Xin chào! Tôi là AI hỗ trợ y tế. Vui lòng mô tả triệu chứng cụ thể.\n\n");
             response.append("**Ví dụ:**\n");
-            response.append("• \"Đau ngực + khó thở từ sáng nay\"\n");
-            response.append("• \"Sốt + ho có đờm 3 ngày\"\n");
-            response.append("• \"Đau bụng dưới bên phải\"\n\n");
-            response.append("📞 **Khẩn cấp:** (028) 1234-5678");
+            response.append("📞 **Khẩn cấp:** 0777815075");
         }
 
         return response.toString();
@@ -634,7 +631,7 @@ public class ChatService {
         formatted.append("• Quyết định chẩn đoán cuối cùng thuộc về bác sĩ chuyên khoa\n");
         formatted.append("• Cần kết hợp với triệu chứng lâm sàng và tiền sử bệnh\n");
         formatted.append("• Nếu có triệu chứng nghiêm trọng, hãy đến bệnh viện ngay\n\n");
-        formatted.append("📞 **Khẩn cấp:** (028) 1234-5678\n");
+        formatted.append("📞 **Khẩn cấp:** 0777815075\n");
         formatted.append("🏥 **Bệnh viện AIDIMS** - Chuyên khoa Chẩn đoán Hình ảnh");
 
         return formatted.toString();

@@ -2,6 +2,7 @@ import { memo, useState, useEffect } from "react";
 import LayoutLogin from "../Layout/LayoutLogin";
 import { getAllDicoms, downloadDicomFile } from "../../services/DicomService";
 import "../../css/DicomViewer.css";
+import MiniChatbot from "./MiniChatBot";
 
 const DicomViewer = () => {
   const [dicomImages, setDicomImages] = useState([]);
@@ -100,6 +101,7 @@ const DicomViewer = () => {
           </div>
         )}
       </div>
+      <MiniChatbot />
     </LayoutLogin>
   );
 };

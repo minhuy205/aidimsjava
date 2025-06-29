@@ -112,7 +112,7 @@ public class ChatController {
                             "❌ **Lỗi phân tích hình ảnh**\n\n" +
                                     "Không thể phân tích hình ảnh lúc này:\n" +
                                     "• " + e.getMessage() + "\n\n" +
-                                    "📞 **Hỗ trợ:** (028) 1234-5678",
+                                    "📞 **Hỗ trợ:** 0777815075",
                             "error"));
         }
     }
