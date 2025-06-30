@@ -25,7 +25,8 @@ public class SecurityConfig {
                                 "/api/diagnostic-reports/**",
                                 "/api/request-photo/**",
                                 "/api/chat/**",
-                                "/api/imaging-types/**" // ⭐ THÊM DÒNG NÀY
+                                "/api/imaging-types/**",
+                                "/api/dicom-import/**" // ⭐ THÊM DÒNG NÀY
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
