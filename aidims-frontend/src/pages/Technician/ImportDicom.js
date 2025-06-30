@@ -172,34 +172,39 @@ const ImportDicom = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedFiles.length) return alert("Vui lòng chọn file DICOM");
-    if (!selectedPatient || !studyType || !bodyPart)
-      return alert("Vui lòng điền đủ thông tin");
-
-    const patient = patients.find((p) => p.patient_id === +selectedPatient);
+    console.log("Đã bấm Import DICOM");
+    if (!selectedFiles[0] || !selectedFiles[0].file) {
+      alert("Bạn chưa chọn file hoặc file không hợp lệ!");
+      return;
+    }
+    // Log thông tin file
+    console.log("File gửi lên:", selectedFiles[0].file);
+    // Log FormData
     const metadata = {
-      patientCode: patient?.patient_code || selectedPatient,
-      studyType,
-      bodyPart,
-      technicalParams,
+      patient_code: selectedPatient,
+      study_type: studyType,
+      body_part: bodyPart,
+      technical_params:
+        typeof technicalParams === "object"
+          ? JSON.stringify(technicalParams)
+          : technicalParams,
       notes,
-      dicomFileName: selectedFiles[0]?.name,
-      performedBy: 7,
+      performed_by: 7,
     };
-
     const formData = new FormData();
-    formData.append(
-      "metadata",
-      new Blob([JSON.stringify(metadata)], { type: "application/json" })
-    );
+    Object.entries(metadata).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
     formData.append("file", selectedFiles[0].file);
-
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ", " + pair[1]);
+    }
     try {
       const msg = await importDicom(formData);
       alert(msg);
       const importRecord = {
         ...metadata,
-        fileName: metadata.dicomFileName,
+        fileName: selectedFiles[0]?.name,
         importDate: new Date().toLocaleString("vi-VN"),
         status: "Thành công",
         fileSize: `${(selectedFiles[0].size / 1024 / 1024).toFixed(2)} MB`,
@@ -236,7 +241,6 @@ const ImportDicom = () => {
               ))}
             </select>
           </div>
-
 
           <div className="form-group">
             <label>Loại chụp: *</label>

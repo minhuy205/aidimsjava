@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8080/api/dicom";
+const API_BASE = "http://localhost:8080/api/dicom-import";
 
 /**
  * Lấy danh sách tất cả DICOM đã import (tùy thuộc vào backend hỗ trợ endpoint này)
@@ -31,7 +31,7 @@ export async function importDicom(formData) {
   try {
     const res = await fetch(`${API_BASE}/import`, {
       method: "POST",
-      body: formData, // Không đặt Content-Type ở đây, browser sẽ tự gán multipart/form-data với boundary
+      body: formData, // Không đặt Content-Type ở đây, browser sẽ tự gánmultipart/form-data với boundary
     });
 
     if (!res.ok) {
