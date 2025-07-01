@@ -26,7 +26,9 @@ public class SecurityConfig {
                                 "/api/request-photo/**",
                                 "/api/chat/**",
                                 "/api/imaging-types/**",
-                                "/api/dicom-import/**" // ⭐ THÊM DÒNG NÀY
+                                "/api/dicom-import/**",
+                                "/api/verify-image/dicom-imports", // Cho phép truy cập endpoint lấy ảnh import
+                                "/api/verify-image/save" // Thêm dòng này để cho phép lưu kiểm tra hình ảnh
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

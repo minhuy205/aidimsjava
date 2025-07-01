@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import LayoutLogin from "../Layout/LayoutLogin"
 import "../../css/verifyImages.css"
+import { verifyImageService } from "../../services/verifyImageService"
 
 const VerifyImages = () => {
   const [images, setImages] = useState([])
@@ -14,74 +15,44 @@ const VerifyImages = () => {
     dateFrom: "",
     dateTo: "",
   })
+  // Modal state
+  const [showImageModal, setShowImageModal] = useState(false)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [selectedImage, setSelectedImage] = useState(null)
 
   useEffect(() => {
-    // Load images from localStorage or initialize with sample data
-    const savedImages = localStorage.getItem("dicomImages")
-    if (savedImages) {
-      const parsedImages = JSON.parse(savedImages)
-      setImages(parsedImages)
-      setFilteredImages(parsedImages)
-    } else {
-      const sampleImages = [
-        {
-          id: 1,
-          fileName: "CT_CHEST_001.dcm",
-          patientCode: "BN001",
-          patientName: "Nguyễn Văn Nam",
-          studyType: "CT Scanner",
-          bodyPart: "Ngực",
-          captureDate: "2024-12-15",
-          quality: "Tốt",
+    // Lấy danh sách ảnh từ backend (dicom_imports)
+    fetch("http://localhost:8080/api/verify-image/dicom-imports")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Không thể kết nối API: " + res.status)
+        }
+        return res.json()
+      })
+      .then((data) => {
+        const imagesFromDb = data.map((item) => ({
+          id: item.id,
+          fileName: item.fileName || "Không có tên file",
+          patientCode: item.patientCode || "",
+          patientName: item.patientName || item.patientCode || "",
+          studyType: item.studyType || "",
+          bodyPart: item.bodyPart || "",
+          captureDate: item.importDate ? item.importDate.split("T")[0] : "",
+          quality: "Chưa xác định", // Chưa ai kiểm tra
           status: "Chờ kiểm tra",
-          technicalParams: {
-            kVp: 120,
-            mAs: 250,
-            sliceThickness: 5,
-          },
-          fileSize: "25.6 MB",
-          thumbnail: "/placeholder.svg?height=150&width=150",
-        },
-        {
-          id: 2,
-          fileName: "XRAY_KNEE_002.dcm",
-          patientCode: "BN002",
-          patientName: "Trần Thị Hoa",
-          studyType: "X-quang thường",
-          bodyPart: "Khớp gối",
-          captureDate: "2024-12-15",
-          quality: "Xuất sắc",
-          status: "Đã kiểm tra",
-          technicalParams: {
-            kVp: 80,
-            mAs: 10,
-          },
-          fileSize: "8.2 MB",
-          thumbnail: "/placeholder.svg?height=150&width=150",
-        },
-        {
-          id: 3,
-          fileName: "MRI_BRAIN_003.dcm",
-          patientCode: "BN003",
-          patientName: "Lê Minh Tuấn",
-          studyType: "MRI",
-          bodyPart: "Não",
-          captureDate: "2024-12-16",
-          quality: "Kém",
-          status: "Cần chụp lại",
-          technicalParams: {
-            fieldStrength: "1.5T",
-            sequence: "T1",
-            sliceThickness: 3,
-          },
-          fileSize: "45.8 MB",
-          thumbnail: "/placeholder.svg?height=150&width=150",
-        },
-      ]
-      setImages(sampleImages)
-      setFilteredImages(sampleImages)
-      localStorage.setItem("dicomImages", JSON.stringify(sampleImages))
-    }
+          technicalParams: item.technicalParams ? (typeof item.technicalParams === 'string' ? JSON.parse(item.technicalParams) : item.technicalParams) : {},
+          fileSize: item.fileSize ? (item.fileSize / (1024 * 1024)).toFixed(1) + " MB" : "",
+          thumbnail: item.filePath ? `http://localhost:8080${item.filePath}` : "/placeholder.svg?height=150&width=150",
+          filePath: item.filePath || "",
+        }))
+        setImages(imagesFromDb)
+        setFilteredImages(imagesFromDb)
+      })
+      .catch((err) => {
+        alert("Lỗi khi lấy danh sách ảnh từ backend: " + err.message)
+        setImages([])
+        setFilteredImages([])
+      })
   }, [])
 
   const handleFilterChange = (e) => {
@@ -129,7 +100,9 @@ const VerifyImages = () => {
     setFilteredImages(images)
   }
 
-  const updateImageStatus = (imageId, newStatus, newQuality = null) => {
+  // Gọi API lưu kiểm tra hình ảnh khi phê duyệt hoặc từ chối
+  const updateImageStatus = async (imageId, newStatus, newQuality = null) => {
+    // Cập nhật trạng thái trên giao diện ngay lập tức
     const updatedImages = images.map((img) => {
       if (img.id === imageId) {
         return {
@@ -140,10 +113,23 @@ const VerifyImages = () => {
       }
       return img
     })
-
     setImages(updatedImages)
     setFilteredImages(updatedImages)
-    localStorage.setItem("dicomImages", JSON.stringify(updatedImages))
+
+    // Gọi API lưu kiểm tra hình ảnh vào bảng verify_image
+    const img = images.find((img) => img.id === imageId)
+    if (img) {
+      try {
+        await verifyImageService.saveVerifyImage({
+          imageId: img.id,
+          checkedBy: 1, // TODO: lấy userId thực tế
+          result: newStatus,
+          note: `Chất lượng: ${newQuality || img.quality}`,
+        })
+      } catch (err) {
+        alert("Lỗi khi lưu kiểm tra hình ảnh: " + err.message)
+      }
+    }
   }
 
   const getQualityColor = (quality) => {
@@ -236,8 +222,8 @@ const VerifyImages = () => {
                 <img src={image.thumbnail || "/placeholder.svg"} alt={image.fileName} />
                 <div className="image-overlay">
                   <div className="overlay-actions">
-                    <button className="overlay-btn">👁️ Xem</button>
-                    <button className="overlay-btn">📊 Chi tiết</button>
+                    <button className="overlay-btn" onClick={() => { setSelectedImage(image); setShowImageModal(true); }}>👁️ Xem</button>
+                    <button className="overlay-btn" onClick={() => { setSelectedImage(image); setShowDetailModal(true); }}>📊 Chi tiết</button>
                   </div>
                 </div>
               </div>
@@ -306,6 +292,37 @@ const VerifyImages = () => {
             </div>
           ))}
         </div>
+        {/* Modal xem ảnh */}
+        {showImageModal && selectedImage && (
+          <div className="modal-overlay" onClick={() => setShowImageModal(false)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <img src={selectedImage.filePath ? `http://localhost:8080${selectedImage.filePath}` : selectedImage.thumbnail} alt={selectedImage.fileName} style={{ maxWidth: '90vw', maxHeight: '80vh' }} />
+              <button className="modal-close" onClick={() => setShowImageModal(false)}>Đóng</button>
+            </div>
+          </div>
+        )}
+        {/* Modal chi tiết */}
+        {showDetailModal && selectedImage && (
+          <div className="modal-overlay" onClick={() => setShowDetailModal(false)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <h3>Chi tiết hình ảnh</h3>
+              <p><strong>Tên file:</strong> {selectedImage.fileName}</p>
+              <p><strong>Bệnh nhân:</strong> {selectedImage.patientCode} - {selectedImage.patientName}</p>
+              <p><strong>Loại chụp:</strong> {selectedImage.studyType}</p>
+              <p><strong>Vùng chụp:</strong> {selectedImage.bodyPart}</p>
+              <p><strong>Ngày chụp:</strong> {selectedImage.captureDate}</p>
+              <p><strong>Kích thước:</strong> {selectedImage.fileSize}</p>
+              <h5>Thông số kỹ thuật:</h5>
+              <div className="params-grid">
+                {Object.entries(selectedImage.technicalParams).map(([key, value]) => (
+                  <span key={key} className="param-item">{key}: {value}</span>
+                ))}
+              </div>
+              <p><strong>Chất lượng:</strong> {selectedImage.quality}</p>
+              <button className="modal-close" onClick={() => setShowDetailModal(false)}>Đóng</button>
+            </div>
+          </div>
+        )}
 
         {filteredImages.length === 0 && (
           <div className="no-results">
