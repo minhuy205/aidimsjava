@@ -1,4 +1,4 @@
-"use client";
+	"use client";
 
 import { useState, useEffect } from "react";
 import Layout from "../Layout/Layout";
@@ -177,11 +177,23 @@ const ImportDicom = () => {
       alert("Bạn chưa chọn file hoặc file không hợp lệ!");
       return;
     }
+    // Kiểm tra selectedPatient có giá trị chưa
+    if (!selectedPatient) {
+      alert("Bạn chưa chọn bệnh nhân!");
+      return;
+    }
+    // Lấy đúng mã bệnh nhân từ danh sách patients (dựa vào patient_id, ép kiểu về string để so sánh chắc chắn)
+    const patientObj = patients.find((p) => String(p.patient_id) === String(selectedPatient));
+    if (!patientObj) {
+      alert("Không tìm thấy mã bệnh nhân, vui lòng chọn lại!");
+      return;
+    }
+    const patientCode = patientObj.patient_code;
     // Log thông tin file
     console.log("File gửi lên:", selectedFiles[0].file);
     // Log FormData
     const metadata = {
-      patient_code: selectedPatient,
+      patient_code: patientCode, // Đúng mã bệnh nhân
       study_type: studyType,
       body_part: bodyPart,
       technical_params:
@@ -224,114 +236,163 @@ const ImportDicom = () => {
   return (
     <Layout>
       <div className="import-dicom-page">
-        <h2>📄 Nhập File DICOM</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Chọn bệnh nhân:</label>
-            <select
-              value={selectedPatient}
-              onChange={(e) => setSelectedPatient(e.target.value)}
-              required
-            >
-              <option value="">-- Chọn --</option>
-              {patients.map((p) => (
-                <option key={p.patient_id} value={p.patient_id}>
-                  {p.patient_code} - {p.full_name} - {p.phone}
-                </option>
-              ))}
-            </select>
-          </div>
+        <h2 className="page-title">📄 Import Ảnh DICOM</h2>
+        <div className="page-header">
+          <h2>✅ Nhập file DICOM </h2>
+          <p>Import và quản lý file DICOM từ các thiết bị chụp hình ảnh y tế</p>
+        </div>
 
-          <div className="form-group">
-            <label>Loại chụp: *</label>
-            <input
-              value={studyType}
-              onChange={(e) => setStudyType(e.target.value)}
-              required
-            />
+        <div className="form-container">
+          <form onSubmit={handleSubmit}>
+            <div className="form-section">
+              <div className="section-title">Thông tin ảnh DICOM</div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Chọn bệnh nhân:</label>
+                  <select
+                    className="form-select"
+                    value={selectedPatient}
+                    onChange={(e) => setSelectedPatient(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Chọn --</option>
+                    {patients.map((p) => (
+                      <option key={p.patient_id} value={p.patient_id}>
+                        {p.patient_code} - {p.full_name} - {p.phone}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Loại chụp: *</label>
+                  <input
+                    className="form-input"
+                    value={studyType}
+                    onChange={(e) => setStudyType(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Vùng chụp: *</label>
+                  <select
+                    className="form-select"
+                    value={bodyPart}
+                    onChange={(e) => setBodyPart(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Chọn vị trí --</option>
+                    {SIMPLE_BODY_PARTS.map((part, idx) => (
+                      <option key={idx} value={part.value}>
+                        {part.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>kVp:</label>
+                  <input
+                    className="form-input"
+                    name="kVp"
+                    value={technicalParams.kVp}
+                    onChange={handleTechnicalParamChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>mAs:</label>
+                  <input
+                    className="form-input"
+                    name="mAs"
+                    value={technicalParams.mAs}
+                    onChange={handleTechnicalParamChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Độ dày lát cắt (mm):</label>
+                  <input
+                    className="form-input"
+                    name="sliceThickness"
+                    value={technicalParams.sliceThickness}
+                    onChange={handleTechnicalParamChange}
+                  />
+                </div>
+                <div className="form-group checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="contrast"
+                      checked={technicalParams.contrast}
+                      onChange={handleTechnicalParamChange}
+                    />
+                    Dùng thuốc cản quang
+                  </label>
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Ghi chú:</label>
+                <textarea
+                  className="form-textarea"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+              </div>
+              <div className="form-group file-upload-label">
+                <label>Chọn file hình ảnh (DICOM, JPEG, PNG):</label>
+                <input
+                  className="file-input"
+                  type="file"
+                  accept=".dcm,image/*"
+                  onChange={handleFileSelect}
+                />
+                {selectedFiles[0] && (
+                  <div className="file-preview">
+                    <p><b>Tên file:</b> {selectedFiles[0].name}</p>
+                    <p><b>Kích thước:</b> {((selectedFiles[0].size / 1024 / 1024).toFixed(2))} MB</p>
+                  </div>
+                )}
+              </div>
+              <div className="form-actions">
+                <button className="submit-button" type="submit">📥 Import DICOM</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div className="recent-imports">
+          <div className="section-title">Lịch sử import gần đây</div>
+          <div className="imports-table">
+            {recentImports.length === 0 ? (
+              <div className="no-imports">Chưa có file nào được import.</div>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th>File</th>
+                    <th>Mã bệnh nhân</th>
+                    <th>Loại chụp</th>
+                    <th>Vùng chụp</th>
+                    <th>Kích thước</th>
+                    <th>Ngày import</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentImports.map((item, idx) => (
+                    <tr key={idx}>
+                      <td>{item.fileName}</td>
+                      <td>{item.patient_code}</td>
+                      <td>{item.study_type || item.studyType}</td>
+                      <td>{item.body_part || item.bodyPart}</td>
+                      <td>{item.fileSize}</td>
+                      <td>{item.importDate}</td>
+                      <td>{item.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
-
-          <div className="form-group">
-            <label>Vùng chụp: *</label>
-            <select
-              value={bodyPart}
-              onChange={(e) => setBodyPart(e.target.value)}
-              required
-            >
-              <option value="">-- Chọn vị trí --</option>
-              {SIMPLE_BODY_PARTS.map((part, idx) => (
-                <option key={idx} value={part.value}>
-                  {part.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>kVp:</label>
-            <input
-              name="kVp"
-              value={technicalParams.kVp}
-              onChange={handleTechnicalParamChange}
-            />
-          </div>
-          <div className="form-group">
-            <label>mAs:</label>
-            <input
-              name="mAs"
-              value={technicalParams.mAs}
-              onChange={handleTechnicalParamChange}
-            />
-          </div>
-          <div className="form-group">
-            <label>Độ dày lát cắt (mm):</label>
-            <input
-              name="sliceThickness"
-              value={technicalParams.sliceThickness}
-              onChange={handleTechnicalParamChange}
-            />
-          </div>
-          <div className="form-group">
-            <label>
-              <input
-                type="checkbox"
-                name="contrast"
-                checked={technicalParams.contrast}
-                onChange={handleTechnicalParamChange}
-              />{" "}
-              Dùng thuốc cản quang
-            </label>
-          </div>
-          <div className="form-group">
-            <label>Ghi chú:</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Chọn file hình ảnh (DICOM, JPEG, PNG):</label>
-            <input
-              type="file"
-              accept=".dcm,image/*"
-              onChange={handleFileSelect}
-            />
-          </div>
-
-          <button type="submit">📥 Import DICOM</button>
-        </form>
-
-        <hr />
-        <h3>Lịch sử import gần đây</h3>
-        <ul>
-          {recentImports.map((item, idx) => (
-            <li key={idx}>
-              {item.fileName} - {item.patientCode} - {item.studyType} -{" "}
-              {item.bodyPart} ({item.fileSize}) [{item.importDate}]
-            </li>
-          ))}
-        </ul>
+        </div>
       </div>
     </Layout>
   );
