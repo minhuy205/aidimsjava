@@ -145,44 +145,64 @@
   object-fit: contain;
 }
 
-.image-overlay {
+/* Overlay actions giống modal hồ sơ bệnh nhân */
+.image-hover-actions {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 102, 204, 0.15);
+  border: 2px solid #3b82f6;
+  padding: 24px 32px;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  z-index: 2;
+}
+
+.image-preview:hover .image-hover-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hover-action-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.image-preview:hover .image-overlay {
-  opacity: 1;
-}
-
-.overlay-actions {
-  display: flex;
-  gap: 1rem;
-}
-
-.overlay-btn {
-  background: white;
-  color: #333;
+  gap: 8px;
+  background: #f1f5ff;
+  color: #2563eb;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 1rem;
   font-weight: 600;
-  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+  transition: background 0.2s, color 0.2s;
 }
 
-.overlay-btn:hover {
-  background: #f8f9fa;
-  transform: translateY(-2px);
+.hover-action-btn:hover {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.hover-action-icon {
+  font-size: 1.2rem;
+}
+
+.hover-action-text {
+  font-size: 1rem;
+}
+
+/* Ẩn overlay cũ */
+.image-overlay {
+  display: none !important;
 }
 
 .image-info {
@@ -315,6 +335,93 @@
 .no-results p {
   font-size: 1.1rem;
   color: #666;
+}
+
+/* Popup/modal for DICOM image verification */
+.image-hover-popup-mask {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(30,40,60,0.18);
+  z-index: 1000;
+}
+.image-hover-popup-modal-patient {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(800px, 96vw);
+  min-height: 420px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.22);
+  border: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1100;
+}
+.image-hover-popup-modal-patient .modal-header {
+  background: linear-gradient(90deg,#6d28d9 0%,#3b82f6 100%);
+  color: #fff;
+  padding: 24px 0 12px 0;
+  text-align: center;
+  position: relative;
+}
+.image-hover-popup-modal-patient .modal-header .modal-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 32px;
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1;
+}
+.popup-tabs {
+  display: flex;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f3f4f6;
+  color: #222;
+  font-weight: 600;
+}
+.popup-tab {
+  flex: 1;
+  padding: 18px 0;
+  background: none;
+  border: none;
+  color: #222;
+  font-weight: 600;
+  font-size: 20px;
+  cursor: pointer;
+  border-bottom: none;
+  transition: all 0.2s;
+}
+.popup-tab.active {
+  color: #3b82f6;
+  border-bottom: 3px solid #3b82f6;
+}
+.popup-content {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+.popup-image {
+  max-width: 600px;
+  max-height: 350px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+}
+.popup-detail {
+  font-size: 20px;
+  color: #222;
+  width: 100%;
+}
+.popup-detail > div {
+  margin-bottom: 14px;
 }
 
 /* Responsive Design */

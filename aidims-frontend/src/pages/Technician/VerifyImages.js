@@ -17,7 +17,7 @@ const VerifyImages = () => {
   })
   // Modal state
   const [showImageModal, setShowImageModal] = useState(false)
-  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [modalTab, setModalTab] = useState("view")
   const [selectedImage, setSelectedImage] = useState(null)
 
   useEffect(() => {
@@ -166,6 +166,7 @@ const VerifyImages = () => {
           <p>Xác minh và đánh giá chất lượng hình ảnh DICOM</p>
         </div>
 
+        {/* Bộ lọc kiểm tra hình ảnh */}
         <div className="filters-section">
           <div className="filters-grid">
             <div className="filter-group">
@@ -214,18 +215,102 @@ const VerifyImages = () => {
             </button>
           </div>
         </div>
-
-        <div className="images-grid">
-          {filteredImages.map((image) => (
-            <div key={image.id} className="image-card">
-              <div className="image-preview">
-                <img src={image.thumbnail || "/placeholder.svg"} alt={image.fileName} />
-                <div className="image-overlay">
-                  <div className="overlay-actions">
-                    <button className="overlay-btn" onClick={() => { setSelectedImage(image); setShowImageModal(true); }}>👁️ Xem</button>
-                    <button className="overlay-btn" onClick={() => { setSelectedImage(image); setShowDetailModal(true); }}>📊 Chi tiết</button>
+        {/* Kết quả lọc */}
+        {filteredImages.length > 0 && filteredImages.length !== images.length && (
+          <>
+            <h3 style={{marginTop: 24, marginBottom: 12}}>Kết quả lọc</h3>
+            <div className="images-grid">
+              {filteredImages.map((image) => (
+                <div key={image.id} className="image-card">
+                  <div className="image-preview" style={{ position: 'relative' }}>
+                    <img src={image.thumbnail || "/placeholder.svg"} alt={image.fileName} style={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        setSelectedImage(image);
+                        setShowImageModal(true);
+                        setModalTab("view");
+                      }}
+                    />
+                  </div>
+                  <div className="image-info">
+                    <div className="image-header">
+                      <h4>{image.fileName}</h4>
+                      <div className="image-badges">
+                        <span className="quality-badge" style={{ backgroundColor: getQualityColor(image.quality) }}>
+                          {image.quality}
+                        </span>
+                        <span className="status-badge" style={{ backgroundColor: getStatusColor(image.status) }}>
+                          {image.status}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="image-details">
+                      <p>
+                        <strong>Bệnh nhân:</strong> {image.patientCode} - {image.patientName}
+                      </p>
+                      <p>
+                        <strong>Loại chụp:</strong> {image.studyType}
+                      </p>
+                      <p>
+                        <strong>Vùng chụp:</strong> {image.bodyPart}
+                      </p>
+                      <p>
+                        <strong>Ngày chụp:</strong> {image.captureDate}
+                      </p>
+                      <p>
+                        <strong>Kích thước:</strong> {image.fileSize}
+                      </p>
+                    </div>
+                    <div className="technical-params">
+                      <h5>Thông số kỹ thuật:</h5>
+                      <div className="params-grid">
+                        {Object.entries(image.technicalParams).map(([key, value]) => (
+                          <span key={key} className="param-item">
+                            {key}: {value}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="image-actions">
+                      {image.status === "Chờ kiểm tra" && (
+                        <>
+                          <button className="btn-approve" onClick={() => updateImageStatus(image.id, "Đã kiểm tra", "Tốt")}>
+                            ✅ Phê duyệt
+                          </button>
+                          <button className="btn-reject" onClick={() => updateImageStatus(image.id, "Cần chụp lại", "Kém")}>
+                            ❌ Từ chối
+                          </button>
+                        </>
+                      )}
+                      {image.status === "Đã kiểm tra" && (
+                        <button className="btn-recheck" onClick={() => updateImageStatus(image.id, "Chờ kiểm tra")}>
+                          🔄 Kiểm tra lại
+                        </button>
+                      )}
+                      {image.status === "Cần chụp lại" && (
+                        <button className="btn-recheck" onClick={() => updateImageStatus(image.id, "Chờ kiểm tra")}>
+                          🔄 Kiểm tra lại
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          </>
+        )}
+        {/* Danh sách hình ảnh đã import */}
+        <h3 style={{marginTop: 24, marginBottom: 12}}>Danh sách các hình ảnh đã import</h3>
+        <div className="images-grid">
+          {images.map((image) => (
+            <div key={image.id} className="image-card">
+              <div className="image-preview" style={{ position: 'relative' }}>
+                <img src={image.thumbnail || "/placeholder.svg"} alt={image.fileName} style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    setSelectedImage(image);
+                    setShowImageModal(true);
+                    setModalTab("view");
+                  }}
+                />
               </div>
               <div className="image-info">
                 <div className="image-header">
@@ -292,46 +377,73 @@ const VerifyImages = () => {
             </div>
           ))}
         </div>
-        {/* Modal xem ảnh */}
-        {showImageModal && selectedImage && (
-          <div className="modal-overlay" onClick={() => setShowImageModal(false)}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
-              <img src={selectedImage.filePath ? `http://localhost:8080${selectedImage.filePath}` : selectedImage.thumbnail} alt={selectedImage.fileName} style={{ maxWidth: '90vw', maxHeight: '80vh' }} />
-              <button className="modal-close" onClick={() => setShowImageModal(false)}>Đóng</button>
-            </div>
-          </div>
-        )}
-        {/* Modal chi tiết */}
-        {showDetailModal && selectedImage && (
-          <div className="modal-overlay" onClick={() => setShowDetailModal(false)}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
-              <h3>Chi tiết hình ảnh</h3>
-              <p><strong>Tên file:</strong> {selectedImage.fileName}</p>
-              <p><strong>Bệnh nhân:</strong> {selectedImage.patientCode} - {selectedImage.patientName}</p>
-              <p><strong>Loại chụp:</strong> {selectedImage.studyType}</p>
-              <p><strong>Vùng chụp:</strong> {selectedImage.bodyPart}</p>
-              <p><strong>Ngày chụp:</strong> {selectedImage.captureDate}</p>
-              <p><strong>Kích thước:</strong> {selectedImage.fileSize}</p>
-              <h5>Thông số kỹ thuật:</h5>
-              <div className="params-grid">
-                {Object.entries(selectedImage.technicalParams).map(([key, value]) => (
-                  <span key={key} className="param-item">{key}: {value}</span>
-                ))}
-              </div>
-              <p><strong>Chất lượng:</strong> {selectedImage.quality}</p>
-              <button className="modal-close" onClick={() => setShowDetailModal(false)}>Đóng</button>
-            </div>
-          </div>
-        )}
-
+        {/* Nếu lọc không ra kết quả */}
         {filteredImages.length === 0 && (
           <div className="no-results">
             <p>Không tìm thấy hình ảnh nào phù hợp với bộ lọc.</p>
           </div>
         )}
+
+        {/* Modal xem hình ảnh chi tiết */}
+        {showImageModal && selectedImage && (
+          <ImagePopupModal
+            image={selectedImage}
+            activeTab={modalTab}
+            setActiveTab={setModalTab}
+            onClose={() => setShowImageModal(false)}
+          />
+        )}
       </div>
     </LayoutLogin>
   )
+}
+
+function ImagePopupModal({ image, activeTab, setActiveTab, onClose }) {
+  // Modal lớn giữa màn hình, không bị nháy khi hover
+  return (
+    <>
+      <div className="image-hover-popup-mask" onClick={onClose} />
+      <div className="image-hover-popup-modal-patient" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: 1 }}>🖼️ XEM HÌNH ẢNH DICOM</span>
+          <button className="modal-close-btn" onClick={onClose}>&times;</button>
+        </div>
+        <div className="popup-tabs">
+          <button
+            className={activeTab === "view" ? "popup-tab active" : "popup-tab"}
+            onClick={() => setActiveTab("view")}
+          >
+            👁️ Xem ảnh
+          </button>
+          <button
+            className={activeTab === "detail" ? "popup-tab active" : "popup-tab"}
+            onClick={() => setActiveTab("detail")}
+          >
+            📊 Chi tiết
+          </button>
+        </div>
+        <div className="popup-content">
+          {activeTab === "view" ? (
+            <img
+              src={image.filePath ? `http://localhost:8080${image.filePath}` : image.thumbnail}
+              alt={image.fileName}
+              className="popup-image"
+            />
+          ) : (
+            <div className="popup-detail">
+              <div><strong>Tên file:</strong> {image.fileName}</div>
+              <div><strong>Bệnh nhân:</strong> {image.patientCode} - {image.patientName}</div>
+              <div><strong>Loại chụp:</strong> {image.studyType}</div>
+              <div><strong>Vùng chụp:</strong> {image.bodyPart}</div>
+              <div><strong>Ngày chụp:</strong> {image.captureDate}</div>
+              <div><strong>Kích thước:</strong> {image.fileSize}</div>
+              <div><strong>Chất lượng:</strong> {image.quality}</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default VerifyImages
