@@ -27,14 +27,16 @@ public class SecurityConfig {
                                 "/api/chat/**",
                                 "/api/imaging-types/**",
                                 "/api/dicom-import/**",
-                                "/api/verify-image/dicom-imports", // Cho phép truy cập endpoint lấy ảnh import
-                                "/api/verify-image/save" // Thêm dòng này để cho phép lưu kiểm tra hình ảnh
+                                "/api/dicom-viewer/**",                    // ✅ THÊM DÒNG NÀY
+                                "/api/verify-image/dicom-imports",         // Cho phép truy cập endpoint lấy ảnh import
+                                "/api/verify-image/save"                   // Thêm dòng này để cho phép lưu kiểm tra hình ảnh
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());
 
+        System.out.println("✅ SecurityConfig: DICOM Viewer endpoints permitted");
         return http.build();
     }
 
@@ -57,6 +59,8 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
+        System.out.println("✅ CORS configured for DICOM Viewer");
         return source;
     }
 }
