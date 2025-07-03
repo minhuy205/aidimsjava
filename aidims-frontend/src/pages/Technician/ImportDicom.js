@@ -20,40 +20,54 @@ const ImportDicom = () => {
 
   // Lấy danh sách yêu cầu chụp từ bác sĩ
   useEffect(() => {
-    requestPhotoService.getAllRequests().then((data) => {
+    requestPhotoService.getAllRequests().then(async (data) => {
       setRequests(data || []);
-      // Lấy danh sách bệnh nhân đã được bác sĩ yêu cầu chụp (lọc trùng theo patient_id)
       const uniquePatients = [];
       const seen = new Set();
-      (data || []).forEach((req) => {
-        if (req.patientId && !seen.has(req.patientId)) {
-          uniquePatients.push({
-            patient_id: req.patientId,
-            patient_code: req.patientCode,
-            full_name: req.fullName,
-            phone: req.phone || "",
-            date_of_birth: req.dateOfBirth,
-            gender: req.gender,
-            email: req.email,
-            address: req.address,
-            identity_number: req.identityNumber,
-            insurance_number: req.insuranceNumber
-          });
-          seen.add(req.patientId);
+      for (const req of (data || [])) {
+        // Ưu tiên lấy các trường có giá trị, fallback nếu không có
+        let patient_id = req.patient_id || req.patientId || req.patientID || req.id;
+        let patient_code = req.patient_code || req.patientCode || req.code;
+        let full_name = req.full_name || req.fullName || req.name;
+        let phone = req.phone || '';
+        let date_of_birth = req.date_of_birth || req.dateOfBirth || '';
+        let gender = req.gender || '';
+        let email = req.email || '';
+        let address = req.address || '';
+        let identity_number = req.identity_number || req.identityNumber || '';
+        let insurance_number = req.insurance_number || req.insuranceNumber || '';
+        // Nếu thiếu thông tin cơ bản, gọi API lấy chi tiết bệnh nhân
+        if (patient_id && (!patient_code || !full_name)) {
+          try {
+            const patientDetail = await patientService.getPatientById(patient_id);
+            patient_code = patientDetail.patient_code || patientDetail.patientCode || patient_code;
+            full_name = patientDetail.full_name || patientDetail.fullName || full_name;
+            phone = patientDetail.phone || phone;
+            date_of_birth = patientDetail.date_of_birth || patientDetail.dateOfBirth || date_of_birth;
+            gender = patientDetail.gender || gender;
+            email = patientDetail.email || email;
+            address = patientDetail.address || address;
+            identity_number = patientDetail.identity_number || patientDetail.identityNumber || identity_number;
+            insurance_number = patientDetail.insurance_number || patientDetail.insuranceNumber || insurance_number;
+          } catch (e) {}
         }
-      });
+        if (patient_id && !seen.has(patient_id) && (patient_code || full_name)) {
+          uniquePatients.push({
+            patient_id,
+            patient_code: patient_code || '',
+            full_name: full_name || '',
+            phone,
+            date_of_birth,
+            gender,
+            email,
+            address,
+            identity_number,
+            insurance_number
+          });
+          seen.add(patient_id);
+        }
+      }
       setPatients(uniquePatients);
-      // Sau khi lấy danh sách bệnh nhân mới nhất, lọc lại lịch sử import
-      setRecentImports(prev => {
-        if (!prev) return [];
-        return prev.filter(item => {
-          if (!item.patient_code) return false;
-          return uniquePatients.some(p =>
-            p.patient_code === item.patient_code ||
-            String(p.patient_id) === String(item.patient_id)
-          );
-        });
-      });
     });
     const saved = localStorage.getItem("dicomImports");
     if (saved) setRecentImports(JSON.parse(saved));
@@ -139,12 +153,28 @@ const ImportDicom = () => {
     try {
       const msg = await importDicom(formData);
       alert(msg);
+      // Lấy patient_code chắc chắn nhất
+      let patient_code = '';
+      if (selectedRequest.patient_code) patient_code = selectedRequest.patient_code;
+      else if (selectedRequest.patientCode) patient_code = selectedRequest.patientCode;
+      else if (metadata.patient_code) patient_code = metadata.patient_code;
+      else if (selectedPatientId) {
+        const p = patients.find(x => String(x.patient_id) === String(selectedPatientId));
+        if (p && p.patient_code) patient_code = p.patient_code;
+      }
+      // Nếu vẫn chưa có, thử lấy từ patient_id của selectedRequest
+      if (!patient_code && selectedRequest.patient_id) {
+        const p = patients.find(x => String(x.patient_id) === String(selectedRequest.patient_id));
+        if (p && p.patient_code) patient_code = p.patient_code;
+      }
       const importRecord = {
         ...metadata,
+        patient_code: patient_code || '',
         fileName: selectedFiles[0]?.name,
         importDate: new Date().toLocaleString("vi-VN"),
         status: "Thành công",
         fileSize: `${(selectedFiles[0].size / 1024 / 1024).toFixed(2)} MB`,
+        patient_id: selectedPatientId
       };
       const updated = [importRecord, ...recentImports];
       setRecentImports(updated);
@@ -373,43 +403,33 @@ const ImportDicom = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentImports
-                    .filter(item => {
-                      // Nếu mã bệnh nhân không còn trong danh sách bệnh nhân hiện tại thì ẩn
-                      if (!item.patient_code) return false;
-                      // So sánh cả patient_code và patient_id (nhiều hệ thống lưu khác nhau)
-                      return patients.some(p =>
-                        p.patient_code === item.patient_code ||
-                        String(p.patient_id) === String(item.patient_id)
-                      );
-                    })
-                    .map((item, idx) => {
-                      const isImage = /\.(jpg|jpeg|png|gif)$/i.test(item.fileName || "");
-                      const imageUrl = isImage
-                        ? `/aidims-backend/dicom_uploads/${item.fileName}`
-                        : null;
-                      return (
-                        <tr key={idx}>
-                          <td>
-                            {isImage && (
-                              <img
-                                src={imageUrl}
-                                alt={item.fileName}
-                                style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 4 }}
-                                onError={e => { e.target.style.display = 'none'; }}
-                              />
-                            )}
-                          </td>
-                          <td>{item.fileName}</td>
-                          <td>{item.patient_code}</td>
-                          <td>{item.study_type || item.studyType}</td>
-                          <td>{item.body_part || item.bodyPart}</td>
-                          <td>{item.fileSize}</td>
-                          <td>{item.importDate}</td>
-                          <td>{item.status}</td>
-                        </tr>
-                      );
-                    })}
+                  {recentImports.map((item, idx) => {
+                    const isImage = /\.(jpg|jpeg|png|gif)$/i.test(item.fileName || "");
+                    const imageUrl = isImage
+                      ? `/aidims-backend/dicom_uploads/${item.fileName}`
+                      : null;
+                    return (
+                      <tr key={idx}>
+                        <td>
+                          {isImage && (
+                            <img
+                              src={imageUrl}
+                              alt={item.fileName}
+                              style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 4 }}
+                              onError={e => { e.target.style.display = 'none'; }}
+                            />
+                          )}
+                        </td>
+                        <td>{item.fileName}</td>
+                        <td>{item.patient_code}</td>
+                        <td>{item.study_type || item.studyType}</td>
+                        <td>{item.body_part || item.bodyPart}</td>
+                        <td>{item.fileSize}</td>
+                        <td>{item.importDate}</td>
+                        <td>{item.status}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
