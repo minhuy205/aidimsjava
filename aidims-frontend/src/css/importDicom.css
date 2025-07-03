@@ -180,6 +180,133 @@ tr:hover {
   font-size: 16px;
 }
 
+.custom-info-box {
+  background: #f4f8fb;
+  border: 1.5px solid #b3d0e6;
+  border-radius: 10px;
+  padding: 18px 24px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 8px 0 rgba(180, 210, 230, 0.08);
+  font-size: 16px;
+  color: #234;
+}
+
+.custom-info-box > div {
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.custom-info-box b {
+  min-width: 120px;
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.patient-info-card {
+  background: #fff;
+  border: 2px solid #7b8dfb;
+  border-radius: 18px;
+  box-shadow: 0 4px 18px 0 rgba(123, 141, 251, 0.08);
+  padding: 28px 32px 24px 32px;
+  margin-bottom: 28px;
+  max-width: 100%;
+}
+
+.patient-info-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #3d4093;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  border-bottom: 3px solid #7b8dfb;
+  padding-bottom: 8px;
+}
+
+.patient-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 32px;
+}
+
+.patient-info-cell {
+  background: #f7f8fa;
+  border-radius: 16px;
+  padding: 24px 0 18px 0;
+  text-align: center;
+}
+
+.patient-info-label {
+  color: #222;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.patient-info-value {
+  color: #6b7be6;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.patient-info-value.highlight {
+  color: #6b7be6;
+  font-weight: 700;
+}
+
+.doctor-request-card {
+  background: #fff;
+  border: 2px solid #ffe082;
+  border-radius: 18px;
+  box-shadow: 0 4px 18px 0 rgba(255, 224, 130, 0.08);
+  padding: 28px 32px 24px 32px;
+  margin-bottom: 28px;
+  max-width: 100%;
+}
+
+.doctor-request-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #d48806;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  border-bottom: 3px solid #ffe082;
+  padding-bottom: 8px;
+}
+
+.doctor-request-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 32px;
+}
+
+.doctor-request-cell {
+  background: #fcfcf7;
+  border-radius: 16px;
+  padding: 24px 0 18px 0;
+  text-align: center;
+}
+
+.doctor-request-label {
+  color: #444;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.doctor-request-value {
+  color: #d48806;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.doctor-request-value.highlight {
+  color: #d48806;
+  font-weight: 700;
+}
+
 @media (max-width: 700px) {
   .recent-imports {
     padding: 18px 6px;
@@ -187,5 +314,43 @@ tr:hover {
   th, td {
     padding: 10px 8px;
     font-size: 13px;
+  }
+  .doctor-request-grid {
+    grid-template-columns: 1fr;
+    gap: 6px 0;
+  }
+  .doctor-request-title {
+    font-size: 1.1rem;
+  }
+  .doctor-request-row {
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 6px;
+  }
+  .doctor-request-label, .doctor-request-value {
+    min-width: unset;
+    font-size: 0.98rem;
+    margin-right: 0;
+  }
+  .patient-info-grid, .doctor-request-grid2 {
+    grid-template-columns: 1fr;
+    gap: 16px 0;
+  }
+  .patient-info-card, .doctor-request_card {
+    padding: 16px 6px 12px 6px;
+  }
+  .patient-info-title, .doctor-request-title {
+    font-size: 1.2rem;
+    padding-bottom: 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  .custom-info-box {
+    padding: 10px 8px;
+    font-size: 14px;
+  }
+  .custom-info-box b {
+    min-width: 80px;
   }
 }

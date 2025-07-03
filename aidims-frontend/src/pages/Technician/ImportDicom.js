@@ -1,4 +1,4 @@
-	"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Layout from "../Layout/Layout";
@@ -8,146 +8,90 @@ import { patientService } from "../../services/patientService";
 import { requestPhotoService } from "../../services/requestPhotoService";
 import { imageTypeService } from "../../services/imageTypeService";
 
-// Danh sách vùng chụp đơn giản như yêu cầu
-const SIMPLE_BODY_PARTS = [
-  { value: "limbs", label: "Tứ chi" },
-  { value: "chest", label: "Ngực" },
-  { value: "abdomen", label: "Bụng" },
-  { value: "head", label: "Đầu" },
-  { value: "spine", label: "Cột sống" },
-  { value: "pelvis", label: "Khung chậu" },
-  { value: "other", label: "Khác" },
-];
-
-const imagingTypeToTypeCode = (imagingType) => {
-  switch (imagingType?.toLowerCase()) {
-    case "x-ray":
-      return "XR";
-    case "ct":
-      return "CT";
-    case "mri":
-      return "MRI";
-    case "us":
-    case "ultrasound":
-      return "US";
-    case "mammography":
-      return "MG";
-    case "fluoroscopy":
-      return "FL";
-    case "pet-ct":
-    case "pet":
-      return "PET";
-    case "spect":
-      return "SP";
-    default:
-      return "";
-  }
-};
-
-const convertImagingTypeToStudyType = (type) => {
-  switch (type?.toLowerCase()) {
-    case "x-ray":
-      return "X-quang thường";
-    case "ct":
-      return "CT Scanner";
-    case "mri":
-      return "MRI";
-    case "us":
-    case "ultrasound":
-      return "Siêu âm";
-    case "pet-ct":
-    case "pet":
-      return "PET-CT";
-    case "spect":
-      return "SPECT";
-    case "fluoroscopy":
-      return "Fluoroscopy";
-    case "mammography":
-      return "Mammography";
-    default:
-      return "";
-  }
-};
-
 const ImportDicom = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [selectedPatient, setSelectedPatient] = useState("");
   const [patients, setPatients] = useState([]);
-  const [studyType, setStudyType] = useState("");
-  const [bodyPart, setBodyPart] = useState("");
-  const [technicalParams, setTechnicalParams] = useState({
-    kVp: "",
-    mAs: "",
-    sliceThickness: "",
-    contrast: false,
-  });
-  const [notes, setNotes] = useState("");
+  const [requests, setRequests] = useState([]); // Danh sách yêu cầu chụp
+  const [selectedRequestId, setSelectedRequestId] = useState("");
+  const [selectedRequest, setSelectedRequest] = useState(null);
   const [recentImports, setRecentImports] = useState([]);
+  const [selectedPatientId, setSelectedPatientId] = useState("");
+  const [patientRequests, setPatientRequests] = useState([]);
 
+  // Lấy danh sách yêu cầu chụp từ bác sĩ
   useEffect(() => {
-    patientService
-      .getAllPatients()
-      .then(setPatients)
-      .catch(() => setPatients([]));
-
+    requestPhotoService.getAllRequests().then((data) => {
+      setRequests(data || []);
+      // Lấy danh sách bệnh nhân đã được bác sĩ yêu cầu chụp (lọc trùng theo patient_id)
+      const uniquePatients = [];
+      const seen = new Set();
+      (data || []).forEach((req) => {
+        if (req.patientId && !seen.has(req.patientId)) {
+          uniquePatients.push({
+            patient_id: req.patientId,
+            patient_code: req.patientCode,
+            full_name: req.fullName,
+            phone: req.phone || "",
+            date_of_birth: req.dateOfBirth,
+            gender: req.gender,
+            email: req.email,
+            address: req.address,
+            identity_number: req.identityNumber,
+            insurance_number: req.insuranceNumber
+          });
+          seen.add(req.patientId);
+        }
+      });
+      setPatients(uniquePatients);
+      // Sau khi lấy danh sách bệnh nhân mới nhất, lọc lại lịch sử import
+      setRecentImports(prev => {
+        if (!prev) return [];
+        return prev.filter(item => {
+          if (!item.patient_code) return false;
+          return uniquePatients.some(p =>
+            p.patient_code === item.patient_code ||
+            String(p.patient_id) === String(item.patient_id)
+          );
+        });
+      });
+    });
     const saved = localStorage.getItem("dicomImports");
     if (saved) setRecentImports(JSON.parse(saved));
   }, []);
 
-  useEffect(() => {
-    if (!selectedPatient) return resetForm();
-
-    requestPhotoService
-      .getRequestsByPatientId(selectedPatient)
-      .then(async (requests) => {
-        if (!requests.length) return resetForm();
-
-        const latest = requests[requests.length - 1];
-        const rawImagingType = latest?.imagingType;
-        const imagingCode = imagingTypeToTypeCode(rawImagingType);
-
-        setStudyType(convertImagingTypeToStudyType(rawImagingType));
-
-        // Giữ nguyên giá trị vùng chụp từ API
-        setBodyPart(latest.body_part || "");
-
-        setNotes(latest.clinical_indication || "");
-
-        if (!imagingCode) {
-          console.warn("❗ imaging_type không xác định:", rawImagingType);
-          return;
+  // Khi chọn bệnh nhân, tự động chọn yêu cầu chụp mới nhất (nếu có)
+  const handlePatientChange = (e) => {
+    const patientId = e.target.value;
+    setSelectedPatientId(patientId);
+    // Lọc các yêu cầu chụp của bệnh nhân này
+    const reqs = requests.filter((r) => String(r.patient_id) === String(patientId) || String(r.patientId) === String(patientId));
+    setPatientRequests(reqs);
+    if (reqs.length > 0) {
+      // Chọn tự động yêu cầu mới nhất (theo requestDate hoặc request_id lớn nhất)
+      let latest = reqs[0];
+      for (let r of reqs) {
+        if ((r.requestDate && latest.requestDate && r.requestDate > latest.requestDate) ||
+            (r.request_date && latest.request_date && r.request_date > latest.request_date) ||
+            (r.requestId && latest.requestId && r.requestId > latest.requestId) ||
+            (r.id && latest.id && r.id > latest.id)) {
+          latest = r;
         }
+      }
+      setSelectedRequestId(latest.id || latest.requestId);
+      setSelectedRequest(latest);
+    } else {
+      setSelectedRequestId("");
+      setSelectedRequest(null);
+    }
+  };
 
-        try {
-          const techParams = await imageTypeService.getParamsByType(
-            imagingCode
-          );
-          setTechnicalParams({
-            kVp: techParams.kVp || "",
-            mAs: techParams.mAs || "",
-            sliceThickness: techParams.slice_thickness || "",
-            contrast: techParams.contrast === true,
-          });
-        } catch (err) {
-          console.warn("❌ Không lấy được thông số:", err);
-        }
-      })
-      .catch((err) => {
-        console.error("Không thể lấy yêu cầu:", err);
-        resetForm();
-      });
-  }, [selectedPatient]);
-
-  const resetForm = () => {
-    setStudyType("");
-    setBodyPart("");
-    setNotes("");
-    setTechnicalParams({
-      kVp: "",
-      mAs: "",
-      sliceThickness: "",
-      contrast: false,
-    });
+  // Khi chọn yêu cầu chụp, fill thông tin
+  const handleRequestChange = (e) => {
+    const reqId = e.target.value;
+    setSelectedRequestId(reqId);
+    // Tìm đúng object yêu cầu chụp (có thể có các field khác nhau)
+    const req = patientRequests.find((r) => String(r.id) === String(reqId) || String(r.requestId) === String(reqId));
+    setSelectedRequest(req || null);
   };
 
   const handleFileSelect = (e) => {
@@ -162,55 +106,36 @@ const ImportDicom = () => {
     );
   };
 
-  const handleTechnicalParamChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setTechnicalParams({
-      ...technicalParams,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Đã bấm Import DICOM");
     if (!selectedFiles[0] || !selectedFiles[0].file) {
       alert("Bạn chưa chọn file hoặc file không hợp lệ!");
       return;
     }
-    // Kiểm tra selectedPatient có giá trị chưa
-    if (!selectedPatient) {
-      alert("Bạn chưa chọn bệnh nhân!");
+    if (!selectedRequest) {
+      alert("Bạn chưa chọn yêu cầu chụp!");
       return;
     }
-    // Lấy đúng mã bệnh nhân từ danh sách patients (dựa vào patient_id, ép kiểu về string để so sánh chắc chắn)
-    const patientObj = patients.find((p) => String(p.patient_id) === String(selectedPatient));
-    if (!patientObj) {
-      alert("Không tìm thấy mã bệnh nhân, vui lòng chọn lại!");
-      return;
-    }
-    const patientCode = patientObj.patient_code;
-    // Log thông tin file
-    console.log("File gửi lên:", selectedFiles[0].file);
-    // Log FormData
+    // Lấy metadata từ yêu cầu chụp
     const metadata = {
-      patient_code: patientCode, // Đúng mã bệnh nhân
-      study_type: studyType,
-      body_part: bodyPart,
-      technical_params:
-        typeof technicalParams === "object"
-          ? JSON.stringify(technicalParams)
-          : technicalParams,
-      notes,
+      patient_code: selectedRequest.patient_code || selectedRequest.patientCode || '',
+      study_type: selectedRequest.imagingType || selectedRequest.imaging_type || selectedRequest.study_type || '',
+      body_part: selectedRequest.body_part || selectedRequest.bodyPart || '',
+      technical_params: selectedRequest.technical_params || selectedRequest.technicalParams || '',
+      notes: selectedRequest.notes || selectedRequest.clinical_indication || selectedRequest.clinicalIndication || '',
       performed_by: 7,
+      request_id: selectedRequest.id || selectedRequest.requestId || '',
+      // Thêm các thông số kỹ thuật từ input
+      kVp: selectedFiles[0]?.kVp || '',
+      mAs: selectedFiles[0]?.mAs || '',
+      sliceThickness: selectedFiles[0]?.sliceThickness || '',
+      contrast: selectedFiles[0]?.contrast || ''
     };
     const formData = new FormData();
     Object.entries(metadata).forEach(([key, value]) => {
       formData.append(key, value);
     });
     formData.append("file", selectedFiles[0].file);
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ", " + pair[1]);
-    }
     try {
       const msg = await importDicom(formData);
       alert(msg);
@@ -224,118 +149,188 @@ const ImportDicom = () => {
       const updated = [importRecord, ...recentImports];
       setRecentImports(updated);
       localStorage.setItem("dicomImports", JSON.stringify(updated));
-      resetForm();
       setSelectedFiles([]);
-      setSelectedPatient("");
+      setSelectedRequestId("");
+      setSelectedRequest(null);
     } catch (err) {
-      console.error(err);
       alert("Import thất bại: " + err.message);
     }
+  };
+
+  // Helper chuyển đổi sang tiếng Việt
+  const getBodyPartVN = val => {
+    if (!val) return '';
+    const map = { spine: 'Cột sống', chest: 'Ngực', head: 'Đầu', hand: 'Tay', leg: 'Chân', abdomen: 'Bụng' };
+    return map[val.toLowerCase()] || val;
+  };
+  const getPriorityVN = val => {
+    if (!val) return '';
+    const map = { normal: 'Bình thường', urgent: 'Khẩn cấp', high: 'Cao', low: 'Thấp' };
+    return map[val.toLowerCase()] || val;
+  };
+  const getStatusVN = val => {
+    if (!val) return '';
+    const map = { pending: 'Chờ xử lý', completed: 'Hoàn thành', imported: 'Đã import', cancelled: 'Đã hủy' };
+    return map[val.toLowerCase()] || val;
   };
 
   return (
     <Layout>
       <div className="import-dicom-page">
         <h2 className="page-title">📄 Import Ảnh DICOM</h2>
-        <div className="page-header">
-          <h2>✅ Nhập file DICOM </h2>
-          <p>Import và quản lý file DICOM từ các thiết bị chụp hình ảnh y tế</p>
-        </div>
-
         <div className="form-container">
           <form onSubmit={handleSubmit}>
             <div className="form-section">
-              <div className="section-title">Thông tin ảnh DICOM</div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Chọn bệnh nhân:</label>
-                  <select
-                    className="form-select"
-                    value={selectedPatient}
-                    onChange={(e) => setSelectedPatient(e.target.value)}
-                    required
-                  >
-                    <option value="">-- Chọn --</option>
-                    {patients.map((p) => (
-                      <option key={p.patient_id} value={p.patient_id}>
-                        {p.patient_code} - {p.full_name} - {p.phone}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Loại chụp: *</label>
-                  <input
-                    className="form-input"
-                    value={studyType}
-                    onChange={(e) => setStudyType(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Vùng chụp: *</label>
-                  <select
-                    className="form-select"
-                    value={bodyPart}
-                    onChange={(e) => setBodyPart(e.target.value)}
-                    required
-                  >
-                    <option value="">-- Chọn vị trí --</option>
-                    {SIMPLE_BODY_PARTS.map((part, idx) => (
-                      <option key={idx} value={part.value}>
-                        {part.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>kVp:</label>
-                  <input
-                    className="form-input"
-                    name="kVp"
-                    value={technicalParams.kVp}
-                    onChange={handleTechnicalParamChange}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>mAs:</label>
-                  <input
-                    className="form-input"
-                    name="mAs"
-                    value={technicalParams.mAs}
-                    onChange={handleTechnicalParamChange}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Độ dày lát cắt (mm):</label>
-                  <input
-                    className="form-input"
-                    name="sliceThickness"
-                    value={technicalParams.sliceThickness}
-                    onChange={handleTechnicalParamChange}
-                  />
-                </div>
-                <div className="form-group checkbox-group">
-                  <label>
-                    <input
-                      type="checkbox"
-                      name="contrast"
-                      checked={technicalParams.contrast}
-                      onChange={handleTechnicalParamChange}
-                    />
-                    Dùng thuốc cản quang
-                  </label>
-                </div>
-              </div>
               <div className="form-group">
-                <label>Ghi chú:</label>
-                <textarea
-                  className="form-textarea"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                />
+                <label>Chọn bệnh nhân có yêu cầu chụp:</label>
+                <select className="form-select" value={selectedPatientId} onChange={handlePatientChange} required>
+                  <option value="">-- Chọn --</option>
+                  {patients.map((p) => (
+                    <option key={p.patient_id} value={p.patient_id}>
+                      {p.patient_code} - {p.full_name} - {p.phone}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Hiển thị thông tin bệnh nhân khi đã chọn */}
+              {selectedPatientId && (() => {
+                const p = patients.find(x => String(x.patient_id) === String(selectedPatientId));
+                if (!p) return null;
+                // Tính tuổi
+                let age = '';
+                if (p.date_of_birth) {
+                  const birth = new Date(p.date_of_birth);
+                  const now = new Date();
+                  age = now.getFullYear() - birth.getFullYear();
+                  const m = now.getMonth() - birth.getMonth();
+                  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+                  age = age + ' tuổi';
+                }
+                return (
+                  <div className="patient-info-card">
+                    <div className="patient-info-title"><i className="fa fa-user" style={{color:'#5b6ee1', marginRight:8}}></i>Thông tin bệnh nhân</div>
+                    <div className="patient-info-grid">
+                      <div className="patient-info-cell">
+                        <div className="patient-info-label">Mã bệnh nhân:</div>
+                        <div className="patient-info-value highlight">{p.patient_code}</div>
+                      </div>
+                      <div className="patient-info-cell">
+                        <div className="patient-info-label">Họ và tên:</div>
+                        <div className="patient-info-value highlight">{p.full_name}</div>
+                      </div>
+                      <div className="patient-info-cell">
+                        <div className="patient-info-label">Tuổi:</div>
+                        <div className="patient-info-value highlight">{age}</div>
+                      </div>
+                      <div className="patient-info-cell">
+                        <div className="patient-info-label">Giới tính:</div>
+                        <div className="patient-info-value highlight">{p.gender}</div>
+                      </div>
+                      <div className="patient-info-cell">
+                        <div className="patient-info-label">Ngày sinh:</div>
+                        <div className="patient-info-value highlight">{p.date_of_birth}</div>
+                      </div>
+                      <div className="patient-info-cell">
+                        <div className="patient-info-label">Số điện thoại:</div>
+                        <div className="patient-info-value highlight">{p.phone}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              {/* KHÔNG HIỂN THỊ DROPDOWN VÀ BẢNG YÊU CẦU CHỤP  */}
+              {selectedRequest && (
+                <div className="form-group doctor-request-card">
+                  <div className="doctor-request-title"><i className="fa fa-stethoscope" style={{color:'#d48806', marginRight:8}}></i>Thông tin yêu cầu chụp từ bác sĩ</div>
+                  <div className="doctor-request-grid2">
+                    <div className="doctor-request-cell">
+                      <div className="doctor-request-label">Mã yêu cầu:</div>
+                      <div className="doctor-request-value highlight">{selectedRequest.requestCode || selectedRequest.request_code || selectedRequest.id || selectedRequest.requestId}</div>
+                    </div>
+                    <div className="doctor-request-cell">
+                      <div className="doctor-request-label">Loại chụp:</div>
+                      <div className="doctor-request-value highlight">{selectedRequest.imagingType || selectedRequest.imaging_type || selectedRequest.study_type}</div>
+                    </div>
+                    <div className="doctor-request-cell">
+                      <div className="doctor-request-label">Vùng chụp:</div>
+                      <div className="doctor-request-value highlight">{getBodyPartVN(selectedRequest.bodyPart || selectedRequest.body_part)}</div>
+                    </div>
+                    <div className="doctor-request-cell">
+                      <div className="doctor-request-label">Chỉ định:</div>
+                      <div className="doctor-request-value highlight">{selectedRequest.clinicalIndication || selectedRequest.clinical_indication}</div>
+                    </div>
+                    <div className="doctor-request-cell">
+                      <div className="doctor-request-label">Ghi chú:</div>
+                      <div className="doctor-request-value highlight">{selectedRequest.notes}</div>
+                    </div>
+                    <div className="doctor-request-cell">
+                      <div className="doctor-request-label">Mức độ ưu tiên:</div>
+                      <div className="doctor-request-value highlight">{getPriorityVN(selectedRequest.priorityLevel || selectedRequest.priority_level)}</div>
+                    </div>
+                    <div className="doctor-request-cell">
+                      <div className="doctor-request-label">Ngày yêu cầu:</div>
+                      <div className="doctor-request-value highlight">{selectedRequest.requestDate || selectedRequest.request_date}</div>
+                    </div>
+                    <div className="doctor-request-cell">
+                      <div className="doctor-request-label">Trạng thái:</div>
+                      <div className="doctor-request-value highlight">{getStatusVN(selectedRequest.status)}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* Thông số kỹ thuật hình ảnh */}
+              <div className="form-group">
+                <label>Thông số kỹ thuật hình ảnh:</label>
+                <div style={{display: 'flex', gap: 16, flexWrap: 'wrap'}}>
+                  <div>
+                    <label>Điện áp (kVp):</label>
+                    <input type="number" min={0} className="form-control" value={selectedFiles[0]?.kVp ?? ''}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setSelectedFiles(files => {
+                          const arr = files.length ? [...files] : [{}];
+                          arr[0] = {...arr[0], kVp: val};
+                          return arr;
+                        });
+                      }} placeholder="VD: 80" style={{width: 80}} />
+                  </div>
+                  <div>
+                    <label>Dòng điện (mAs):</label>
+                    <input type="number" min={0} className="form-control" value={selectedFiles[0]?.mAs ?? ''}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setSelectedFiles(files => {
+                          const arr = files.length ? [...files] : [{}];
+                          arr[0] = {...arr[0], mAs: val};
+                          return arr;
+                        });
+                      }} placeholder="VD: 10" style={{width: 80}} />
+                  </div>
+                  <div>
+                    <label>Độ dày lát cắt (mm):</label>
+                    <input type="text" className="form-control" value={selectedFiles[0]?.sliceThickness ?? ''}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setSelectedFiles(files => {
+                          const arr = files.length ? [...files] : [{}];
+                          arr[0] = {...arr[0], sliceThickness: val};
+                          return arr;
+                        });
+                      }} placeholder="VD: 11" style={{width: 80}} />
+                  </div>
+                  <div>
+                    <label>Chất cản quang:</label>
+                    <input type="text" className="form-control" value={selectedFiles[0]?.contrast ?? ''}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setSelectedFiles(files => {
+                          const arr = files.length ? [...files] : [{}];
+                          arr[0] = {...arr[0], contrast: val};
+                          return arr;
+                        });
+                      }} placeholder="Có/Không" style={{width: 80}} />
+                  </div>
+                </div>
               </div>
               <div className="form-group file-upload-label">
                 <label>Chọn file hình ảnh (DICOM, JPEG, PNG):</label>
@@ -367,6 +362,7 @@ const ImportDicom = () => {
               <table>
                 <thead>
                   <tr>
+                    <th>Ảnh</th>
                     <th>File</th>
                     <th>Mã bệnh nhân</th>
                     <th>Loại chụp</th>
@@ -377,17 +373,43 @@ const ImportDicom = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentImports.map((item, idx) => (
-                    <tr key={idx}>
-                      <td>{item.fileName}</td>
-                      <td>{item.patient_code}</td>
-                      <td>{item.study_type || item.studyType}</td>
-                      <td>{item.body_part || item.bodyPart}</td>
-                      <td>{item.fileSize}</td>
-                      <td>{item.importDate}</td>
-                      <td>{item.status}</td>
-                    </tr>
-                  ))}
+                  {recentImports
+                    .filter(item => {
+                      // Nếu mã bệnh nhân không còn trong danh sách bệnh nhân hiện tại thì ẩn
+                      if (!item.patient_code) return false;
+                      // So sánh cả patient_code và patient_id (nhiều hệ thống lưu khác nhau)
+                      return patients.some(p =>
+                        p.patient_code === item.patient_code ||
+                        String(p.patient_id) === String(item.patient_id)
+                      );
+                    })
+                    .map((item, idx) => {
+                      const isImage = /\.(jpg|jpeg|png|gif)$/i.test(item.fileName || "");
+                      const imageUrl = isImage
+                        ? `/aidims-backend/dicom_uploads/${item.fileName}`
+                        : null;
+                      return (
+                        <tr key={idx}>
+                          <td>
+                            {isImage && (
+                              <img
+                                src={imageUrl}
+                                alt={item.fileName}
+                                style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 4 }}
+                                onError={e => { e.target.style.display = 'none'; }}
+                              />
+                            )}
+                          </td>
+                          <td>{item.fileName}</td>
+                          <td>{item.patient_code}</td>
+                          <td>{item.study_type || item.studyType}</td>
+                          <td>{item.body_part || item.bodyPart}</td>
+                          <td>{item.fileSize}</td>
+                          <td>{item.importDate}</td>
+                          <td>{item.status}</td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             )}
