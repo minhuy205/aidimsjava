@@ -1,56 +1,119 @@
+
 package com.aidims.aidimsbackend.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.aidims.aidimsbackend.entity.DicomImport;
 import com.aidims.aidimsbackend.entity.VerifyImage;
 import com.aidims.aidimsbackend.repository.DicomImportRepository;
+import com.aidims.aidimsbackend.service.DicomFileService;
 import com.aidims.aidimsbackend.service.VerifyImageService;
 
 @RestController
 @RequestMapping("/api/verify-image")
-@CrossOrigin(origins = "http://localhost:3000") // Cho phép CORS cho frontend React
+@CrossOrigin(origins = "http://localhost:3000")
 public class VerifyImageController {
+
     @Autowired
     private VerifyImageService verifyImageService;
+
     @Autowired
     private DicomImportRepository dicomImportRepository;
 
     @PostMapping("/save")
     public ResponseEntity<?> saveVerifyImage(@RequestBody VerifyImage verifyImage) {
-        // Validate các trường bắt buộc
-        if (verifyImage.getImageId() == null || verifyImage.getCheckedBy() == null || verifyImage.getResult() == null || verifyImage.getResult().isEmpty()) {
-            return ResponseEntity.badRequest().body("Thiếu thông tin bắt buộc: imageId, checkedBy, result");
+        try {
+            // Validate required fields
+            if (verifyImage.getImageId() == null || verifyImage.getCheckedBy() == null ||
+                verifyImage.getResult() == null) {
+                return ResponseEntity.badRequest().body("Missing required fields: imageId, checkedBy, result");
+            }
+
+            // Check if image exists
+            if (!dicomImportRepository.existsById(verifyImage.getImageId())) {
+                return ResponseEntity.badRequest().body("Image not found with id: " + verifyImage.getImageId());
+            }
+
+            // Set current time
+            verifyImage.setCheckTime(LocalDateTime.now());
+
+            // Save verification
+            VerifyImage saved = verifyImageService.saveVerifyImage(verifyImage);
+
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error saving verification: " + e.getMessage());
         }
-        VerifyImage saved = verifyImageService.saveVerifyImage(verifyImage);
-        return ResponseEntity.ok(saved);
-    }
-
-    @GetMapping("/all")
-    public ResponseEntity<List<VerifyImage>> getAllVerifyImages() {
-        return ResponseEntity.ok(verifyImageService.getAllVerifyImages());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<VerifyImage> getVerifyImageById(@PathVariable Long id) {
-        return verifyImageService.getVerifyImageById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/dicom-imports")
     public ResponseEntity<List<DicomImport>> getAllDicomImports() {
-        // Lấy toàn bộ ảnh đã import để kiểm tra
-        return ResponseEntity.ok(dicomImportRepository.findAll());
+        try {
+            return ResponseEntity.ok(dicomImportRepository.findAll());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<VerifyImage>> getAllVerifyImages() {
+        try {
+            List<VerifyImage> verifyImages = verifyImageService.getAllVerifyImages();
+            return ResponseEntity.ok(verifyImages);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<VerifyImage> getVerifyImageById(@PathVariable Long id) {
+        try {
+            return verifyImageService.getVerifyImageById(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> updateImageStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        try {
+            String status = body.get("status");
+            if (status == null) {
+                return ResponseEntity.badRequest().body("Missing status");
+            }
+            // Lấy bản ghi ảnh cần cập nhật
+            Optional<VerifyImage> optional = verifyImageService.getVerifyImageById(id);
+            if (optional.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            VerifyImage image = optional.get();
+            image.setResult(status); // "approved" hoặc "rejected"
+            image.setCheckTime(LocalDateTime.now());
+            verifyImageService.saveVerifyImage(image);
+            return ResponseEntity.ok(image);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error updating status: " + e.getMessage());
+        }
+    }
+
 }

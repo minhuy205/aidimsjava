@@ -1,449 +1,610 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import LayoutLogin from "../Layout/LayoutLogin"
-import "../../css/verifyImages.css"
-import { verifyImageService } from "../../services/verifyImageService"
+import { useState, useEffect, useCallback } from "react";
+import LayoutLogin from "../Layout/LayoutLogin";
+import "../../css/verifyImages.css";
+import verifyImageService from "../../services/verifyImageService";
 
 const VerifyImages = () => {
-  const [images, setImages] = useState([])
-  const [filteredImages, setFilteredImages] = useState([])
+  // State management
+  const [images, setImages] = useState([]);
+  const [filteredImages, setFilteredImages] = useState([]);
   const [filters, setFilters] = useState({
-    status: "",
+    status: "pending",
     studyType: "",
     quality: "",
     dateFrom: "",
     dateTo: "",
-  })
-  // Modal state
-  const [showImageModal, setShowImageModal] = useState(false)
-  const [modalTab, setModalTab] = useState("view")
-  const [selectedImage, setSelectedImage] = useState(null)
+  });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [approvalNote, setApprovalNote] = useState("");
+
+  // Fetch images from backend
+  const fetchImages = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [dicomImportsRes, verifyImagesRes] = await Promise.all([
+        fetch("http://localhost:8080/api/verify-image/dicom-imports"),
+        fetch("http://localhost:8080/api/verify-image/all"),
+      ]);
+
+      if (!dicomImportsRes.ok || !verifyImagesRes.ok) {
+        throw new Error("Failed to load image data");
+      }
+
+      const [dicomImports, verifyImages] = await Promise.all([
+        dicomImportsRes.json(),
+        verifyImagesRes.json(),
+      ]);
+
+      const combinedImages = dicomImports.map((dicomItem) => {
+        const verification =
+          verifyImages.find((v) => v.imageId === dicomItem.id) || {};
+
+        // Extract filename from path
+        const fileName = dicomItem.filePath
+          ? dicomItem.filePath.split(/[\\/]/).pop()
+          : dicomItem.fileName;
+
+        // Build correct URL for image and thumbnail
+        const filePath = fileName
+          ? `/dicom_uploads/${fileName}`
+          : null;
+        const thumbnail = fileName
+          ? `/dicom_uploads/${fileName}`
+          : "/placeholder-image.jpg";
+
+        return {
+          id: dicomItem.id,
+          fileName: fileName || "No filename",
+          patientCode: dicomItem.patientCode || "",
+          patientName: dicomItem.patientName || "",
+          studyType: dicomItem.studyType || "",
+          bodyPart: dicomItem.bodyPart || "",
+          captureDate: dicomItem.importDate
+            ? new Date(dicomItem.importDate).toLocaleDateString("vi-VN")
+            : "",
+          quality: verification.note?.includes("Xuất sắc")
+            ? "Xuất sắc"
+            : verification.note?.includes("Tốt")
+            ? "Tốt"
+            : verification.note?.includes("Kém")
+            ? "Kém"
+            : "Chưa xác định",
+          status:
+            verification.result === "approved"
+              ? "Đã duyệt"
+              : verification.result === "rejected"
+              ? "Từ chối"
+              : "Chờ duyệt",
+          technicalParams: dicomItem.technicalParams || {},
+          fileSize: dicomItem.fileSize
+            ? `${(dicomItem.fileSize / (1024 * 1024)).toFixed(2)} MB`
+            : "",
+          filePath,
+          thumbnail,
+          verificationId: verification.id,
+          note: verification.note || "",
+        };
+      });
+
+      setImages(combinedImages);
+      setFilteredImages(
+        combinedImages.filter((img) => img.status === "Chờ duyệt")
+      );
+    } catch (error) {
+      console.error("Error loading images:", error);
+      alert("Error loading image list: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Lấy danh sách ảnh từ backend (dicom_imports)
-    fetch("http://localhost:8080/api/verify-image/dicom-imports")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Không thể kết nối API: " + res.status)
-        }
-        return res.json()
-      })
-      .then((data) => {
-        const imagesFromDb = data.map((item) => ({
-          id: item.id,
-          fileName: item.fileName || "Không có tên file",
-          patientCode: item.patientCode || "",
-          patientName: item.patientName || item.patientCode || "",
-          studyType: item.studyType || "",
-          bodyPart: item.bodyPart || "",
-          captureDate: item.importDate ? item.importDate.split("T")[0] : "",
-          quality: "Chưa xác định", // Chưa ai kiểm tra
-          status: "Chờ kiểm tra",
-          technicalParams: item.technicalParams ? (typeof item.technicalParams === 'string' ? JSON.parse(item.technicalParams) : item.technicalParams) : {},
-          fileSize: item.fileSize ? (item.fileSize / (1024 * 1024)).toFixed(1) + " MB" : "",
-          thumbnail: item.filePath ? `http://localhost:8080${item.filePath}` : "/placeholder.svg?height=150&width=150",
-          filePath: item.filePath || "",
-        }))
-        setImages(imagesFromDb)
-        setFilteredImages(imagesFromDb)
-      })
-      .catch((err) => {
-        alert("Lỗi khi lấy danh sách ảnh từ backend: " + err.message)
-        setImages([])
-        setFilteredImages([])
-      })
-  }, [])
+    fetchImages();
+  }, [fetchImages]);
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target
-    setFilters({
-      ...filters,
-      [name]: value,
-    })
-  }
+  // Filter handlers
+  const handleFilterChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  }, []);
 
-  const applyFilters = () => {
-    let filtered = images
+  const applyFilters = useCallback(() => {
+    let filtered = [...images];
 
+    // Status filter
     if (filters.status) {
-      filtered = filtered.filter((img) => img.status === filters.status)
+      filtered = filtered.filter((img) =>
+        filters.status === "all"
+          ? true
+          : filters.status === "pending"
+          ? img.status === "Chờ duyệt"
+          : filters.status === "approved"
+          ? img.status === "Đã duyệt"
+          : filters.status === "rejected"
+          ? img.status === "Từ chối"
+          : true
+      );
     }
 
+    // Study type filter
     if (filters.studyType) {
-      filtered = filtered.filter((img) => img.studyType === filters.studyType)
+      filtered = filtered.filter((img) => img.studyType === filters.studyType);
     }
 
+    // Quality filter
     if (filters.quality) {
-      filtered = filtered.filter((img) => img.quality === filters.quality)
+      filtered = filtered.filter((img) => img.quality === filters.quality);
     }
 
+    // Date range filters
     if (filters.dateFrom) {
-      filtered = filtered.filter((img) => img.captureDate >= filters.dateFrom)
+      filtered = filtered.filter((img) => {
+        if (!img.captureDate) return false;
+        const [day, month, year] = img.captureDate.split("/");
+        const imgDate = new Date(`${year}-${month}-${day}`);
+        return imgDate >= new Date(filters.dateFrom);
+      });
     }
 
     if (filters.dateTo) {
-      filtered = filtered.filter((img) => img.captureDate <= filters.dateTo)
+      filtered = filtered.filter((img) => {
+        if (!img.captureDate) return false;
+        const [day, month, year] = img.captureDate.split("/");
+        const imgDate = new Date(`${year}-${month}-${day}`);
+        return imgDate <= new Date(filters.dateTo);
+      });
     }
 
-    setFilteredImages(filtered)
-  }
+    setFilteredImages(filtered);
+  }, [filters, images]);
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setFilters({
-      status: "",
+      status: "pending",
       studyType: "",
       quality: "",
       dateFrom: "",
       dateTo: "",
-    })
-    setFilteredImages(images)
-  }
+    });
+    setFilteredImages(images.filter((img) => img.status === "Chờ duyệt"));
+  }, [images]);
 
-  // Gọi API lưu kiểm tra hình ảnh khi phê duyệt hoặc từ chối
-  const updateImageStatus = async (imageId, newStatus, newQuality = null) => {
-    // Cập nhật trạng thái trên giao diện ngay lập tức
-    const updatedImages = images.map((img) => {
-      if (img.id === imageId) {
-        return {
-          ...img,
-          status: newStatus,
-          quality: newQuality || img.quality,
-        }
-      }
-      return img
-    })
-    setImages(updatedImages)
-    setFilteredImages(updatedImages)
+  // Approval handlers
+  const handleApprove = useCallback(
+    async (approve = true) => {
+      if (!selectedImage) return;
 
-    // Gọi API lưu kiểm tra hình ảnh vào bảng verify_image
-    const img = images.find((img) => img.id === imageId)
-    if (img) {
       try {
-        await verifyImageService.saveVerifyImage({
-          imageId: img.id,
-          checkedBy: 1, // TODO: lấy userId thực tế
-          result: newStatus,
-          note: `Chất lượng: ${newQuality || img.quality}`,
-        })
-      } catch (err) {
-        alert("Lỗi khi lưu kiểm tra hình ảnh: " + err.message)
-      }
-    }
-  }
+        setLoading(true);
+        const result = approve ? "approved" : "rejected";
+        const note = approve
+          ? `Chất lượng: ${approvalNote || "Tốt"}`
+          : `Lý do từ chối: ${approvalNote || "Chất lượng không đạt"}`;
 
-  const getQualityColor = (quality) => {
+        await verifyImageService.saveVerifyImage({
+          imageId: selectedImage.id,
+          checkedBy: 1, // TODO: Replace with actual user ID
+          result,
+          note,
+        });
+
+        // Update state
+        setImages((prev) =>
+          prev.map((img) =>
+            img.id === selectedImage.id
+              ? {
+                  ...img,
+                  status: approve ? "Đã duyệt" : "Từ chối",
+                  quality: approve
+                    ? approvalNote.includes("Xuất sắc")
+                      ? "Xuất sắc"
+                      : "Tốt"
+                    : "Kém",
+                  note,
+                }
+              : img
+          )
+        );
+
+        setFilteredImages((prev) =>
+          prev.filter((img) => img.id !== selectedImage.id)
+        );
+        setShowApproveModal(false);
+        setSelectedImage(null);
+        setApprovalNote("");
+      } catch (error) {
+        console.error("Approval error:", error);
+        alert("Approval failed: " + error.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [selectedImage, approvalNote]
+  );
+
+  // UI helpers
+  const getStatusColor = useCallback((status) => {
+    switch (status) {
+      case "Đã duyệt":
+        return "var(--success)";
+      case "Từ chối":
+        return "var(--danger)";
+      case "Chờ duyệt":
+        return "var(--warning)";
+      default:
+        return "var(--secondary)";
+    }
+  }, []);
+
+  const getQualityColor = useCallback((quality) => {
     switch (quality) {
       case "Xuất sắc":
-        return "#28a745"
+        return "var(--success)";
       case "Tốt":
-        return "#17a2b8"
+        return "var(--info)";
       case "Kém":
-        return "#dc3545"
+        return "var(--danger)";
       default:
-        return "#6c757d"
+        return "var(--secondary)";
     }
-  }
+  }, []);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Đã kiểm tra":
-        return "#28a745"
-      case "Chờ kiểm tra":
-        return "#ffc107"
-      case "Cần chụp lại":
-        return "#dc3545"
-      default:
-        return "#6c757d"
-    }
-  }
+  // Modal components
+  const ImageModal = () =>
+    showImageModal &&
+    selectedImage && (
+      <div className="modal-backdrop" onClick={() => setShowImageModal(false)}>
+        <div className="image-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>{selectedImage.fileName}</h3>
+            <button
+              className="close-btn"
+              onClick={() => setShowImageModal(false)}
+            >
+              &times;
+            </button>
+          </div>
+          <div className="modal-body">
+            {selectedImage.filePath ? (
+              <img
+                src={selectedImage.filePath}
+                alt={selectedImage.fileName}
+                onError={(e) => {
+                  console.error("Failed to load image:", e.target.src);
+                  e.target.src = "/placeholder-image.jpg";
+                  e.target.onerror = null;
+                }}
+              />
+            ) : (
+              <div className="no-image">
+                <p>No image available</p>
+                <img
+                  src="/placeholder-image.jpg"
+                  alt="Placeholder"
+                  className="placeholder-image"
+                />
+              </div>
+            )}
+            <div className="image-info">
+              <p>
+                <strong>Bệnh nhân:</strong> {selectedImage.patientCode} -{" "}
+                {selectedImage.patientName}
+              </p>
+              <p>
+                <strong>Loại chụp:</strong> {selectedImage.studyType}
+              </p>
+              <p>
+                <strong>Vùng chụp:</strong> {selectedImage.bodyPart}
+              </p>
+              <p>
+                <strong>Ngày chụp:</strong> {selectedImage.captureDate}
+              </p>
+              {selectedImage.note && (
+                <p>
+                  <strong>Ghi chú:</strong> {selectedImage.note}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+  const ApproveModal = () =>
+    showApproveModal &&
+    selectedImage && (
+      <div
+        className="modal-backdrop"
+        onClick={() => setShowApproveModal(false)}
+      >
+        <div className="approval-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>Duyệt hình ảnh</h3>
+            <button
+              className="close-btn"
+              onClick={() => setShowApproveModal(false)}
+            >
+              &times;
+            </button>
+          </div>
+          <div className="modal-body">
+            <p>
+              Bạn đang duyệt hình ảnh: <strong>{selectedImage.fileName}</strong>
+            </p>
+            <div className="form-group">
+              <label>Đánh giá chất lượng:</label>
+              <select
+                value={
+                  approvalNote.includes("Xuất sắc")
+                    ? "excellent"
+                    : approvalNote.includes("Tốt")
+                    ? "good"
+                    : ""
+                }
+                onChange={(e) => {
+                  const quality =
+                    e.target.value === "excellent" ? "Xuất sắc" : "Tốt";
+                  setApprovalNote(`Chất lượng: ${quality}`);
+                }}
+              >
+                <option value="">Chọn chất lượng</option>
+                <option value="excellent">Xuất sắc</option>
+                <option value="good">Tốt</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Ghi chú:</label>
+              <textarea
+                value={
+                  approvalNote.startsWith("Chất lượng:")
+                    ? approvalNote.replace(/^Chất lượng: /, "")
+                    : approvalNote
+                }
+                onChange={(e) => {
+                  if (approvalNote.includes("Xuất sắc")) {
+                    setApprovalNote(`Chất lượng: Xuất sắc - ${e.target.value}`);
+                  } else if (approvalNote.includes("Tốt")) {
+                    setApprovalNote(`Chất lượng: Tốt - ${e.target.value}`);
+                  } else {
+                    setApprovalNote(e.target.value);
+                  }
+                }}
+                placeholder="Nhập ghi chú (nếu có)"
+              />
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button
+              className="btn btn-success"
+              onClick={() => handleApprove(true)}
+              disabled={!approvalNote}
+            >
+              Xác nhận duyệt
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setShowApproveModal(false)}
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      </div>
+    );
 
   return (
     <LayoutLogin>
-      <div className="verify-images-page">
-        <div className="page-header">
-          <h2>✅ Kiểm tra chất lượng hình ảnh</h2>
-          <p>Xác minh và đánh giá chất lượng hình ảnh DICOM</p>
+      <div className="verify-images-container">
+        <div className="header-section">
+          <h1>Duyệt Hình Ảnh Y Tế</h1>
+          <p>Xem xét và phê duyệt chất lượng hình ảnh DICOM</p>
         </div>
 
-        {/* Bộ lọc kiểm tra hình ảnh */}
-        <div className="filters-section">
-          <div className="filters-grid">
+        <div className="filter-section">
+          <div className="filter-row">
             <div className="filter-group">
               <label>Trạng thái:</label>
-              <select name="status" value={filters.status} onChange={handleFilterChange}>
-                <option value="">Tất cả</option>
-                <option value="Chờ kiểm tra">Chờ kiểm tra</option>
-                <option value="Đã kiểm tra">Đã kiểm tra</option>
-                <option value="Cần chụp lại">Cần chụp lại</option>
+              <select
+                name="status"
+                value={filters.status}
+                onChange={handleFilterChange}
+              >
+                <option value="pending">Chờ duyệt</option>
+                <option value="approved">Đã duyệt</option>
+                <option value="rejected">Từ chối</option>
+                <option value="all">Tất cả</option>
               </select>
             </div>
             <div className="filter-group">
               <label>Loại chụp:</label>
-              <select name="studyType" value={filters.studyType} onChange={handleFilterChange}>
+              <select
+                name="studyType"
+                value={filters.studyType}
+                onChange={handleFilterChange}
+              >
                 <option value="">Tất cả</option>
                 <option value="X-quang thường">X-quang thường</option>
                 <option value="CT Scanner">CT Scanner</option>
                 <option value="MRI">MRI</option>
                 <option value="Siêu âm">Siêu âm</option>
+                <option value="PET-CT">PET-CT</option>
               </select>
             </div>
             <div className="filter-group">
               <label>Chất lượng:</label>
-              <select name="quality" value={filters.quality} onChange={handleFilterChange}>
+              <select
+                name="quality"
+                value={filters.quality}
+                onChange={handleFilterChange}
+              >
                 <option value="">Tất cả</option>
                 <option value="Xuất sắc">Xuất sắc</option>
                 <option value="Tốt">Tốt</option>
                 <option value="Kém">Kém</option>
+                <option value="Chưa xác định">Chưa xác định</option>
               </select>
             </div>
             <div className="filter-group">
               <label>Từ ngày:</label>
-              <input type="date" name="dateFrom" value={filters.dateFrom} onChange={handleFilterChange} />
+              <input
+                type="date"
+                name="dateFrom"
+                value={filters.dateFrom}
+                onChange={handleFilterChange}
+              />
             </div>
             <div className="filter-group">
               <label>Đến ngày:</label>
-              <input type="date" name="dateTo" value={filters.dateTo} onChange={handleFilterChange} />
+              <input
+                type="date"
+                name="dateTo"
+                value={filters.dateTo}
+                onChange={handleFilterChange}
+              />
             </div>
           </div>
           <div className="filter-actions">
-            <button className="btn-filter" onClick={applyFilters}>
-              🔍 Lọc
+            <button onClick={applyFilters} className="btn btn-primary">
+              Áp dụng
             </button>
-            <button className="btn-reset" onClick={resetFilters}>
-              🔄 Đặt lại
+            <button onClick={resetFilters} className="btn btn-secondary">
+              Đặt lại
             </button>
           </div>
         </div>
-        {/* Kết quả lọc */}
-        {filteredImages.length > 0 && filteredImages.length !== images.length && (
-          <>
-            <h3 style={{marginTop: 24, marginBottom: 12}}>Kết quả lọc</h3>
-            <div className="images-grid">
-              {filteredImages.map((image) => (
-                <div key={image.id} className="image-card">
-                  <div className="image-preview" style={{ position: 'relative' }}>
-                    <img src={image.thumbnail || "/placeholder.svg"} alt={image.fileName} style={{ cursor: 'pointer' }}
-                      onClick={() => {
-                        setSelectedImage(image);
-                        setShowImageModal(true);
-                        setModalTab("view");
-                      }}
-                    />
-                  </div>
-                  <div className="image-info">
-                    <div className="image-header">
-                      <h4>{image.fileName}</h4>
-                      <div className="image-badges">
-                        <span className="quality-badge" style={{ backgroundColor: getQualityColor(image.quality) }}>
+
+        {loading ? (
+          <div className="loading-indicator">
+            <div className="spinner"></div>
+            <p>Đang tải dữ liệu...</p>
+          </div>
+        ) : (
+          <div className="images-table-container">
+            <table className="images-table">
+              <thead>
+                <tr>
+                  <th>Hình ảnh</th>
+                  <th>Bệnh nhân</th>
+                  <th>Loại chụp</th>
+                  <th>Vùng chụp</th>
+                  <th>Ngày chụp</th>
+                  <th>Chất lượng</th>
+                  <th>Trạng thái</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredImages.length > 0 ? (
+                  filteredImages.map((image) => (
+                    <tr key={image.id}>
+                      <td className="image-cell">
+                        <div
+                          className="thumbnail-wrapper"
+                          onClick={() => {
+                            setSelectedImage(image);
+                            setShowImageModal(true);
+                          }}
+                        >
+                          <img
+                            src={image.thumbnail}
+                            alt={image.fileName}
+                            onError={(e) => {
+                              e.target.src = "/placeholder-image.jpg";
+                              e.target.onerror = null;
+                            }}
+                          />
+                          <span>{image.fileName}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="patient-info">
+                          <strong>{image.patientCode}</strong>
+                          {image.patientName && (
+                            <span>{image.patientName}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td>{image.studyType}</td>
+                      <td>{image.bodyPart}</td>
+                      <td>{image.captureDate}</td>
+                      <td>
+                        <span
+                          className="badge"
+                          style={{
+                            backgroundColor: getQualityColor(image.quality),
+                          }}
+                        >
                           {image.quality}
                         </span>
-                        <span className="status-badge" style={{ backgroundColor: getStatusColor(image.status) }}>
+                      </td>
+                      <td>
+                        <span
+                          className="badge"
+                          style={{
+                            backgroundColor: getStatusColor(image.status),
+                          }}
+                        >
                           {image.status}
                         </span>
-                      </div>
-                    </div>
-                    <div className="image-details">
-                      <p>
-                        <strong>Bệnh nhân:</strong> {image.patientCode} - {image.patientName}
-                      </p>
-                      <p>
-                        <strong>Loại chụp:</strong> {image.studyType}
-                      </p>
-                      <p>
-                        <strong>Vùng chụp:</strong> {image.bodyPart}
-                      </p>
-                      <p>
-                        <strong>Ngày chụp:</strong> {image.captureDate}
-                      </p>
-                      <p>
-                        <strong>Kích thước:</strong> {image.fileSize}
-                      </p>
-                    </div>
-                    <div className="technical-params">
-                      <h5>Thông số kỹ thuật:</h5>
-                      <div className="params-grid">
-                        {Object.entries(image.technicalParams).map(([key, value]) => (
-                          <span key={key} className="param-item">
-                            {key}: {value}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="image-actions">
-                      {image.status === "Chờ kiểm tra" && (
-                        <>
-                          <button className="btn-approve" onClick={() => updateImageStatus(image.id, "Đã kiểm tra", "Tốt")}>
-                            ✅ Phê duyệt
-                          </button>
-                          <button className="btn-reject" onClick={() => updateImageStatus(image.id, "Cần chụp lại", "Kém")}>
-                            ❌ Từ chối
-                          </button>
-                        </>
-                      )}
-                      {image.status === "Đã kiểm tra" && (
-                        <button className="btn-recheck" onClick={() => updateImageStatus(image.id, "Chờ kiểm tra")}>
-                          🔄 Kiểm tra lại
+                      </td>
+                      <td className="actions-cell">
+                        {image.status === "Chờ duyệt" && (
+                          <>
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={() => {
+                                setSelectedImage(image);
+                                setShowApproveModal(true);
+                              }}
+                            >
+                              Duyệt
+                            </button>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => {
+                                setSelectedImage(image);
+                                setApprovalNote("");
+                                handleApprove(false);
+                              }}
+                            >
+                              Từ chối
+                            </button>
+                          </>
+                        )}
+                        <button
+                          className="btn btn-info btn-sm"
+                          onClick={() => {
+                            setSelectedImage(image);
+                            setShowImageModal(true);
+                          }}
+                        >
+                          Xem
                         </button>
-                      )}
-                      {image.status === "Cần chụp lại" && (
-                        <button className="btn-recheck" onClick={() => updateImageStatus(image.id, "Chờ kiểm tra")}>
-                          🔄 Kiểm tra lại
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-        {/* Danh sách hình ảnh đã import */}
-        <h3 style={{marginTop: 24, marginBottom: 12}}>Danh sách các hình ảnh đã import</h3>
-        <div className="images-grid">
-          {images.map((image) => (
-            <div key={image.id} className="image-card">
-              <div className="image-preview" style={{ position: 'relative' }}>
-                <img src={image.thumbnail || "/placeholder.svg"} alt={image.fileName} style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setSelectedImage(image);
-                    setShowImageModal(true);
-                    setModalTab("view");
-                  }}
-                />
-              </div>
-              <div className="image-info">
-                <div className="image-header">
-                  <h4>{image.fileName}</h4>
-                  <div className="image-badges">
-                    <span className="quality-badge" style={{ backgroundColor: getQualityColor(image.quality) }}>
-                      {image.quality}
-                    </span>
-                    <span className="status-badge" style={{ backgroundColor: getStatusColor(image.status) }}>
-                      {image.status}
-                    </span>
-                  </div>
-                </div>
-                <div className="image-details">
-                  <p>
-                    <strong>Bệnh nhân:</strong> {image.patientCode} - {image.patientName}
-                  </p>
-                  <p>
-                    <strong>Loại chụp:</strong> {image.studyType}
-                  </p>
-                  <p>
-                    <strong>Vùng chụp:</strong> {image.bodyPart}
-                  </p>
-                  <p>
-                    <strong>Ngày chụp:</strong> {image.captureDate}
-                  </p>
-                  <p>
-                    <strong>Kích thước:</strong> {image.fileSize}
-                  </p>
-                </div>
-                <div className="technical-params">
-                  <h5>Thông số kỹ thuật:</h5>
-                  <div className="params-grid">
-                    {Object.entries(image.technicalParams).map(([key, value]) => (
-                      <span key={key} className="param-item">
-                        {key}: {value}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="image-actions">
-                  {image.status === "Chờ kiểm tra" && (
-                    <>
-                      <button className="btn-approve" onClick={() => updateImageStatus(image.id, "Đã kiểm tra", "Tốt")}>
-                        ✅ Phê duyệt
-                      </button>
-                      <button className="btn-reject" onClick={() => updateImageStatus(image.id, "Cần chụp lại", "Kém")}>
-                        ❌ Từ chối
-                      </button>
-                    </>
-                  )}
-                  {image.status === "Đã kiểm tra" && (
-                    <button className="btn-recheck" onClick={() => updateImageStatus(image.id, "Chờ kiểm tra")}>
-                      🔄 Kiểm tra lại
-                    </button>
-                  )}
-                  {image.status === "Cần chụp lại" && (
-                    <button className="btn-recheck" onClick={() => updateImageStatus(image.id, "Chờ kiểm tra")}>
-                      🔄 Kiểm tra lại
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* Nếu lọc không ra kết quả */}
-        {filteredImages.length === 0 && (
-          <div className="no-results">
-            <p>Không tìm thấy hình ảnh nào phù hợp với bộ lọc.</p>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="8" className="no-results">
+                      Không tìm thấy hình ảnh nào phù hợp
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         )}
 
-        {/* Modal xem hình ảnh chi tiết */}
-        {showImageModal && selectedImage && (
-          <ImagePopupModal
-            image={selectedImage}
-            activeTab={modalTab}
-            setActiveTab={setModalTab}
-            onClose={() => setShowImageModal(false)}
-          />
-        )}
+        <ImageModal />
+        <ApproveModal />
       </div>
     </LayoutLogin>
-  )
-}
-
-function ImagePopupModal({ image, activeTab, setActiveTab, onClose }) {
-  // Modal lớn giữa màn hình, không bị nháy khi hover
-  return (
-    <>
-      <div className="image-hover-popup-mask" onClick={onClose} />
-      <div className="image-hover-popup-modal-patient" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: 1 }}>🖼️ XEM HÌNH ẢNH DICOM</span>
-          <button className="modal-close-btn" onClick={onClose}>&times;</button>
-        </div>
-        <div className="popup-tabs">
-          <button
-            className={activeTab === "view" ? "popup-tab active" : "popup-tab"}
-            onClick={() => setActiveTab("view")}
-          >
-            👁️ Xem ảnh
-          </button>
-          <button
-            className={activeTab === "detail" ? "popup-tab active" : "popup-tab"}
-            onClick={() => setActiveTab("detail")}
-          >
-            📊 Chi tiết
-          </button>
-        </div>
-        <div className="popup-content">
-          {activeTab === "view" ? (
-            <img
-              src={image.filePath ? `http://localhost:8080${image.filePath}` : image.thumbnail}
-              alt={image.fileName}
-              className="popup-image"
-            />
-          ) : (
-            <div className="popup-detail">
-              <div><strong>Tên file:</strong> {image.fileName}</div>
-              <div><strong>Bệnh nhân:</strong> {image.patientCode} - {image.patientName}</div>
-              <div><strong>Loại chụp:</strong> {image.studyType}</div>
-              <div><strong>Vùng chụp:</strong> {image.bodyPart}</div>
-              <div><strong>Ngày chụp:</strong> {image.captureDate}</div>
-              <div><strong>Kích thước:</strong> {image.fileSize}</div>
-              <div><strong>Chất lượng:</strong> {image.quality}</div>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
   );
-}
+};
 
-export default VerifyImages
+export default VerifyImages;

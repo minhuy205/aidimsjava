@@ -27,16 +27,15 @@ public class SecurityConfig {
                                 "/api/chat/**",
                                 "/api/imaging-types/**",
                                 "/api/dicom-import/**",
-                                "/api/dicom-viewer/**",                    // ✅ THÊM DÒNG NÀY
-                                "/api/verify-image/dicom-imports",         // Cho phép truy cập endpoint lấy ảnh import
-                                "/api/verify-image/save"                   // Thêm dòng này để cho phép lưu kiểm tra hình ảnh
+                                "/api/verify-image/dicom-imports",
+                                "/api/verify-image/save",
+                                "/api/verify-image/all"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());
 
-        System.out.println("✅ SecurityConfig: DICOM Viewer endpoints permitted");
         return http.build();
     }
 
@@ -44,23 +43,20 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // ✅ CẢI THIỆN: Thêm nhiều origins cho development và production
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",    // React development
-                "http://localhost:3001",    // Alternative React port
-                "http://localhost:8080",    // Same origin requests
-                "http://127.0.0.1:3000"     // Alternative localhost
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "http://localhost:8080",
+                "http://127.0.0.1:3000"
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L); // ✅ THÊM: Cache preflight requests for 1 hour
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
-        System.out.println("✅ CORS configured for DICOM Viewer");
         return source;
     }
 }
