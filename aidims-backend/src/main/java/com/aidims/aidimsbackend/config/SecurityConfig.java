@@ -29,7 +29,8 @@ public class SecurityConfig {
                                 "/api/dicom-import/**",
                                 "/api/verify-image/dicom-imports",
                                 "/api/verify-image/save",
-                                "/api/verify-image/all"
+                                "/api/verify-image/all",
+                                "/api/dicom-viewer/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
