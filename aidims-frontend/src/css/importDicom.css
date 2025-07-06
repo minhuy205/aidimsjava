@@ -173,6 +173,10 @@ tr:hover {
   background: #eaf6fd;
 }
 
+tr:hover .technical-params-cell {
+  background: #eaf6fd;
+}
+
 .no-imports {
   text-align: center;
   color: #a0a7b4;
@@ -305,6 +309,36 @@ tr:hover {
 .doctor-request-value.highlight {
   color: #d48806;
   font-weight: 700;
+}
+
+.technical-params-cell {
+  background: #fafdff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  min-width: 120px;
+  color: #234;
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0 auto;
+  box-shadow: none;
+  border-left: none;
+  transition: none;
+}
+.technical-params-cell div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+.technical-params-cell b {
+  color: #217dbb;
+  font-weight: 600;
+  margin-left: 4px;
+}
+.technical-params-cell .icon-tech {
+  font-size: 1.1em;
+  color: #7b8dfb;
+  margin-right: 4px;
 }
 
 @media (max-width: 700px) {

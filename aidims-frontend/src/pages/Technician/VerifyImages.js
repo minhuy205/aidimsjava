@@ -400,9 +400,11 @@ const VerifyImages = () => {
   return (
     <LayoutLogin>
       <div className="verify-images-container">
-        <div className="header-section">
-          <h1>Duyệt Hình Ảnh Y Tế</h1>
-          <p>Xem xét và phê duyệt chất lượng hình ảnh DICOM</p>
+        <div className="page-header verify-header">
+          <h2 style={{fontSize: 38, fontWeight: 800, color: '#222', margin: 0, display: 'inline-block', verticalAlign: 'middle'}}>
+            <span style={{fontSize: 36, verticalAlign: 'middle', marginRight: 8}}>✅</span> Kiểm tra chất lượng DICOM
+          </h2>
+          <p style={{fontSize: 20, color: '#666', marginTop: 8, fontWeight: 400, marginBottom: 0}}>Xác minh chất lượng hình ảnh và thông số kỹ thuật</p>
         </div>
 
         <div className="filter-section">

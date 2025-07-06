@@ -130,20 +130,34 @@ const ImportDicom = () => {
       alert("Bạn chưa chọn yêu cầu chụp!");
       return;
     }
-    // Lấy metadata từ yêu cầu chụp
-    const metadata = {
-      patient_code: selectedRequest.patient_code || selectedRequest.patientCode || '',
-      study_type: selectedRequest.imagingType || selectedRequest.imaging_type || selectedRequest.study_type || '',
-      body_part: selectedRequest.body_part || selectedRequest.bodyPart || '',
-      technical_params: selectedRequest.technical_params || selectedRequest.technicalParams || '',
-      notes: selectedRequest.notes || selectedRequest.clinical_indication || selectedRequest.clinicalIndication || '',
-      performed_by: 7,
-      request_id: selectedRequest.id || selectedRequest.requestId || '',
-      // Thêm các thông số kỹ thuật từ input
+    // Lấy patient_code chắc chắn nhất
+    let patient_code = '';
+    if (selectedRequest.patient_code) patient_code = selectedRequest.patient_code;
+    else if (selectedRequest.patientCode) patient_code = selectedRequest.patientCode;
+    else if (selectedPatientId) {
+      const p = patients.find(x => String(x.patient_id) === String(selectedPatientId));
+      if (p && p.patient_code) patient_code = p.patient_code;
+    }
+    else if (selectedRequest.patient_id) {
+      const p = patients.find(x => String(x.patient_id) === String(selectedRequest.patient_id));
+      if (p && p.patient_code) patient_code = p.patient_code;
+    }
+    // Gộp thông số kỹ thuật thành JSON string
+    const technicalParamsObj = {
       kVp: selectedFiles[0]?.kVp || '',
       mAs: selectedFiles[0]?.mAs || '',
       sliceThickness: selectedFiles[0]?.sliceThickness || '',
       contrast: selectedFiles[0]?.contrast || ''
+    };
+    // Lấy metadata từ yêu cầu chụp
+    const metadata = {
+      patient_code: patient_code || '',
+      study_type: selectedRequest.imagingType || selectedRequest.imaging_type || selectedRequest.study_type || '',
+      body_part: selectedRequest.body_part || selectedRequest.bodyPart || '',
+      technical_params: JSON.stringify(technicalParamsObj),
+      notes: selectedRequest.notes || selectedRequest.clinical_indication || selectedRequest.clinicalIndication || '',
+      performed_by: 7,
+      request_id: selectedRequest.id || selectedRequest.requestId || ''
     };
     const formData = new FormData();
     Object.entries(metadata).forEach(([key, value]) => {
@@ -153,23 +167,8 @@ const ImportDicom = () => {
     try {
       const msg = await importDicom(formData);
       alert(msg);
-      // Lấy patient_code chắc chắn nhất
-      let patient_code = '';
-      if (selectedRequest.patient_code) patient_code = selectedRequest.patient_code;
-      else if (selectedRequest.patientCode) patient_code = selectedRequest.patientCode;
-      else if (metadata.patient_code) patient_code = metadata.patient_code;
-      else if (selectedPatientId) {
-        const p = patients.find(x => String(x.patient_id) === String(selectedPatientId));
-        if (p && p.patient_code) patient_code = p.patient_code;
-      }
-      // Nếu vẫn chưa có, thử lấy từ patient_id của selectedRequest
-      if (!patient_code && selectedRequest.patient_id) {
-        const p = patients.find(x => String(x.patient_id) === String(selectedRequest.patient_id));
-        if (p && p.patient_code) patient_code = p.patient_code;
-      }
       const importRecord = {
         ...metadata,
-        patient_code: patient_code || '',
         fileName: selectedFiles[0]?.name,
         importDate: new Date().toLocaleString("vi-VN"),
         status: "Thành công",
@@ -207,7 +206,11 @@ const ImportDicom = () => {
   return (
     <Layout>
       <div className="import-dicom-page">
-        <h2 className="page-title">📄 Import Ảnh DICOM</h2>
+         <h2 className="page-title">📄 Import Ảnh DICOM</h2>
+        <div className="page-header">
+          <h2>✅ Nhập file DICOM </h2>
+          <p>Import và quản lý file DICOM từ các thiết bị chụp hình ảnh y tế</p>
+        </div>
         <div className="form-container">
           <form onSubmit={handleSubmit}>
             <div className="form-section">
@@ -392,7 +395,7 @@ const ImportDicom = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>Ảnh</th>
+                    {/* <th>Ảnh</th> */}
                     <th>File</th>
                     <th>Mã bệnh nhân</th>
                     <th>Loại chụp</th>
@@ -400,26 +403,54 @@ const ImportDicom = () => {
                     <th>Kích thước</th>
                     <th>Ngày import</th>
                     <th>Trạng thái</th>
+                    <th>Thông số kỹ thuật</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentImports.map((item, idx) => {
+                    // Ưu tiên lấy imageUrl từ backend nếu có, nếu không thì tự build url từ fileName
+                    let imageUrl = item.imageUrl || item.image_url || null;
                     const isImage = /\.(jpg|jpeg|png|gif)$/i.test(item.fileName || "");
-                    const imageUrl = isImage
-                      ? `/aidims-backend/dicom_uploads/${item.fileName}`
-                      : null;
+                    if (!imageUrl && isImage) {
+                      imageUrl = `/aidims-backend/dicom_uploads/${item.fileName}`;
+                    }
+                    // Nếu là file DICOM hoặc không phải ảnh, hiển thị icon DICOM
+                    const isDicom = /\.(dcm)$/i.test(item.fileName || "");
+                    let techParams = null;
+                    if (item.technical_params) {
+                      try {
+                        techParams = typeof item.technical_params === 'string' ? JSON.parse(item.technical_params) : item.technical_params;
+                      } catch (e) {
+                        techParams = item.technical_params;
+                      }
+                    }
                     return (
                       <tr key={idx}>
-                        <td>
-                          {isImage && (
+                        {/* <td style={{textAlign:'center', verticalAlign:'middle', width:70}}>
+                          {imageUrl ? (
                             <img
                               src={imageUrl}
                               alt={item.fileName}
-                              style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 4 }}
-                              onError={e => { e.target.style.display = 'none'; }}
+                              style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 4, background:'#f4f4f4', border:'1px solid #eee' }}
+                              onError={e => {
+                                e.target.onerror = null;
+                                e.target.src = isDicom
+                                  ? 'https://cdn-icons-png.flaticon.com/512/2997/2997933.png' // icon DICOM
+                                  : 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png'; // fallback icon ảnh
+                                e.target.style.objectFit = 'contain';
+                                e.target.style.background = '#f8f8f8';
+                              }}
                             />
+                          ) : isDicom ? (
+                            <span style={{fontSize:36, color:'#bdbdbd', display:'inline-block', width:60, height:60, lineHeight:'60px'}}>
+                              <img src="https://cdn-icons-png.flaticon.com/512/2997/2997933.png" alt="dicom" style={{width:36, height:36, opacity:0.7}} />
+                            </span>
+                          ) : (
+                            <span style={{fontSize:36, color:'#bdbdbd', display:'inline-block', width:60, height:60, lineHeight:'60px'}}>
+                              <i className="fa fa-file-image-o" aria-hidden="true"></i>
+                            </span>
                           )}
-                        </td>
+                        </td> */}
                         <td>{item.fileName}</td>
                         <td>{item.patient_code}</td>
                         <td>{item.study_type || item.studyType}</td>
@@ -427,6 +458,18 @@ const ImportDicom = () => {
                         <td>{item.fileSize}</td>
                         <td>{item.importDate}</td>
                         <td>{item.status}</td>
+                        <td className="technical-params-cell">
+                          {techParams && typeof techParams === 'object' ? (
+                            <>
+                              {techParams.kVp && <div><span className="icon-tech">⚡</span>Điện áp (kVp): <b>{techParams.kVp}</b></div>}
+                              {techParams.mAs && <div><span className="icon-tech">🔋</span>Dòng điện (mAs): <b>{techParams.mAs}</b></div>}
+                              {techParams.sliceThickness && <div><span className="icon-tech">📏</span>Độ dày lát cắt: <b>{techParams.sliceThickness}</b></div>}
+                              {techParams.contrast && <div><span className="icon-tech">💧</span>Chất cản quang: <b>{techParams.contrast}</b></div>}
+                            </>
+                          ) : (
+                            <span style={{fontSize:13, color:'#888'}}>{item.technical_params || ''}</span>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}

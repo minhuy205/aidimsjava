@@ -10,9 +10,20 @@
 }
 
 .verify-images-container {
-  padding: 20px;
+  padding-top: 80px;
+  padding-left: 20px;
+  padding-right: 20px;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.verify-header {
+  margin-bottom: 24px;
+  background: transparent;
+  padding: 0;
+  z-index: 2;
+  position: relative;
+  text-align: center;
 }
 
 .header-section {
@@ -355,5 +366,15 @@
   
   .actions-cell .btn:last-child {
     margin-bottom: 0;
+  }
+  
+  .verify-images-container {
+    padding-top: 90px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .verify-header {
+    font-size: 22px;
+    padding-top: 0;
   }
 }
