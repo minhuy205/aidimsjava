@@ -31,6 +31,7 @@ import DoctorLogin from "./pages/Login/DoctorLogin.js"
 import ReceptionistLogin from "./pages/Login/ReceptionistLogin.js"
 import TechnicianLogin from "./pages/Login/TechnicianLogin.js"
 import AdminLogin from "./pages/Login/AdminLogin.js"
+
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
     <BrowserRouter>

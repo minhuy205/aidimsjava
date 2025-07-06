@@ -1,101 +1,92 @@
-import { memo, useState, useEffect } from "react";
+import { memo, useState } from "react";
 import LayoutLogin from "../Layout/LayoutLogin";
-import "../../css/CompareImages.css"; // file css riêng
+import "../../css/CompareImages.css";
+import ImageEditorModal from "../../components/ImageEditorModal"; // Đảm bảo đúng đường dẫn
+
 
 const CompareImages = () => {
+  const [keyword, setKeyword] = useState("");
   const [dicomImages, setDicomImages] = useState([]);
-  const [patients, setPatients] = useState([]);
-  const [selectedPatient, setSelectedPatient] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null); // NEW: ảnh được chọn để zoom
 
-  useEffect(() => {
-    // Mock danh sách bệnh nhân
-    const mockPatients = [
-      { patientCode: "BN001", fullName: "Nguyễn Văn Nam" },
-      { patientCode: "BN002", fullName: "Trần Thị Hoa" },
-    ];
-    setPatients(mockPatients);
+  const handleSearch = async () => {
+    if (!keyword.trim()) return;
 
-    // Mock dữ liệu DICOM
-    const mockDicoms = [
-      {
-        id: "DICOM001",
-        fileName: "CT-Head-Old.dcm",
-        dateTaken: "2024-01-01",
-        patientCode: "BN001",
-        imageUrl: "https://via.placeholder.com/400x400.png?text=Old+Image"
-      },
-      {
-        id: "DICOM002",
-        fileName: "CT-Head-New.dcm",
-        dateTaken: "2024-06-01",
-        patientCode: "BN001",
-        imageUrl: "https://via.placeholder.com/400x400.png?text=New+Image"
-      },
-      {
-        id: "DICOM003",
-        fileName: "XRay-Chest-Old.dcm",
-        dateTaken: "2024-02-01",
-        patientCode: "BN002",
-        imageUrl: "https://via.placeholder.com/400x400.png?text=Old+Chest"
-      },
-      {
-        id: "DICOM004",
-        fileName: "XRay-Chest-New.dcm",
-        dateTaken: "2024-06-10",
-        patientCode: "BN002",
-        imageUrl: "https://via.placeholder.com/400x400.png?text=New+Chest"
-      }
-    ];
-    setDicomImages(mockDicoms);
-  }, []);
-
-  const handlePatientChange = (e) => {
-    setSelectedPatient(e.target.value);
+    setSearching(true);
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/compare-images/search?keyword=${encodeURIComponent(keyword)}`
+      );
+      const data = await response.json();
+      const sorted = data.sort(
+        (a, b) => new Date(a.dateTaken) - new Date(b.dateTaken)
+      );
+      setDicomImages(sorted);
+    } catch (error) {
+      console.error("❌ Lỗi khi tìm ảnh DICOM:", error);
+      setDicomImages([]);
+    } finally {
+      setSearching(false);
+    }
   };
-
-  const patientName = patients.find(p => p.patientCode === selectedPatient)?.fullName;
-
-  const imagesForPatient = dicomImages
-    .filter(img => img.patientCode === selectedPatient)
-    .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken)); // Cũ -> Mới
 
   return (
     <LayoutLogin>
       <div className="doctor-page">
         <div className="compare-container">
-          <h2>🔄 So sánh ảnh DICOM</h2>
-          <p>Chọn bệnh nhân để xem ảnh DICOM cũ và mới</p>
+          <h2>🔍 So sánh ảnh DICOM</h2>
+          <p>Nhập mã bệnh nhân hoặc tên để tìm tất cả ảnh đã chụp</p>
 
-          <select value={selectedPatient} onChange={handlePatientChange} className="patient-select">
-            <option value="">-- Chọn bệnh nhân --</option>
-            {patients.map(patient => (
-              <option key={patient.patientCode} value={patient.patientCode}>
-                {patient.fullName}
-              </option>
-            ))}
-          </select>
+          <div className="search-bar">
+            <input
+              type="text"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="Nhập mã bệnh nhân hoặc tên..."
+              className="search-input"
+            />
+            <button onClick={handleSearch} className="search-button">
+              Tìm kiếm
+            </button>
+          </div>
 
-          {selectedPatient && (
+          {searching && <p>⏳ Đang tìm ảnh...</p>}
+
+          {dicomImages.length > 0 && (
             <div className="comparison-section">
-              <h3>Bệnh nhân: {patientName}</h3>
+              <h3>Bệnh nhân: {dicomImages[0].fullName}</h3>
               <div className="image-compare">
-                {imagesForPatient[0] ? (
-                  <div className="image-box">
-                    <h4>Ảnh cũ ({imagesForPatient[0].dateTaken})</h4>
-                    <img src={imagesForPatient[0].imageUrl} alt="Old DICOM" />
+                {dicomImages.map((img, index) => (
+                  <div className="image-box" key={img.id || index}>
+                    <h4>
+                      {img.dateTaken} - {img.modality || "?"} - {img.bodyPart || "?"}
+                    </h4>
+                    <img
+                      src={img.imageUrl}
+                      alt={`DICOM ${index}`}
+                      style={{ cursor: "zoom-in" }}
+                      onClick={() => setSelectedImage(img.imageUrl)}
+                    />
                   </div>
-                ) : <p>Không có ảnh cũ</p>}
-
-                {imagesForPatient[1] ? (
-                  <div className="image-box">
-                    <h4>Ảnh mới ({imagesForPatient[1].dateTaken})</h4>
-                    <img src={imagesForPatient[1].imageUrl} alt="New DICOM" />
-                  </div>
-                ) : <p>Không có ảnh mới</p>}
+                ))}
               </div>
             </div>
           )}
+
+          {dicomImages.length === 0 && !searching && (
+            <p>
+              Không tìm thấy ảnh cho từ khóa: <b>{keyword}</b>
+            </p>
+          )}
         </div>
+
+        {/* 🔍 Modal hiển thị ảnh và công cụ vẽ */}
+        <ImageEditorModal
+          isOpen={!!selectedImage}
+          onRequestClose={() => setSelectedImage(null)}
+          imageUrl={selectedImage}
+        />
       </div>
     </LayoutLogin>
   );
