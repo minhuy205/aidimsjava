@@ -13,6 +13,7 @@ const PatientProfile = () => {
   const [activeTab, setActiveTab] = useState("general")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [statusFilter, setStatusFilter] = useState("all") // Thêm filter cho trạng thái
 
   // Load patients from database (same source as receptionist)
   useEffect(() => {
@@ -48,9 +49,10 @@ const PatientProfile = () => {
           // Default fields for doctor view
           chiefComplaint: "Chưa khám",
           specialty: "Tổng quát",
-          status: "Chờ khám",
+          status: patient.status || "Chờ khám", // Sử dụng trạng thái từ DB hoặc mặc định
           priority: "Bình thường",
           visitDate: new Date().toISOString().split("T")[0],
+          completedAt: patient.completed_at || null, // Thời gian hoàn thành khám
         }))
 
         setPatients(transformedPatients)
@@ -77,6 +79,80 @@ const PatientProfile = () => {
     setActiveTab("general")
   }
 
+  // Hàm xử lý hoàn thành khám
+  const handleCompleteExamination = (patientId) => {
+    setPatients(prevPatients =>
+        prevPatients.map(patient =>
+            patient.id === patientId
+                ? {
+                  ...patient,
+                  status: "Đã khám",
+                  completedAt: new Date().toISOString()
+                }
+                : patient
+        )
+    )
+
+    // Cập nhật selectedPatient nếu đang xem modal của bệnh nhân này
+    if (selectedPatient && selectedPatient.id === patientId) {
+      setSelectedPatient(prev => ({
+        ...prev,
+        status: "Đã khám",
+        completedAt: new Date().toISOString()
+      }))
+    }
+
+    // Tự động chuyển về tab "Đã khám" để người dùng thấy bệnh nhân vừa hoàn thành
+    setStatusFilter("completed")
+
+    // Đóng modal sau khi hoàn thành
+    setTimeout(() => {
+      closeModal()
+    }, 1000)
+
+    // Hiển thị thông báo thành công
+    alert("✅ Đã hoàn thành khám bệnh nhân!")
+  }
+
+  // Hàm xử lý trở về trạng thái chưa khám
+  const handleBackToWaiting = (patientId) => {
+    const confirmBack = window.confirm("⚠️ Bạn có chắc muốn đưa bệnh nhân này trở lại trạng thái chờ khám?")
+
+    if (confirmBack) {
+      setPatients(prevPatients =>
+          prevPatients.map(patient =>
+              patient.id === patientId
+                  ? {
+                    ...patient,
+                    status: "Chờ khám",
+                    completedAt: null // Xóa thời gian hoàn thành
+                  }
+                  : patient
+          )
+      )
+
+      // Cập nhật selectedPatient nếu đang xem modal của bệnh nhân này
+      if (selectedPatient && selectedPatient.id === patientId) {
+        setSelectedPatient(prev => ({
+          ...prev,
+          status: "Chờ khám",
+          completedAt: null
+        }))
+      }
+
+      // Tự động chuyển về tab "Chưa khám"
+      setStatusFilter("all")
+
+      // Đóng modal sau khi cập nhật
+      setTimeout(() => {
+        closeModal()
+      }, 1000)
+
+      // Hiển thị thông báo thành công
+      alert("🔄 Đã đưa bệnh nhân trở lại trạng thái chờ khám!")
+    }
+  }
+
   const calculateAge = (dateOfBirth) => {
     if (!dateOfBirth) return "N/A"
 
@@ -100,6 +176,14 @@ const PatientProfile = () => {
         return "#28a745"
     }
   }
+
+  // Lọc bệnh nhân theo trạng thái
+  const filteredPatients = patients.filter(patient => {
+    if (statusFilter === "all") return patient.status === "Chờ khám" // Chỉ hiển thị bệnh nhân chưa khám
+    if (statusFilter === "waiting") return patient.status === "Chờ khám"
+    if (statusFilter === "completed") return patient.status === "Đã khám"
+    return true
+  })
 
   // Loading state
   if (loading) {
@@ -166,12 +250,38 @@ const PatientProfile = () => {
                 <div className="stat-label">Chờ khám</div>
                 <div className="stat-number">{patients.filter((p) => p.status === "Chờ khám").length}</div>
               </div>
+              <div className="stat-card">
+                <div className="stat-label">Đã khám</div>
+                <div className="stat-number">{patients.filter((p) => p.status === "Đã khám").length}</div>
+              </div>
+            </div>
+
+            {/* Thêm bộ lọc trạng thái */}
+            <div className="status-filter">
+              <button
+                  className={`filter-btn ${statusFilter === "all" ? "active" : ""}`}
+                  onClick={() => setStatusFilter("all")}
+              >
+                🏥 Chưa khám ({patients.filter(p => p.status === "Chờ khám").length})
+              </button>
+              <button
+                  className={`filter-btn ${statusFilter === "waiting" ? "active" : ""}`}
+                  onClick={() => setStatusFilter("waiting")}
+              >
+                ⏳ Chờ khám ({patients.filter(p => p.status === "Chờ khám").length})
+              </button>
+              <button
+                  className={`filter-btn ${statusFilter === "completed" ? "active" : ""}`}
+                  onClick={() => setStatusFilter("completed")}
+              >
+                ✅ Đã khám ({patients.filter(p => p.status === "Đã khám").length})
+              </button>
             </div>
 
             <div className="table-container">
-              {patients.length === 0 ? (
+              {filteredPatients.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "2rem" }}>
-                    <div>📝 Chưa có bệnh nhân nào trong hệ thống</div>
+                    <div>📝 Không có bệnh nhân nào {statusFilter === "all" ? "chưa khám" : statusFilter === "waiting" ? "chờ khám" : statusFilter === "completed" ? "đã khám" : "trong hệ thống"}</div>
                   </div>
               ) : (
                   <table className="patient-table">
@@ -185,10 +295,11 @@ const PatientProfile = () => {
                       <th>Email</th>
                       <th>Sinh hiệu</th>
                       <th>Trạng thái</th>
+                      {statusFilter === "completed" && <th>Hoàn thành</th>}
                     </tr>
                     </thead>
                     <tbody>
-                    {patients.map((patient) => (
+                    {filteredPatients.map((patient) => (
                         <tr key={patient.id} onClick={() => handlePatientClick(patient)} className="patient-row">
                           <td>{patient.patientCode}</td>
                           <td className="patient-name">{patient.fullName}</td>
@@ -204,8 +315,15 @@ const PatientProfile = () => {
                             )}
                           </td>
                           <td>
-                            <span className="status-badge">{patient.status}</span>
+                            <span className={`status-badge ${patient.status === "Đã khám" ? "completed" : ""}`}>
+                              {patient.status}
+                            </span>
                           </td>
+                          {statusFilter === "completed" && (
+                              <td>
+                                {patient.completedAt && new Date(patient.completedAt).toLocaleString("vi-VN")}
+                              </td>
+                          )}
                         </tr>
                     ))}
                     </tbody>
@@ -223,6 +341,11 @@ const PatientProfile = () => {
                     </button>
                     <h3>🏥 HỒ SƠ BỆNH ÁN</h3>
                     <p>Mã bệnh nhân: {selectedPatient.patientCode}</p>
+                    <div className="patient-status-header">
+                      <span className={`status-badge-large ${selectedPatient.status === "Đã khám" ? "completed" : ""}`}>
+                        {selectedPatient.status === "Đã khám" ? "✅ Đã khám xong" : "⏳ Chờ khám"}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="modal-tabs">
@@ -342,14 +465,25 @@ const PatientProfile = () => {
                             <div className="info-row">
                               <span className="info-label">Trạng thái:</span>
                               <span className="info-value">
-            <span className="status-badge">{selectedPatient.status}</span>
-          </span>
+                                <span className={`status-badge ${selectedPatient.status === "Đã khám" ? "completed" : ""}`}>
+                                  {selectedPatient.status}
+                                </span>
+                              </span>
                             </div>
 
                             <div className="info-row">
                               <span className="info-label">Ngày khám:</span>
                               <span className="info-value">{selectedPatient.visitDate}</span>
                             </div>
+
+                            {selectedPatient.completedAt && (
+                                <div className="info-row">
+                                  <span className="info-label">Hoàn thành khám:</span>
+                                  <span className="info-value">
+                                  {new Date(selectedPatient.completedAt).toLocaleString("vi-VN")}
+                                </span>
+                                </div>
+                            )}
                           </div>
                         </div>
                     )}
@@ -424,14 +558,34 @@ const PatientProfile = () => {
                       <Link to={`/CreateImagingRequest?patientId=${selectedPatient.id}`}>
                         <button className="btn btn-primary">📝 Tạo yêu cầu chụp</button>
                       </Link>
-                      {/* THAY ĐỔI: Truyền patientId qua URL params */}
                       <Link to={`/SymptomDisplay?patientId=${selectedPatient.id}`}>
                         <button className="btn btn-secondary">📄 Xem triệu chứng</button>
                       </Link>
                       <Link to={`/MedicalReportForm?patientId=${selectedPatient.id}`}>
                         <button className="btn btn-secondary">📄 Tạo báo cáo</button>
                       </Link>
-                      <button className="btn btn-success">✅ Hoàn thành khám</button>
+
+                      {/* Hiển thị nút tùy theo trạng thái */}
+                      {selectedPatient.status === "Đã khám" ? (
+                          <div className="status-actions">
+                          <span className="completed-badge">
+                            ✅ Đã hoàn thành khám
+                          </span>
+                            <button
+                                className="btn btn-warning"
+                                onClick={() => handleBackToWaiting(selectedPatient.id)}
+                            >
+                              🔄 Trở về chờ khám
+                            </button>
+                          </div>
+                      ) : (
+                          <button
+                              className="btn btn-success"
+                              onClick={() => handleCompleteExamination(selectedPatient.id)}
+                          >
+                            ✅ Hoàn thành khám
+                          </button>
+                      )}
                     </div>
                   </div>
                 </div>
