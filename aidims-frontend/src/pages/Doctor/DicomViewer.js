@@ -11,6 +11,8 @@ import {
 } from "../../services/dicomViewerService";
 import "../../css/DicomViewer.css";
 import MiniChatbot from "./MiniChatBot";
+import ImageEditorModal from "../../components/ImageEditorModal";
+
 
 const DicomViewer = () => {
     const [dicomImages, setDicomImages] = useState([]);
@@ -20,6 +22,7 @@ const DicomViewer = () => {
     const [error, setError] = useState(null);
     const [stats, setStats] = useState(null);
     const [searchKeyword, setSearchKeyword] = useState('');
+    const [editorImageUrl, setEditorImageUrl] = useState(null);
 
     useEffect(() => {
         loadDicomViewerData();
@@ -413,8 +416,14 @@ const DicomViewer = () => {
                                                     maxHeight: '500px',
                                                     borderRadius: '10px',
                                                     border: '2px solid #ddd',
-                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                                    cursor: 'zoom-in' // 👈 thêm con trỏ zoom
                                                 }}
+                                                onClick={() =>
+                                                    setEditorImageUrl(
+                                                    `http://localhost:8080/api/dicom-viewer/image/${encodeURIComponent(selectedImage.fileName)}`
+                                                    )
+                                                }
                                                 onLoad={() => console.log("✅ Ảnh DICOM Viewer được tải thành công")}
                                                 onError={(e) => {
                                                     console.error("❌ Lỗi tải ảnh:", selectedImage.fileName);
@@ -422,6 +431,7 @@ const DicomViewer = () => {
                                                     e.target.nextSibling.style.display = 'block';
                                                 }}
                                             />
+
                                             <div style={{ display: 'none', color: 'red', padding: '20px' }}>
                                                 ❌ Không thể tải ảnh. Vui lòng kiểm tra đường dẫn.
                                                 <br />
@@ -432,6 +442,13 @@ const DicomViewer = () => {
                                         <div style={{textAlign: 'center', color: '#999', padding: '20px'}}>
                                             📷 Không có ảnh để hiển thị
                                         </div>
+                                    )}
+                                    {editorImageUrl && (
+                                        <ImageEditorModal
+                                            isOpen={!!editorImageUrl}
+                                            imageUrl={editorImageUrl}
+                                            onRequestClose={() => setEditorImageUrl(null)}
+                                        />
                                     )}
                                 </div>
 
