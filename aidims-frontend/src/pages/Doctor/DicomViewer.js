@@ -155,7 +155,8 @@ const DicomViewer = () => {
             </div>
         );
     };
-
+    const getImageUrl = (fileName) =>
+    `http://localhost:8080/api/dicom-viewer/image/${encodeURIComponent(fileName)}`;
     if (loading) {
         return (
             <LayoutLogin>
@@ -405,7 +406,7 @@ const DicomViewer = () => {
                                     {selectedImage.imageUrl ? (
                                         <div style={{textAlign: 'center'}}>
                                             <img
-                                                src={selectedImage.imageUrl}
+                                                src={`http://localhost:8080/api/dicom-viewer/image/${encodeURIComponent(selectedImage.fileName)}`}
                                                 alt="DICOM Preview"
                                                 style={{
                                                     maxWidth: '100%',
@@ -416,15 +417,15 @@ const DicomViewer = () => {
                                                 }}
                                                 onLoad={() => console.log("✅ Ảnh DICOM Viewer được tải thành công")}
                                                 onError={(e) => {
-                                                    console.error("❌ Lỗi tải ảnh DICOM Viewer:", selectedImage.imageUrl);
+                                                    console.error("❌ Lỗi tải ảnh:", selectedImage.fileName);
                                                     e.target.style.display = 'none';
                                                     e.target.nextSibling.style.display = 'block';
                                                 }}
                                             />
-                                            <div style={{display: 'none', color: 'red', padding: '20px'}}>
-                                                ❌ Không thể tải ảnh. Vui lòng kiểm tra đường dẫn file.
-                                                <br/>
-                                                <small>URL: {selectedImage.imageUrl}</small>
+                                            <div style={{ display: 'none', color: 'red', padding: '20px' }}>
+                                                ❌ Không thể tải ảnh. Vui lòng kiểm tra đường dẫn.
+                                                <br />
+                                                <small>File: {selectedImage.fileName}</small>
                                             </div>
                                         </div>
                                     ) : (
