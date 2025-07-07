@@ -189,6 +189,7 @@ const PatientProfile = () => {
   if (loading) {
     return (
         <LayoutLogin>
+
           <div className="doctor-page">
             <div className="patient-list-container">
               <div className="page-header">

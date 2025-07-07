@@ -2,7 +2,7 @@ import { memo, useState } from "react";
 import LayoutLogin from "../Layout/LayoutLogin";
 import "../../css/CompareImages.css";
 import ImageEditorModal from "../../components/ImageEditorModal"; // Đảm bảo đúng đường dẫn
-
+import MiniChatbot from "../Doctor/MiniChatBot"
 
 const CompareImages = () => {
   const [keyword, setKeyword] = useState("");
@@ -33,11 +33,11 @@ const CompareImages = () => {
 
   return (
     <LayoutLogin>
+
       <div className="doctor-page">
         <div className="compare-container">
           <h2>🔍 So sánh ảnh DICOM</h2>
           <p>Nhập mã bệnh nhân hoặc tên để tìm tất cả ảnh đã chụp</p>
-
           <div className="search-bar">
             <input
               type="text"
@@ -80,7 +80,33 @@ const CompareImages = () => {
             </p>
           )}
         </div>
-
+          <button
+              onClick={() => window.history.back()}
+              style={{
+                  position: 'fixed',
+                  top: '20px',
+                  left: '20px',
+                  zIndex: 99999,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 16px',
+                  background: '#fff',
+                  border: '2px solid #007bff',
+                  borderRadius: '8px',
+                  color: '#007bff',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+              }}
+              title="Quay lại"
+          >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              <span>Quay lại</span>
+          </button>
         {/* 🔍 Modal hiển thị ảnh và công cụ vẽ */}
         <ImageEditorModal
           isOpen={!!selectedImage}
@@ -88,6 +114,8 @@ const CompareImages = () => {
           imageUrl={selectedImage}
         />
       </div>
+      <MiniChatbot />
+
     </LayoutLogin>
   );
 };
