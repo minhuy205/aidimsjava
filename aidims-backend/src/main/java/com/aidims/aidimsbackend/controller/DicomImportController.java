@@ -82,8 +82,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.aidims.aidimsbackend.entity.DicomImport;
-import com.aidims.aidimsbackend.service.DicomImportService;
-import com.aidims.aidimsbackend.service.DicomFileService; // Thêm import này
+import com.aidims.aidimsbackend.service.DicomFileService;
+import com.aidims.aidimsbackend.service.DicomImportService; // Thêm import này
 
 @RestController
 @RequestMapping("/api/dicom-import")
@@ -99,6 +99,7 @@ public class DicomImportController {
 public ResponseEntity<?> importDicom(
         @RequestParam("file") MultipartFile file,
         @RequestParam("patient_code") String patientCode,
+        @RequestParam("patient_name") String patientName,
         @RequestParam("study_type") String studyType,
         @RequestParam("body_part") String bodyPart,
         @RequestParam("technical_params") String technicalParams,
@@ -135,6 +136,7 @@ public ResponseEntity<?> importDicom(
     dicomImport.setFilePath(filePath);
     dicomImport.setFileSize(file.getSize());
     dicomImport.setPatientCode(patientCode);
+    dicomImport.setPatientName(patientName);
     dicomImport.setStudyType(studyType);
     dicomImport.setBodyPart(bodyPart);
     dicomImport.setTechnicalParams(technicalParams);

@@ -144,10 +144,13 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  max-width: 950px;
+  margin: 0 auto;
 }
 
 .images-table {
-  width: 100%;
+  width: 950px;
+  min-width: 800px;
   border-collapse: collapse;
 }
 
@@ -237,8 +240,9 @@
   background: rgba(0,0,0,0.5);
   display: flex;
   justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  align-items: flex-start;
+  z-index: 2000;
+  padding-top: 100px;
 }
 
 .image-modal,
@@ -250,6 +254,32 @@
   max-height: 90vh;
   overflow: auto;
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  margin-top: 0;
+  z-index: 2100;
+}
+
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 16px;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.tab-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-weight: 400;
+  transition: border 0.2s, font-weight 0.2s;
+}
+.tab-item.active {
+  border-bottom: 2px solid var(--primary);
+  font-weight: 600;
+  color: var(--primary);
+  background: #f8f9fa;
 }
 
 .modal-header {
@@ -334,6 +364,79 @@
   gap: 10px;
 }
 
+.image-info-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 24px 0 0 0;
+}
+
+.image-info-modal-flex {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 40px;
+  padding: 24px 0 0 0;
+}
+
+.image-info-modal-img-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-info-modal-img {
+  width: 320px;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 2px solid #e0e0e0;
+  box-shadow: 0 2px 16px #0002;
+  background: #fff;
+}
+
+.image-info-modal-details {
+  width: 100%;
+  max-width: 420px;
+  background: #fafbfc;
+  border-radius: 14px;
+  padding: 32px 38px;
+  box-shadow: 0 1px 12px #0001;
+  font-size: 20px;
+  color: #222;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.image-info-modal-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.images-table td .patient-info {
+  font-size: 16px;
+  font-weight: 500;
+  color: #222;
+  min-width: 120px;
+}
+
+.images-table td .patient-info .patient-name {
+  display: block;
+  color: #555;
+  font-size: 15px;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
 @media (max-width: 768px) {
   .filter-row {
     flex-direction: column;
@@ -377,4 +480,82 @@
     font-size: 22px;
     padding-top: 0;
   }
+}
+
+@media (max-width: 600px) {
+  .image-modal, .approval-modal {
+    width: 98%;
+    max-width: 99vw;
+    padding: 0 2vw;
+  }
+  .modal-tabs {
+    flex-direction: column;
+    gap: 0;
+  }
+  .tab-item {
+    width: 100%;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+}
+
+@media (max-width: 900px) {
+  .image-info-modal-flex {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  .image-info-modal-details {
+    align-items: center;
+    text-align: center;
+    padding: 24px 10px;
+    font-size: 18px;
+  }
+  .image-info-modal-img {
+    width: 220px;
+    height: 220px;
+  }
+}
+
+.image-info-modal-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.image-info-modal-actions .btn {
+  min-width: 110px;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.image-info-modal-actions .btn-success {
+  background: #4caf50;
+  color: #fff;
+}
+.image-info-modal-actions .btn-success:hover {
+  background: #388e3c;
+}
+
+.image-info-modal-actions .btn-danger {
+  background: #e74c3c;
+  color: #fff;
+}
+.image-info-modal-actions .btn-danger:hover {
+  background: #c0392b;
+}
+
+.image-info-modal-actions .btn-info {
+  background: #3498db;
+  color: #fff;
+}
+.image-info-modal-actions .btn-info:hover {
+  background: #217dbb;
 }

@@ -49,6 +49,29 @@ public class DicomImport {
     @Column(name = "file_path")
     private String filePath;
 
+    @Column(name = "patient_name")
+    private String patientName;
+
+    // Default constructor
+    public DicomImport() {}
+
+    // All-args constructor
+    public DicomImport(Long id, String fileName, String patientCode, String studyType, String bodyPart, String technicalParams, String notes, Long fileSize, String status, Timestamp importDate, String performedBy, String filePath, String patientName) {
+        this.id = id;
+        this.fileName = fileName;
+        this.patientCode = patientCode;
+        this.studyType = studyType;
+        this.bodyPart = bodyPart;
+        this.technicalParams = technicalParams;
+        this.notes = notes;
+        this.fileSize = fileSize;
+        this.status = status;
+        this.importDate = importDate;
+        this.performedBy = performedBy;
+        this.filePath = filePath;
+        this.patientName = patientName;
+    }
+
     // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -74,4 +97,6 @@ public class DicomImport {
     public void setPerformedBy(String performedBy) { this.performedBy = performedBy; }
     public String getFilePath() { return filePath; }
     public void setFilePath(String filePath) { this.filePath = filePath; }
+    public String getPatientName() { return patientName; }
+    public void setPatientName(String patientName) { this.patientName = patientName; }
 }

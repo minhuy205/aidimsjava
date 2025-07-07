@@ -152,6 +152,7 @@ const ImportDicom = () => {
     // Lấy metadata từ yêu cầu chụp
     const metadata = {
       patient_code: patient_code || '',
+      patient_name: patients.find(x => String(x.patient_id) === String(selectedPatientId))?.full_name || '', // BỔ SUNG DÒNG NÀY
       study_type: selectedRequest.imagingType || selectedRequest.imaging_type || selectedRequest.study_type || '',
       body_part: selectedRequest.body_part || selectedRequest.bodyPart || '',
       technical_params: JSON.stringify(technicalParamsObj),

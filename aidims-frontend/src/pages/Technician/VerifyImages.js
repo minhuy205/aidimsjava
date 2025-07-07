@@ -21,6 +21,7 @@ const VerifyImages = () => {
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [approvalNote, setApprovalNote] = useState("");
+  const [activeTab, setActiveTab] = useState("info");
 
   // Fetch images from backend
   const fetchImages = useCallback(async () => {
@@ -61,7 +62,14 @@ const VerifyImages = () => {
           id: dicomItem.id,
           fileName: fileName || "No filename",
           patientCode: dicomItem.patientCode || "",
-          patientName: dicomItem.patientName || "",
+          patientName:
+            dicomItem.patientName ||
+            (dicomItem.patient && dicomItem.patient.name) ||
+            dicomItem.name ||
+            dicomItem.fullName ||
+            (dicomItem.request && (dicomItem.request.patientName || (dicomItem.request.patient && dicomItem.request.patient.name))) ||
+            (dicomItem.imagingRequest && (dicomItem.imagingRequest.patientName || (dicomItem.imagingRequest.patient && dicomItem.imagingRequest.patient.name))) ||
+            "Không rõ",
           studyType: dicomItem.studyType || "",
           bodyPart: dicomItem.bodyPart || "",
           captureDate: dicomItem.importDate
@@ -80,7 +88,21 @@ const VerifyImages = () => {
               : verification.result === "rejected"
               ? "Từ chối"
               : "Chờ duyệt",
-          technicalParams: dicomItem.technicalParams || {},
+          technicalParams: (() => {
+            // Nếu technicalParams là object, trả về luôn
+            if (typeof dicomItem.technicalParams === 'object' && dicomItem.technicalParams !== null) return dicomItem.technicalParams;
+            // Nếu là string JSON, parse ra object
+            if (typeof dicomItem.technicalParams === 'string') {
+              try {
+                return JSON.parse(dicomItem.technicalParams);
+              } catch (e) {
+                // Nếu không phải JSON, trả về string gốc
+                return dicomItem.technicalParams;
+              }
+            }
+            // Nếu null hoặc undefined, trả về object rỗng
+            return {};
+          })(),
           fileSize: dicomItem.fileSize
             ? `${(dicomItem.fileSize / (1024 * 1024)).toFixed(2)} MB`
             : "",
@@ -261,55 +283,104 @@ const VerifyImages = () => {
       <div className="modal-backdrop" onClick={() => setShowImageModal(false)}>
         <div className="image-modal" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
-            <h3>{selectedImage.fileName}</h3>
-            <button
-              className="close-btn"
-              onClick={() => setShowImageModal(false)}
-            >
+            <h3>🖼️ Xem chi tiết hình ảnh</h3>
+            <button className="close-btn" onClick={() => setShowImageModal(false)}>
               &times;
             </button>
           </div>
-          <div className="modal-body">
-            {selectedImage.filePath ? (
-              <img
-                src={selectedImage.filePath}
-                alt={selectedImage.fileName}
-                onError={(e) => {
-                  console.error("Failed to load image:", e.target.src);
-                  e.target.src = "/placeholder-image.jpg";
-                  e.target.onerror = null;
-                }}
-              />
-            ) : (
-              <div className="no-image">
-                <p>No image available</p>
-                <img
-                  src="/placeholder-image.jpg"
-                  alt="Placeholder"
-                  className="placeholder-image"
-                />
+          <div className="modal-tabs" style={{ display: 'flex', borderBottom: '1px solid #eee', marginBottom: 16 }}>
+            <div
+              className={`tab-item${activeTab === "info" ? " active" : ""}`}
+              style={{ padding: '10px 20px', cursor: 'pointer', borderBottom: activeTab === "info" ? '2px solid #3498db' : 'none', fontWeight: activeTab === "info" ? 600 : 400 }}
+              onClick={() => setActiveTab("info")}
+            >
+              Thông tin ảnh
+            </div>
+            <div
+              className={`tab-item${activeTab === "tech" ? " active" : ""}`}
+              style={{ padding: '10px 20px', cursor: 'pointer', borderBottom: activeTab === "tech" ? '2px solid #3498db' : 'none', fontWeight: activeTab === "tech" ? 600 : 400 }}
+              onClick={() => setActiveTab("tech")}
+            >
+              Thông tin kỹ thuật
+            </div>
+          </div>
+          <div className="modal-content">
+            {activeTab === "info" && (
+              <div className="image-info-modal-flex">
+                <div className="image-info-modal-img-wrap">
+                  <img
+                    className="image-info-modal-img"
+                    src={selectedImage.filePath || "/placeholder-image.jpg"}
+                    alt={selectedImage.fileName}
+                    onError={e => {
+                      e.target.src = "/placeholder-image.jpg";
+                      e.target.onerror = null;
+                    }}
+                  />
+                </div>
+                <div className="image-info-modal-details">
+                  <div><strong>Tên file:</strong> {selectedImage.fileName}</div>
+                  <div><strong>Mã bệnh nhân:</strong> {selectedImage.patientCode}</div>
+                  <div><strong>Tên bệnh nhân:</strong> {selectedImage.patientName}</div>
+                  <div><strong>Loại chụp:</strong> {selectedImage.studyType}</div>
+                  <div><strong>Vùng chụp:</strong> {selectedImage.bodyPart}</div>
+                  <div><strong>Ngày chụp:</strong> {selectedImage.captureDate}</div>
+                  <div><strong>Kích thước file:</strong> {selectedImage.fileSize}</div>
+                  <div className="image-info-modal-actions">
+                    {selectedImage.status === "Chờ duyệt" && (
+                      <>
+                        <button
+                          className="btn btn-success"
+                          onClick={() => {
+                            setSelectedImage(selectedImage);
+                            setShowApproveModal(true);
+                          }}
+                        >
+                          Duyệt
+                        </button>
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => {
+                            setSelectedImage(selectedImage);
+                            setApprovalNote("");
+                            handleApprove(false);
+                          }}
+                        >
+                          Từ chối
+                        </button>
+                      </>
+                    )}
+                    <button
+                      className="btn btn-info"
+                      onClick={() => {
+                        window.open(selectedImage.filePath, "_blank");
+                      }}
+                    >
+                      Xem ảnh gốc
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
-            <div className="image-info">
-              <p>
-                <strong>Bệnh nhân:</strong> {selectedImage.patientCode} -{" "}
-                {selectedImage.patientName}
-              </p>
-              <p>
-                <strong>Loại chụp:</strong> {selectedImage.studyType}
-              </p>
-              <p>
-                <strong>Vùng chụp:</strong> {selectedImage.bodyPart}
-              </p>
-              <p>
-                <strong>Ngày chụp:</strong> {selectedImage.captureDate}
-              </p>
-              {selectedImage.note && (
-                <p>
-                  <strong>Ghi chú:</strong> {selectedImage.note}
-                </p>
-              )}
-            </div>
+            {activeTab === "tech" && (
+              <div>
+                <div style={{ marginBottom: 8 }}><strong>Chất lượng:</strong> <span className="badge" style={{ backgroundColor: getQualityColor(selectedImage.quality) }}>{selectedImage.quality}</span></div>
+                <div style={{ marginBottom: 8 }}><strong>Trạng thái:</strong> <span className="badge" style={{ backgroundColor: getStatusColor(selectedImage.status) }}>{selectedImage.status}</span></div>
+                {selectedImage.technicalParams && Object.keys(selectedImage.technicalParams).length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <strong>Thông số kỹ thuật:</strong>
+                    <ul style={{ margin: 0, paddingLeft: 20 }}>
+                      {Object.entries(selectedImage.technicalParams).map(([key, value]) => (
+                        <li key={key}><strong>{key}:</strong> {value}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {selectedImage.note && (
+                  <div style={{ marginTop: 12 }}><strong>Ghi chú:</strong> {selectedImage.note}</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -497,7 +568,7 @@ const VerifyImages = () => {
                   <th>Ngày chụp</th>
                   <th>Chất lượng</th>
                   <th>Trạng thái</th>
-                  <th>Hành động</th>
+                  {/* <th>Hành động</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -526,9 +597,7 @@ const VerifyImages = () => {
                       <td>
                         <div className="patient-info">
                           <strong>{image.patientCode}</strong>
-                          {image.patientName && (
-                            <span>{image.patientName}</span>
-                          )}
+                          <span className="patient-name">{image.patientName || "Không rõ"}</span>
                         </div>
                       </td>
                       <td>{image.studyType}</td>
@@ -554,7 +623,7 @@ const VerifyImages = () => {
                           {image.status}
                         </span>
                       </td>
-                      <td className="actions-cell">
+                      {/* <td className="actions-cell">
                         {image.status === "Chờ duyệt" && (
                           <>
                             <button
@@ -587,12 +656,12 @@ const VerifyImages = () => {
                         >
                           Xem
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8" className="no-results">
+                    <td colSpan="7" className="no-results">
                       Không tìm thấy hình ảnh nào phù hợp
                     </td>
                   </tr>
@@ -610,3 +679,4 @@ const VerifyImages = () => {
 };
 
 export default VerifyImages;
+

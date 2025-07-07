@@ -73,4 +73,7 @@ public List<Doctor> getDoctorsByDepartment(String department) {
 public Doctor getDoctorById(Long id) {
     return doctorRepo.findById(id).orElseThrow();
 }
+public Patient getPatientById(Long id) {
+    return patientRepo.findById(id).orElse(null);
+}
 }
