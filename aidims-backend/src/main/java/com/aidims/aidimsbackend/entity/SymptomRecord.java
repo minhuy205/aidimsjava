@@ -33,6 +33,9 @@ public class SymptomRecord {
     @Column(name = "other_symptoms", columnDefinition = "TEXT")
     private String otherSymptoms;
 
+    @Column(name = "selected_symptoms", columnDefinition = "TEXT")
+    private String selectedSymptoms;
+
     @Column(name = "created_at")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
@@ -89,6 +92,14 @@ public class SymptomRecord {
 
     public void setOtherSymptoms(String otherSymptoms) {
         this.otherSymptoms = otherSymptoms;
+    }
+
+    public String getSelectedSymptoms() {
+        return selectedSymptoms;
+    }
+
+    public void setSelectedSymptoms(String selectedSymptoms) {
+        this.selectedSymptoms = selectedSymptoms;
     }
 
     public LocalDateTime getCreatedAt() {

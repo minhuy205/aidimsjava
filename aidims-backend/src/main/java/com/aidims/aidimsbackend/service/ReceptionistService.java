@@ -34,7 +34,7 @@ public class ReceptionistService {
         return symptomRepo.save(symptom);
     }
 
-    public Assignment assignDoctor(Long patientId, Long doctorId, String department) {
+    public Assignment assignDoctor(Long patientId, Long doctorId, String department, String priority, String notes) {
         Patient patient = patientRepo.findById(patientId).orElseThrow();
         Doctor doctor = doctorRepo.findById(doctorId).orElseThrow();
         Assignment a = new Assignment();
@@ -43,6 +43,8 @@ public class ReceptionistService {
         a.setDepartment(department);
         a.setAssignedAt(LocalDateTime.now());
         a.setStatus("Đang chờ");
+        a.setPriority(priority);
+        a.setNotes(notes);
         return assignmentRepo.save(a);
     }
 
@@ -62,5 +64,16 @@ public Patient createOrUpdatePatient(Patient patient) {
 }
 public List<Doctor> getAllDoctors() {
     return doctorRepo.findAll();
+}
+public List<Doctor> getDoctorsByDepartment(String department) {
+    return doctorRepo.findAll().stream()
+        .filter(d -> d.getDepartment() != null && d.getDepartment().equalsIgnoreCase(department))
+        .toList();
+}
+public Doctor getDoctorById(Long id) {
+    return doctorRepo.findById(id).orElseThrow();
+}
+public Patient getPatientById(Long id) {
+    return patientRepo.findById(id).orElse(null);
 }
 }

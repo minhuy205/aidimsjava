@@ -1,12 +1,9 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import {authService} from "../../services/authService"
 import "../../css/auth.css"
 
 function Login() {
-  console.log("Login component loaded")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
@@ -62,16 +59,16 @@ function Login() {
         setTimeout(() => {
           switch (user.role) {
             case "admin":
-              navigate("/IndexAdmin")
+              navigate("/login/admin")
               break
             case "doctor":
-              navigate("/IndexDoctor")
+              navigate("/login/doctor")
               break
             case "receptionist":
-              navigate("/receptionist")
+              navigate("/login/receptionist")
               break
             case "technician":
-              navigate("/technician")
+              navigate("/login/technician")
               break
             default:
               navigate("/")

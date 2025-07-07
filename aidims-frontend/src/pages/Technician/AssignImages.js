@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import "../../css/assignImages.css"
 
 const AssignImages = () => {
@@ -115,7 +115,7 @@ const AssignImages = () => {
   }
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="assign-images-page">
         <div className="page-header">
           <h2>👥 Phân công hình ảnh</h2>
@@ -303,7 +303,7 @@ const AssignImages = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </LayoutLogin>
   )
 }
 

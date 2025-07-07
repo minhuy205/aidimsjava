@@ -1,7 +1,8 @@
+/* Main form container - more compact */
 .report-form-page {
-    max-width: 600px;
+    max-width: 1200px; /* Increased from 600px */
     margin: 0 auto;
-    padding: 20px;
+    padding: 15px; /* Reduced from 20px */
     background: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -9,49 +10,136 @@
 
 .report-form-section h1 {
     text-align: center;
-    margin-bottom: 20px;
-    font-size: 24px;
+    margin-bottom: 15px; /* Reduced from 20px */
+    font-size: 22px; /* Reduced from 24px */
 }
 
+/* Form layout - horizontal and compact */
 .report-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px; /* Reduced from 20px */
 }
 
+/* Form groups with improved layout */
 .form-group {
     border: 1px solid #ccc;
     border-radius: 6px;
-    padding: 15px;
+    padding: 12px; /* Reduced from 15px */
     background: #f9f9f9;
 }
 
 .form-group legend {
     font-weight: bold;
+    margin-bottom: 8px; /* Reduced from 10px */
+    font-size: 16px; /* Reduced from 18px */
+    padding: 0 8px;
+}
+
+/* Horizontal layout for form fields */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
     margin-bottom: 10px;
-    font-size: 18px;
 }
 
 .form-group label {
     display: flex;
     flex-direction: column;
     font-weight: 500;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* Reduced from 10px */
 }
 
+/* Input fields - controlled width */
 .form-group input,
-.form-group select,
-.form-group textarea {
-    padding: 8px;
+.form-group select {
+    padding: 6px 8px; /* Reduced padding */
     border: 1px solid #ccc;
     border-radius: 4px;
-    margin-top: 5px;
+    margin-top: 3px; /* Reduced from 5px */
     font-size: 14px;
+    max-width: 100%;
+    width: 100%;
 }
 
+/* Textarea with controlled height */
+.form-group textarea {
+    padding: 6px 8px; /* Reduced padding */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 3px;
+    font-size: 14px;
+    max-width: 100%;
+    width: 100%;
+    min-height: 60px; /* Reduced from default */
+    resize: vertical;
+}
+
+/* Special layouts for specific sections */
+.patient-info-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.doctor-info-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.clinical-history-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.diagnosis-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.diagnosis-section .full-width {
+    grid-column: 1 / -1;
+}
+
+/* Name group for patient info */
+.name-group {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 15px;
+}
+
+/* Symptoms checkboxes - horizontal layout */
+.symptoms-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.checkbox-label {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 0 !important;
+    font-weight: normal !important;
+    white-space: nowrap;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto !important;
+    margin-top: 0 !important;
+    margin-right: 5px;
+}
+
+/* Buttons */
 .submit-button {
     align-self: center;
-    padding: 10px 20px;
+    padding: 8px 20px; /* Reduced padding */
     background-color: #007bff;
     color: white;
     border: none;
@@ -64,9 +152,353 @@
 .submit-button:hover {
     background-color: #0056b3;
 }
+
 .button-group {
     display: flex;
     justify-content: center;
     gap: 15px;
-    margin-top: 15px;
+    margin-top: 15px; /* Reduced from 20px */
+    flex-wrap: wrap;
+}
+
+.submit-button, .view-reports-button {
+    padding: 10px 20px; /* Reduced from 12px 24px */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px; /* Reduced from 16px */
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-width: 130px; /* Reduced from 150px */
+}
+
+/* Patient info banner - more compact */
+.patient-info-banner {
+    margin-bottom: 15px; /* Reduced from 20px */
+}
+
+.patient-banner {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: 2px solid #2196f3;
+    border-radius: 12px;
+    padding: 15px; /* Reduced from 20px */
+    margin-bottom: 15px; /* Reduced from 20px */
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+}
+
+.patient-banner h3 {
+    color: #1976d2;
+    margin: 0 0 10px 0; /* Reduced from 15px */
+    font-size: 1.1em; /* Reduced from 1.2em */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.patient-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Reduced from 250px */
+    gap: 8px; /* Reduced from 12px */
+    font-size: 13px; /* Reduced from 14px */
+}
+
+.patient-details span {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 6px 10px; /* Reduced from 8px 12px */
+    border-radius: 6px;
+    border-left: 3px solid #2196f3;
+}
+
+/* Loading banner */
+.loading-banner {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 10px; /* Reduced from 15px */
+    margin-bottom: 15px; /* Reduced from 20px */
+    text-align: center;
+    color: #856404;
+    font-weight: 500;
+}
+
+/* Auto-filled fields styling */
+.auto-filled-field {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+    border: 2px solid #38bdf8 !important;
+    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.1);
+}
+
+.auto-filled-field:focus {
+    border-color: #0ea5e9 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1) !important;
+}
+
+/* Reports list section - more compact */
+.reports-list-section {
+    margin-top: 20px; /* Reduced from 30px */
+    padding: 20px; /* Reduced from 25px */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.reports-list-section h2 {
+    margin-bottom: 15px; /* Reduced from 20px */
+    color: #333;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px; /* Reduced from 10px */
+    font-size: 18px;
+}
+
+/* Table container */
+.reports-table-container {
+    overflow-x: auto;
+    margin-top: 10px; /* Reduced from 15px */
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Table styles */
+.reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 800px;
+}
+
+.reports-table th {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    font-weight: 600;
+    padding: 10px 8px; /* Reduced from 15px 12px */
+    text-align: left;
+    font-size: 12px; /* Reduced from 14px */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.reports-table td {
+    padding: 8px; /* Reduced from 12px */
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 13px;
+}
+
+.reports-table tr:hover {
+    background: #f8f9fa;
+    transition: background 0.2s ease;
+}
+
+.reports-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Special cell styles */
+.report-code-cell {
+    font-family: 'Courier New', monospace;
+    color: #007bff;
+    font-weight: bold;
+    font-size: 12px; /* Reduced from 13px */
+}
+
+/* Status badge styles */
+.status-badge {
+    display: inline-block;
+    padding: 3px 8px; /* Reduced from 4px 12px */
+    border-radius: 12px; /* Reduced from 15px */
+    font-size: 10px; /* Reduced from 11px */
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-draft {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* Action cell and buttons */
+.action-cell {
+    text-align: center;
+    padding: 6px !important; /* Reduced from 8px */
+    min-width: 120px; /* Reduced from 140px */
+}
+
+.action-buttons {
+    display: flex;
+    gap: 3px; /* Reduced from 4px */
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.download-btn, .print-btn {
+    border: none;
+    padding: 4px 8px; /* Reduced from 6px 10px */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 9px; /* Reduced from 10px */
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: 55px; /* Reduced from 65px */
+}
+
+.download-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.download-btn:hover {
+    background: linear-gradient(135deg, #2980b9, #21618c);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.print-btn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.print-btn:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.download-btn:active, .print-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Message styles */
+.message {
+    padding: 10px 14px; /* Reduced from 12px 16px */
+    border-radius: 6px;
+    margin-bottom: 15px; /* Reduced from 20px */
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.message-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* Empty state */
+.empty-reports {
+    text-align: center;
+    padding: 40px 20px; /* Reduced from 60px */
+    color: #6c757d;
+}
+
+.empty-reports p {
+    font-size: 14px; /* Reduced from 16px */
+    margin: 0;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    text-align: center;
+    padding: 30px 20px; /* Reduced from 40px */
+    color: #007bff;
+    font-size: 14px; /* Reduced from 16px */
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .doctor-info-section,
+    .diagnosis-section {
+        grid-template-columns: 1fr;
+    }
+
+    .name-group {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .report-form-page {
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    .patient-details {
+        grid-template-columns: 1fr;
+    }
+
+    .patient-details span {
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+
+    .patient-banner h3 {
+        font-size: 1em;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .submit-button, .view-reports-button {
+        width: 100%;
+    }
+
+    .reports-table-container {
+        overflow-x: scroll;
+    }
+
+    .reports-table th,
+    .reports-table td {
+        padding: 6px 4px;
+        font-size: 11px;
+    }
+
+    .reports-list-section {
+        padding: 12px;
+        margin-top: 15px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .download-btn, .print-btn {
+        padding: 3px 6px;
+        font-size: 8px;
+        min-width: 50px;
+    }
+
+    .action-cell {
+        padding: 3px !important;
+        min-width: 55px;
+    }
 }

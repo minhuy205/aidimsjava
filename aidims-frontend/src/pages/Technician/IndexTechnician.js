@@ -1,11 +1,11 @@
 import { memo } from "react"
 import { Link } from "react-router-dom"
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import "../../css/indexTechnician.css"
 
 const IndexTechnician = () => {
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="technician-page">
         <section className="technician-dashboard">
           <div className="dashboard-content">
@@ -35,7 +35,8 @@ const IndexTechnician = () => {
           </div>
         </section>
       </div>
-    </Layout>
+  )
+    </LayoutLogin>
   )
 }
 

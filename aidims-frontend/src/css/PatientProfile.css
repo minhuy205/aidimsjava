@@ -44,6 +44,10 @@
   border-left: 4px solid #667eea;
 }
 
+.stat-card:nth-child(4) {
+  border-left-color: #28a745; /* Màu xanh cho thống kê "Đã khám" */
+}
+
 .stat-number {
   font-size: 2rem;
   font-weight: 700;
@@ -51,9 +55,47 @@
   margin-bottom: 0.5rem;
 }
 
+.stat-card:nth-child(4) .stat-number {
+  color: #28a745; /* Màu xanh cho số lượng "Đã khám" */
+}
+
 .stat-label {
   color: #666;
   font-size: 0.9rem;
+}
+
+/* Status Filter */
+.status-filter {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #e9ecef;
+  background: white;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+  color: #666;
+}
+
+.filter-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 /* Table Styles */
@@ -122,6 +164,22 @@
   font-weight: 500;
 }
 
+.status-badge.completed {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+/* Vital Signs Indicator */
+.vital-indicator {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.vital-indicator-none {
+  color: #dc3545;
+  font-weight: 500;
+}
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -166,6 +224,24 @@
   margin: 0.5rem 0 0;
   opacity: 0.9;
   font-size: 0.9rem;
+}
+
+.patient-status-header {
+  margin-top: 1rem;
+}
+
+.status-badge-large {
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-badge-large.completed {
+  background: rgba(40, 167, 69, 0.2);
 }
 
 .close-btn {
@@ -233,7 +309,7 @@
   padding: 2rem;
 }
 
-.patient-info-section {
+.medical-info-section {
   background: #f8f9fa;
   border: 1px solid #dee2e6;
   border-radius: 10px;
@@ -241,7 +317,7 @@
   margin-bottom: 1.5rem;
 }
 
-.patient-info-section h4 {
+.medical-info-section h4 {
   margin-top: 0;
   margin-bottom: 1.5rem;
   color: #333;
@@ -319,6 +395,7 @@
   margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid #dee2e6;
+  flex-wrap: wrap;
 }
 
 .btn {
@@ -364,18 +441,39 @@
   transform: translateY(-2px);
 }
 
+.completed-badge {
+  padding: 0.75rem 1.5rem;
+  background: #e8f5e8;
+  color: #2e7d32;
+  border-radius: 8px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .doctor-page {
     padding-top: 70px; /* Giảm padding-top cho mobile */
   }
-  
+
   .patient-list-container {
     padding: 0 1rem;
   }
 
   .patient-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .status-filter {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .filter-btn {
+    width: 100%;
+    max-width: 300px;
   }
 
   .info-grid {
@@ -414,11 +512,11 @@
   .patient-table td {
     padding: 0.5rem;
   }
-  
+
   .modal-overlay {
     padding: 0.5rem;
   }
-  
+
   .medical-record-modal {
     width: 95%;
     max-height: 95vh;
@@ -429,21 +527,29 @@
   .doctor-page {
     padding-top: 60px;
   }
-  
+
   .page-header h2 {
     font-size: 1.5rem;
   }
-  
+
   .page-header p {
     font-size: 1rem;
   }
-  
+
+  .patient-stats {
+    grid-template-columns: 1fr;
+  }
+
   .stat-card {
     padding: 1rem;
   }
-  
+
   .stat-number {
     font-size: 1.5rem;
   }
-}
 
+  .filter-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}

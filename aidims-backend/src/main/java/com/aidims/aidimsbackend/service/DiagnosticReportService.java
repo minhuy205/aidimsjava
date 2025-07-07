@@ -65,6 +65,19 @@ public class DiagnosticReportService {
         if (diagnosticReport.getReportType() == null) {
             diagnosticReport.setReportType(DiagnosticReport.ReportType.SoBo);
         }
+        if (diagnosticReport.getReferringDoctorName() != null &&
+                !diagnosticReport.getReferringDoctorName().trim().isEmpty()) {
+
+            diagnosticReport.setReferringDoctorName(diagnosticReport.getReferringDoctorName().trim());
+
+            if (diagnosticReport.getReferringDoctorSpecialty() != null) {
+                diagnosticReport.setReferringDoctorSpecialty(diagnosticReport.getReferringDoctorSpecialty().trim());
+            }
+
+            System.out.println("📝 Creating report with referring doctor: " +
+                    diagnosticReport.getReferringDoctorName() +
+                    " (" + diagnosticReport.getReferringDoctorSpecialty() + ")");
+        }
 
         return diagnosticReportRepository.save(diagnosticReport);
     }

@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Restart Spring Boot backend",
+			"command": "./mvnw spring-boot:restart",
+			"group": "build",
+			"isBackground": false
+		}
+	]
+}

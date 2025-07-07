@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import { patientService } from "../../services/patientService"
 import "../../css/patientForm.css"
 
@@ -214,7 +214,7 @@ const PatientForm = () => {
   )
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="patient-form">
         <div className="page-header">
           <h2>📄 Quản lý Hồ sơ Bệnh nhân</h2>
@@ -744,7 +744,7 @@ const PatientForm = () => {
           </button>
         </div>
       </div>
-    </Layout>
+    </LayoutLogin>
   )
 }
 

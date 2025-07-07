@@ -54,6 +54,7 @@ public class SymptomRecordController {
                 symptomData.put("detailed_symptoms", symptom.getDetailedSymptoms());
                 symptomData.put("other_symptoms", symptom.getOtherSymptoms());
                 symptomData.put("created_at", symptom.getCreatedAt());
+                symptomData.put("selected_symptoms", symptom.getSelectedSymptoms());
                 if (patient != null) {
                     symptomData.put("patient_code", patient.getPatient_code());
                     symptomData.put("patient_name", patient.getFull_name());
@@ -94,6 +95,7 @@ public class SymptomRecordController {
                 symptomData.put("detailed_symptoms", symptom.getDetailedSymptoms());
                 symptomData.put("other_symptoms", symptom.getOtherSymptoms());
                 symptomData.put("created_at", symptom.getCreatedAt());
+                symptomData.put("selected_symptoms", symptom.getSelectedSymptoms());
                 if (patient != null) {
                     symptomData.put("patient_code", patient.getPatient_code());
                     symptomData.put("patient_name", patient.getFull_name());
@@ -134,6 +136,7 @@ public class SymptomRecordController {
             Integer painScale = requestData.get("pain_scale") != null && !requestData.get("pain_scale").toString().isEmpty() ? Integer.valueOf(requestData.get("pain_scale").toString()) : null;
             String additionalNotes = (String) requestData.get("additional_notes");
             String recordedBy = (String) requestData.get("recorded_by");
+            String selectedSymptoms = (String) requestData.get("selected_symptoms");
 
             // Kiểm tra trường bắt buộc
             if (patientId == null || chiefComplaint == null || chiefComplaint.trim().isEmpty() ||
@@ -152,6 +155,7 @@ public class SymptomRecordController {
             symptom.setOtherSymptoms("Priority: " + priorityLevel +
                     "\nAdditional Notes: " + (additionalNotes != null ? additionalNotes : "") +
                     "\nRecorded By: " + (recordedBy != null ? recordedBy : ""));
+            symptom.setSelectedSymptoms(selectedSymptoms); // Lưu triệu chứng cụ thể
 
             SymptomRecord savedSymptom = symptomRecordService.saveSymptom(symptom);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedSymptom);

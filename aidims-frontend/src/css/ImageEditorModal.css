@@ -1,0 +1,61 @@
+.custom-modal {
+  width: fit-content;
+  max-width: 90vw;
+  margin: auto;
+  border-radius: 12px;
+  background: white;
+  outline: none;
+  overflow: hidden;
+}
+
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-header {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(to right, purple, dodgerblue);
+  color: white;
+}
+
+.modal-header button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.zoom-btn {
+  background-color: #0dcaf0;
+  color: white;
+}
+
+.draw-btn {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.draw-btn.active {
+  background-color: #ffc107;
+  color: black;
+}
+
+.clear-btn {
+  margin-right: 60px;
+  background-color: #dc3545;
+  color: white;
+}
+
+.close-btn {
+  margin-left: auto;
+  font-size: 18px;
+  background: white;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+}

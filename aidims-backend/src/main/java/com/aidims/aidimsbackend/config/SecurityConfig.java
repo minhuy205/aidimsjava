@@ -16,42 +16,52 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // ✅ NEW SYNTAX: Sử dụng lambda thay vì deprecated methods
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Bật CORS với cấu hình riêng
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/receptionist/**",
-                                "/api/symptom-record/**", // Cho phép public API ghi nhận triệu chứng
-                                "/api/diagnostic-reports/**" // ✅ THÊM: Cho phép tất cả diagnostic reports endpoints
+                                "/api/symptom-record/**",
+                                "/api/diagnostic-reports/**",
+                                "/api/request-photo/**",
+                                "/api/chat/**",
+                                "/api/imaging-types/**",
+                                "/api/dicom-import/**",
+                                "/api/verify-image/dicom-imports",
+                                "/api/verify-image/save",
+                                "/api/verify-image/all",
+                                "/api/compare-images/**",
+                                "/api/dicom-viewer/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.disable()) // Tạm thời vô hiệu hóa CSRF cho API
-                .httpBasic(httpBasic -> httpBasic.disable()); // Thêm dòng này để tắt http basic auth
+                .csrf(csrf -> csrf.disable())
+                .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
+    CorsConfiguration configuration = new CorsConfiguration();
 
-        // ✅ CẢI THIỆN: Thêm nhiều origins cho development và production
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",    // React development
-                "http://localhost:3001",    // Alternative React port
-                "http://localhost:8080",    // Same origin requests
-                "http://127.0.0.1:3000"     // Alternative localhost
-        ));
+    configuration.setAllowedOrigins(Arrays.asList(
+        "http://localhost:3000",
+                "http://localhost:3001",
+                "http://localhost:8080",
+                "http://127.0.0.1:3000"
+    ));
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L); // ✅ THÊM: Cache preflight requests for 1 hour
+    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+    configuration.setAllowedHeaders(Arrays.asList("*"));
+    configuration.setExposedHeaders(Arrays.asList(
+        "Content-Disposition", "Content-Type", "Cache-Control"
+    ));
+    configuration.setAllowCredentials(true); // Giữ true nhưng bỏ dấu "*"
+    configuration.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
     }
 }

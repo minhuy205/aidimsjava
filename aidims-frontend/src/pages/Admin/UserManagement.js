@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import "../../css/userManagement.css"
 
 const UserManagement = () => {
@@ -224,7 +224,7 @@ const UserManagement = () => {
   }
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="user-management-page">
         <div className="page-header">
           <h2>👥 Quản lý Người dùng</h2>
@@ -429,7 +429,7 @@ const UserManagement = () => {
           </div>
         )}
       </div>
-    </Layout>
+    </LayoutLogin>
   )
 }
 

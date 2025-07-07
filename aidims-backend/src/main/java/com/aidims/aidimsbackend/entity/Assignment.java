@@ -33,6 +33,9 @@ public class Assignment {
     @Column(name = "assigned_at")
     private LocalDateTime assignedAt;
 
+    private String priority;
+    private String notes;
+
     // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -51,4 +54,9 @@ public class Assignment {
 
     public LocalDateTime getAssignedAt() { return assignedAt; }
     public void setAssignedAt(LocalDateTime assignedAt) { this.assignedAt = assignedAt; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import { patientService } from "../../services/patientService"
 import { assignmentService } from "../../services/assignmentService"
 import '../../css/assignDoctor.css'
@@ -25,18 +25,9 @@ const AssignDoctor = () => {
       .then((data) => setPatients(data))
       .catch(() => setPatients([]))
 
-    // Lấy danh sách bác sĩ từ backend, nếu không có thì dùng mock để demo
+    // Lấy danh sách bác sĩ tất cả (nếu cần hiển thị mặc định)
     assignmentService.getAllDoctors()
-      .then((data) => {
-        if (data && data.length > 0) {
-          setDoctors(data)
-        } else {
-          // Nếu backend không có bác sĩ, cho phép chọn mock nhưng cảnh báo khi lưu
-          setDoctors([
-            { id: 9999, name: "(Demo) BS. Demo", department: specialties[0]?.name || "Chẩn đoán hình ảnh" }
-          ])
-        }
-      })
+      .then((data) => setDoctors(data))
       .catch(() => setDoctors([]))
 
     // Initialize specialties (có thể lấy từ backend nếu backend có bảng chuyên khoa)
@@ -53,7 +44,31 @@ const AssignDoctor = () => {
       { id: 10, name: "Nhi khoa", code: "NK" },
     ]
     setSpecialties(mockSpecialties)
+
+    // Lấy lịch sử chuyển hồ sơ từ backend
+    assignmentService.getAllAssignments()
+      .then((data) => setAssignments(data))
+      .catch(() => setAssignments([]))
   }, [])
+
+  // Khi chọn chuyên khoa, gọi backend để lấy danh sách bác sĩ theo chuyên khoa
+  useEffect(() => {
+    if (selectedSpecialty) {
+      const specialty = specialties.find((s) => s.id === Number.parseInt(selectedSpecialty))
+      if (specialty) {
+        assignmentService.getDoctorsByDepartment(specialty.name)
+          .then((data) => setDoctors(data))
+          .catch(() => setDoctors([]))
+        setSelectedDoctor("")
+      }
+    } else {
+      // Nếu bỏ chọn chuyên khoa, lấy lại toàn bộ bác sĩ
+      assignmentService.getAllDoctors()
+        .then((data) => setDoctors(data))
+        .catch(() => setDoctors([]))
+      setSelectedDoctor("")
+    }
+  }, [selectedSpecialty, specialties])
 
   // Lọc bác sĩ theo chuyên khoa (dựa vào trường department của bác sĩ backend)
   const filteredDoctors = selectedSpecialty
@@ -102,8 +117,13 @@ const AssignDoctor = () => {
       await assignmentService.createAssignment({
         patientId: Number(newAssignment.patientId),
         doctorId: Number(newAssignment.doctorId),
-        department: doctor.department // lấy đúng chuyên khoa từ backend
+        department: doctor.department, // lấy đúng chuyên khoa từ backend
+        priority,
+        notes
       });
+      // Sau khi lưu thành công, lấy lại lịch sử từ backend
+      const updatedAssignments = await assignmentService.getAllAssignments();
+      setAssignments(updatedAssignments);
     } catch (error) {
       // Log chi tiết lỗi trả về từ backend
       if (error instanceof Error) {
@@ -113,10 +133,6 @@ const AssignDoctor = () => {
       }
       return;
     }
-
-    const updatedAssignments = [...assignments, newAssignment]
-    setAssignments(updatedAssignments)
-    localStorage.setItem("doctorAssignments", JSON.stringify(updatedAssignments))
 
     // Reset form
     setSelectedPatient("")
@@ -140,7 +156,7 @@ const AssignDoctor = () => {
   }
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="assign-doctor-page">
         <div className="page-header">
           <h2>👨‍⚕️ Chuyển hồ sơ đến Bác sĩ</h2>
@@ -213,12 +229,12 @@ const AssignDoctor = () => {
                       <div className="doctor-card">
                         <h4>👨‍⚕️ Thông tin bác sĩ</h4>
                         <div className="doctor-details">
-                          <p>
-                            <strong>Tên:</strong> {doctor.name}
-                          </p>
-                          <p>
-                            <strong>Chuyên khoa:</strong> {doctor.department}
-                          </p>
+                          <p><strong>Tên:</strong> {doctor.name}</p>
+                          <p><strong>Chuyên khoa:</strong> {doctor.department}</p>
+                          <p><strong>Số điện thoại:</strong> {doctor.phone}</p>
+                          <p><strong>Email:</strong> {doctor.email}</p>
+                          <p><strong>Kinh nghiệm:</strong> {doctor.experience}</p>
+                          <p><strong>Tình trạng:</strong> {doctor.status}</p>
                         </div>
                       </div>
                     ) : null
@@ -279,6 +295,7 @@ const AssignDoctor = () => {
                   <th>Bác sĩ</th>
                   <th>Chuyên khoa</th>
                   <th>Mức độ ưu tiên</th>
+                  <th>Ghi chú</th>
                   <th>Ngày chuyển</th>
                   <th>Trạng thái</th>
                 </tr>
@@ -286,19 +303,17 @@ const AssignDoctor = () => {
               <tbody>
                 {assignments.map((assignment) => (
                   <tr key={assignment.id}>
-                    <td>{assignment.patientCode}</td>
-                    <td>{assignment.patientName}</td>
-                    <td>{assignment.doctorName}</td>
-                    <td>{assignment.specialtyName}</td>
+                    <td>{assignment.patient?.patient_code || ''}</td>
+                    <td>{assignment.patient?.full_name || ''}</td>
+                    <td>{assignment.doctor?.name || ''}</td>
+                    <td>{assignment.department || assignment.doctor?.department || ''}</td>
                     <td>
-                      <span
-                        className="priority-badge"
-                        style={{ backgroundColor: getPriorityColor(assignment.priority) }}
-                      >
-                        {assignment.priority}
+                      <span className="priority-badge" style={{ backgroundColor: getPriorityColor(assignment.priority) }}>
+                        {assignment.priority || 'Bình thường'}
                       </span>
                     </td>
-                    <td>{new Date(assignment.assignedDate).toLocaleDateString("vi-VN")}</td>
+                    <td>{assignment.notes || assignment.note || ''}</td>
+                    <td>{assignment.assignedAt ? new Date(assignment.assignedAt).toLocaleDateString("vi-VN") : ''}</td>
                     <td>
                       <span className="status-badge">{assignment.status}</span>
                     </td>
@@ -330,7 +345,7 @@ const AssignDoctor = () => {
           </button>
         </div>
       </div>
-    </Layout>
+    </LayoutLogin>
   )
 }
 

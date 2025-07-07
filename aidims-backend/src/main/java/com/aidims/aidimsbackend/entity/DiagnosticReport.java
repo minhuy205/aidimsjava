@@ -68,6 +68,11 @@ public class DiagnosticReport {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "referring_doctor_name")
+    private String referringDoctorName;
+
+    @Column(name = "referring_doctor_specialty", length = 100)
+    private String referringDoctorSpecialty;
     // Enum definitions - WORKING VERSION
     public enum ReportType {
         SoBo, ChinhThuc, CapCuu;
@@ -264,6 +269,22 @@ public class DiagnosticReport {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getReferringDoctorName() {
+        return referringDoctorName;
+    }
+
+    public void setReferringDoctorName(String referringDoctorName) {
+        this.referringDoctorName = referringDoctorName;
+    }
+
+    public String getReferringDoctorSpecialty() {
+        return referringDoctorSpecialty;
+    }
+
+    public void setReferringDoctorSpecialty(String referringDoctorSpecialty) {
+        this.referringDoctorSpecialty = referringDoctorSpecialty;
     }
 
     @Override

@@ -67,9 +67,17 @@ public class DiagnosticReportController {
         try {
             System.out.println("📝 POST / called - Received request to create report: " + diagnosticReport);
 
+            // THÊM DEBUG LOG:
+            System.out.println("🔍 DEBUG - Referring Doctor Name: " + diagnosticReport.getReferringDoctorName());
+            System.out.println("🔍 DEBUG - Referring Doctor Specialty: " + diagnosticReport.getReferringDoctorSpecialty());
+
             DiagnosticReport savedReport = diagnosticReportService.createReport(diagnosticReport);
 
             System.out.println("✅ Report created successfully: " + savedReport.getReportCode());
+
+            // THÊM DEBUG LOG SAU KHI LUU:
+            System.out.println("🔍 DEBUG - Saved Referring Doctor Name: " + savedReport.getReferringDoctorName());
+            System.out.println("🔍 DEBUG - Saved Referring Doctor Specialty: " + savedReport.getReferringDoctorSpecialty());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
                     true, "Báo cáo chẩn đoán đã được tạo thành công", savedReport
