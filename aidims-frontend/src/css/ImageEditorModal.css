@@ -1,105 +1,61 @@
-/* Modal kiểu floating: không che overlay, có thể mở nhiều cái */
-.floating-modal-container {
-  position: fixed;
-  width: 600px;
-  height: 80vh;
-  top: 10vh;
-  left: 10vw; /* sẽ được ghi đè bằng inline-style */
-  background: white;
+.custom-modal {
+  width: fit-content;
+  max-width: 90vw;
+  margin: auto;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-  z-index: 10000;
-  display: flex;
-  flex-direction: column;
+  background: white;
+  outline: none;
   overflow: hidden;
-  padding: 0;
-  border: 1px solid #ccc;
 }
 
-/* Header của từng modal nổi */
-.modal-header {
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: linear-gradient(to right, #6a11cb, #2575fc);
-  color: white;
-  font-weight: bold;
-  font-size: 14px;
-  border-bottom: 1px solid #ccc;
+  justify-content: center;
 }
 
-/* Nút trong header */
+.modal-header {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(to right, purple, dodgerblue);
+  color: white;
+}
+
 .modal-header button {
   padding: 6px 10px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s ease;
 }
 
-/* Các loại nút */
 .zoom-btn {
   background-color: #0dcaf0;
   color: white;
-}
-.zoom-btn:hover {
-  background-color: #0aa2c0;
 }
 
 .draw-btn {
   background-color: #0d6efd;
   color: white;
 }
-.draw-btn:hover {
-  background-color: #0b5ed7;
-}
+
 .draw-btn.active {
   background-color: #ffc107;
   color: black;
 }
 
 .clear-btn {
+  margin-right: 60px;
   background-color: #dc3545;
   color: white;
-}
-.clear-btn:hover {
-  background-color: #bb2d3b;
 }
 
 .close-btn {
   margin-left: auto;
+  font-size: 18px;
   background: white;
-  color: #333;
-  border: 1px solid #ccc;
-  font-weight: bold;
-}
-.close-btn:hover {
-  background: #eee;
-}
-
-/* Body hiển thị ảnh + canvas */
-.modal-body {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #f9f9f9;
-}
-/* Hiệu ứng mượt khi mở modal ảnh */
-@keyframes fadeInZoom {
-  0% {
-    opacity: 0;
-    transform: scale(0.85);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.fade-in-modal {
-  animation: fadeInZoom 0.3s ease-out;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
 }

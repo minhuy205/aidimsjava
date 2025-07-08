@@ -5,19 +5,6 @@ import LayoutLogin from "../Layout/LayoutLogin";
 import "../../css/verifyImages.css";
 import verifyImageService from "../../services/verifyImageService";
 
-// Danh sách loại chụp đồng bộ với các module khác
-const STUDY_TYPE_OPTIONS = [
-  { value: '', label: 'Tất cả' },
-  { value: 'X-quang thường', label: 'X-quang thường' },
-  { value: 'CT Scanner', label: 'CT Scanner' },
-  { value: 'MRI', label: 'MRI' },
-  { value: 'Siêu âm', label: 'Siêu âm' },
-  { value: 'PET-CT', label: 'PET-CT' },
-  { value: 'Mammography', label: 'Mammography' },
-  { value: 'Fluoroscopy', label: 'Fluoroscopy' },
-  { value: 'SPECT', label: 'SPECT' },
-];
-
 const VerifyImages = () => {
   // State management
   const [images, setImages] = useState([]);
@@ -35,26 +22,14 @@ const VerifyImages = () => {
   const [loading, setLoading] = useState(false);
   const [approvalNote, setApprovalNote] = useState("");
   const [activeTab, setActiveTab] = useState("info");
-  const [stats, setStats] = useState({ total: 0, approved: 0, pending: 0, rejected: 0 });
-  // Thống kê số lượng ảnh theo trạng thái (tính trực tiếp từ images)
-  const statsFromImages = {
-    total: images.length,
-    approved: images.filter(img => img.status === "Đã duyệt").length,
-    pending: images.filter(img => img.status === "Chờ duyệt").length,
-    rejected: images.filter(img => img.status === "Từ chối").length,
-  };
-
-  // Filter trạng thái dạng nút giống trang bác sĩ
-  const [statusTab, setStatusTab] = useState("pending");
 
   // Fetch images from backend
   const fetchImages = useCallback(async () => {
     setLoading(true);
     try {
-      const backendUrl = "http://localhost:8080"; // Change this if your backend URL is different
       const [dicomImportsRes, verifyImagesRes] = await Promise.all([
-        fetch(`${backendUrl}/api/verify-image/dicom-imports`, { credentials: 'include' }),
-        fetch(`${backendUrl}/api/verify-image/all`, { credentials: 'include' }),
+        fetch("http://localhost:8080/api/verify-image/dicom-imports"),
+        fetch("http://localhost:8080/api/verify-image/all"),
       ]);
 
       if (!dicomImportsRes.ok || !verifyImagesRes.ok) {
@@ -240,9 +215,27 @@ const VerifyImages = () => {
           note,
         });
 
-        // Sau khi duyệt/từ chối thành công, gọi lại fetchImages và fetchStats để đồng bộ dữ liệu mới nhất từ backend
-        await fetchImages();
+        // Update state
+        setImages((prev) =>
+          prev.map((img) =>
+            img.id === selectedImage.id
+              ? {
+                  ...img,
+                  status: approve ? "Đã duyệt" : "Từ chối",
+                  quality: approve
+                    ? approvalNote.includes("Xuất sắc")
+                      ? "Xuất sắc"
+                      : "Tốt"
+                    : "Kém",
+                  note,
+                }
+              : img
+          )
+        );
 
+        setFilteredImages((prev) =>
+          prev.filter((img) => img.id !== selectedImage.id)
+        );
         setShowApproveModal(false);
         setSelectedImage(null);
         setApprovalNote("");
@@ -253,7 +246,7 @@ const VerifyImages = () => {
         setLoading(false);
       }
     },
-    [selectedImage, approvalNote, fetchImages]
+    [selectedImage, approvalNote]
   );
 
   // UI helpers
@@ -475,15 +468,6 @@ const VerifyImages = () => {
       </div>
     );
 
-  useEffect(() => {
-    // Khi đổi tab trạng thái, tự động lọc lại danh sách
-    let filtered = images;
-    if (statusTab === "pending") filtered = images.filter(img => img.status === "Chờ duyệt");
-    else if (statusTab === "approved") filtered = images.filter(img => img.status === "Đã duyệt");
-    else if (statusTab === "rejected") filtered = images.filter(img => img.status === "Từ chối");
-    setFilteredImages(filtered);
-  }, [statusTab, images]);
-
   return (
     <LayoutLogin>
       <div className="verify-images-container">
@@ -494,16 +478,21 @@ const VerifyImages = () => {
           <p style={{fontSize: 20, color: '#666', marginTop: 8, fontWeight: 400, marginBottom: 0}}>Xác minh chất lượng hình ảnh và thông số kỹ thuật</p>
         </div>
 
-        {/* Filter trạng thái dạng nút đẹp */}
-        <div className="status-tab-row">
-          <button className={`status-tab pending${statusTab === "pending" ? " active" : ""}`} onClick={() => setStatusTab("pending")}>🕒 Chờ duyệt <span>({statsFromImages.pending})</span></button>
-          <button className={`status-tab approved${statusTab === "approved" ? " active" : ""}`} onClick={() => setStatusTab("approved")}>✅ Đã duyệt <span>({statsFromImages.approved})</span></button>
-          <button className={`status-tab rejected${statusTab === "rejected" ? " active" : ""}`} onClick={() => setStatusTab("rejected")}>❌ Từ chối <span>({statsFromImages.rejected})</span></button>
-          <button className={`status-tab all${statusTab === "all" ? " active" : ""}`} onClick={() => setStatusTab("all")}>📋 Tất cả <span>({statsFromImages.total})</span></button>
-        </div>
-
         <div className="filter-section">
           <div className="filter-row">
+            <div className="filter-group">
+              <label>Trạng thái:</label>
+              <select
+                name="status"
+                value={filters.status}
+                onChange={handleFilterChange}
+              >
+                <option value="pending">Chờ duyệt</option>
+                <option value="approved">Đã duyệt</option>
+                <option value="rejected">Từ chối</option>
+                <option value="all">Tất cả</option>
+              </select>
+            </div>
             <div className="filter-group">
               <label>Loại chụp:</label>
               <select
@@ -511,9 +500,12 @@ const VerifyImages = () => {
                 value={filters.studyType}
                 onChange={handleFilterChange}
               >
-                {STUDY_TYPE_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
+                <option value="">Tất cả</option>
+                <option value="X-quang thường">X-quang thường</option>
+                <option value="CT Scanner">CT Scanner</option>
+                <option value="MRI">MRI</option>
+                <option value="Siêu âm">Siêu âm</option>
+                <option value="PET-CT">PET-CT</option>
               </select>
             </div>
             <div className="filter-group">
@@ -547,19 +539,6 @@ const VerifyImages = () => {
                 value={filters.dateTo}
                 onChange={handleFilterChange}
               />
-            </div>
-            <div className="filter-group">
-              <label>Trạng thái:</label>
-              <select
-                name="status"
-                value={filters.status}
-                onChange={handleFilterChange}
-              >
-                <option value="all">Tất cả</option>
-                <option value="approved">Đã duyệt</option>
-                <option value="pending">Chờ duyệt</option>
-                <option value="rejected">Từ chối</option>
-              </select>
             </div>
           </div>
           <div className="filter-actions">
