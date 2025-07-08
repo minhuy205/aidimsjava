@@ -4,6 +4,32 @@ import { useState, useEffect } from "react"
 import LayoutLogin from "../Layout/LayoutLogin"
 import "../../css/userManagement.css"
 
+const API_BASE = "http://localhost:8080/api"
+
+const getRoleStyle = (role) => {
+  const baseStyle = {
+    display: "inline-block",
+    padding: "4px 8px",
+    borderRadius: "6px",
+    color: "white",
+    fontSize: "12px",
+    fontWeight: "500",
+  };
+
+  const roleColors = {
+    admin: "#dc2626",
+    doctor: "#16a34a",
+    receptionist: "#2563eb",
+    technician: "#eab308",
+  };
+
+  return {
+    ...baseStyle,
+    backgroundColor: roleColors[role] || "#6b7280", // fallback: xám
+  };
+};
+
+
 const UserManagement = () => {
   const [users, setUsers] = useState([])
   const [roles, setRoles] = useState([])
@@ -17,80 +43,15 @@ const UserManagement = () => {
     fullName: "",
     email: "",
     phone: "",
+    password: "",
     roleId: "",
     specialtyId: "",
     isActive: true,
   })
 
   useEffect(() => {
-    // Load users from localStorage or initialize with sample data
-    const savedUsers = localStorage.getItem("systemUsers")
-    if (savedUsers) {
-      setUsers(JSON.parse(savedUsers))
-    } else {
-      const sampleUsers = [
-        {
-          id: 1,
-          username: "admin",
-          fullName: "Quản trị viên chính",
-          email: "admin@hospital.com",
-          phone: "0901234567",
-          roleId: 1,
-          roleName: "admin",
-          specialtyId: null,
-          specialtyName: null,
-          isActive: true,
-          lastLogin: "2024-12-15 10:30:00",
-          createdAt: "2024-01-01",
-        },
-        {
-          id: 2,
-          username: "dr_nguyen",
-          fullName: "BS. Nguyễn Văn A",
-          email: "nguyen@hospital.com",
-          phone: "0902345678",
-          roleId: 2,
-          roleName: "doctor",
-          specialtyId: 1,
-          specialtyName: "Chẩn đoán hình ảnh",
-          isActive: true,
-          lastLogin: "2024-12-15 14:20:00",
-          createdAt: "2024-02-15",
-        },
-        {
-          id: 3,
-          username: "nv_huy",
-          fullName: "Huy - Nhân viên tiếp nhận",
-          email: "huy@hospital.com",
-          phone: "0903456789",
-          roleId: 3,
-          roleName: "receptionist",
-          specialtyId: null,
-          specialtyName: null,
-          isActive: true,
-          lastLogin: "2024-12-15 09:15:00",
-          createdAt: "2024-03-10",
-        },
-        {
-          id: 4,
-          username: "kv_duyen",
-          fullName: "Duyên - Kỹ thuật viên",
-          email: "duyen@hospital.com",
-          phone: "0904567890",
-          roleId: 4,
-          roleName: "technician",
-          specialtyId: 1,
-          specialtyName: "Chẩn đoán hình ảnh",
-          isActive: true,
-          lastLogin: "2024-12-15 11:45:00",
-          createdAt: "2024-04-05",
-        },
-      ]
-      setUsers(sampleUsers)
-      localStorage.setItem("systemUsers", JSON.stringify(sampleUsers))
-    }
+    fetchUsers()
 
-    // Initialize roles and specialties
     setRoles([
       { id: 1, name: "admin", displayName: "Quản trị viên" },
       { id: 2, name: "doctor", displayName: "Bác sĩ" },
@@ -107,6 +68,21 @@ const UserManagement = () => {
     ])
   }, [])
 
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/users`)
+      const result = await res.json()
+      if (res.ok) {
+        setUsers(result)
+      } else {
+        alert("Lỗi khi tải danh sách người dùng")
+      }
+    } catch (err) {
+      console.error("Fetch user error:", err)
+      alert("Không thể kết nối tới máy chủ")
+    }
+  }
+
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target
     setUserForm({
@@ -115,110 +91,170 @@ const UserManagement = () => {
     })
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    if (!userForm.username || !userForm.fullName || !userForm.roleId) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc")
-      return
+    const isCreating = !editingUser;
+    if (
+      !userForm.username ||
+      !userForm.fullName ||
+      !userForm.roleId ||
+      (isCreating && !userForm.password)
+    ) {
+      alert("Vui lòng điền đầy đủ thông tin bắt buộc");
+      return;
     }
 
-    const role = roles.find((r) => r.id === Number.parseInt(userForm.roleId))
-    const specialty = specialties.find((s) => s.id === Number.parseInt(userForm.specialtyId))
+    const payload = {
+      username: userForm.username,
+      fullName: userForm.fullName,
+      email: userForm.email,
+      phone: userForm.phone,
+      active: userForm.isActive,
+      role: {
+        roleId: parseInt(userForm.roleId),
+      },
+    };
 
-    if (editingUser) {
-      // Update existing user
-      const updatedUsers = users.map((user) => {
-        if (user.id === editingUser.id) {
-          return {
-            ...user,
-            ...userForm,
-            roleId: Number.parseInt(userForm.roleId),
-            roleName: role.name,
-            specialtyId: userForm.specialtyId ? Number.parseInt(userForm.specialtyId) : null,
-            specialtyName: specialty ? specialty.name : null,
-          }
-        }
-        return user
-      })
-      setUsers(updatedUsers)
-      localStorage.setItem("systemUsers", JSON.stringify(updatedUsers))
-    } else {
-      // Create new user
-      const newUser = {
-        id: Date.now(),
-        ...userForm,
-        roleId: Number.parseInt(userForm.roleId),
-        roleName: role.name,
-        specialtyId: userForm.specialtyId ? Number.parseInt(userForm.specialtyId) : null,
-        specialtyName: specialty ? specialty.name : null,
-        lastLogin: null,
-        createdAt: new Date().toISOString().split("T")[0],
+    if (isCreating || userForm.password.trim() !== "") {
+      payload.password = userForm.password;
+    }
+
+    try {
+      let response, result;
+
+      if (isCreating) {
+        response = await fetch(`${API_BASE}/users`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        const userId = editingUser.userId || editingUser.id;
+        response = await fetch(`${API_BASE}/users/${userId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
       }
-      const updatedUsers = [...users, newUser]
-      setUsers(updatedUsers)
-      localStorage.setItem("systemUsers", JSON.stringify(updatedUsers))
+
+      result = await response.json();
+
+      if (response.ok && result.status === "success") {
+        alert(isCreating ? "🆕 Tạo người dùng thành công" : "✅ Cập nhật người dùng thành công");
+        fetchUsers();
+      } else {
+        alert(result.message || "❌ Có lỗi xảy ra khi xử lý dữ liệu");
+      }
+    } catch (error) {
+      console.error("Lỗi gửi dữ liệu:", error);
+      alert("⚠️ Không thể kết nối đến máy chủ");
     }
 
-    // Reset form and close modal
     setUserForm({
       username: "",
       fullName: "",
       email: "",
       phone: "",
+      password: "",
       roleId: "",
       specialtyId: "",
       isActive: true,
-    })
-    setEditingUser(null)
-    setShowModal(false)
-  }
+    });
+    setEditingUser(null);
+    setShowModal(false);
+  };
+
 
   const handleEdit = (user) => {
-    setEditingUser(user)
-    setUserForm({
-      username: user.username,
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone,
-      roleId: user.roleId.toString(),
-      specialtyId: user.specialtyId ? user.specialtyId.toString() : "",
-      isActive: user.isActive,
-    })
-    setShowModal(true)
-  }
+    setEditingUser(user);
 
-  const handleDelete = (userId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa người dùng này?")) {
-      const updatedUsers = users.filter((user) => user.id !== userId)
-      setUsers(updatedUsers)
-      localStorage.setItem("systemUsers", JSON.stringify(updatedUsers))
+    setUserForm({
+      username: user.username || "",
+      fullName: user.fullName || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      password: "",
+      roleId: user.role?.roleId?.toString() || "",
+      isActive: user.active ?? true,
+    });
+
+    setShowModal(true);
+  };
+
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa?")) return
+    try {
+      const res = await fetch(`${API_BASE}/users/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        alert("Đã xóa người dùng")
+        fetchUsers()
+      } else {
+        alert("Không thể xóa")
+      }
+    } catch (err) {
+      alert("Lỗi kết nối")
     }
   }
 
-  const toggleUserStatus = (userId) => {
-    const updatedUsers = users.map((user) => {
-      if (user.id === userId) {
-        return { ...user, isActive: !user.isActive }
+  const toggleUserStatus = async (id) => {
+    const user = users.find(u => u.id === id || u.userId === id)
+    if (!user) return alert("Không tìm thấy người dùng")
+
+    const newStatus = !user.active
+
+    try {
+      const res = await fetch(`${API_BASE}/users/update-status/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          // Authorization: `Bearer ${token}`, // nếu có auth
+        },
+        body: JSON.stringify({ isActive: newStatus }),
+      })
+
+      let result = {}
+      try {
+        result = await res.json()
+      } catch (e) {
+        console.warn("Không thể đọc JSON từ server:", e)
       }
-      return user
-    })
-    setUsers(updatedUsers)
-    localStorage.setItem("systemUsers", JSON.stringify(updatedUsers))
+
+      if (!res.ok || result.status !== "success") {
+        console.error("❌ Server trả về lỗi:", res.status, result.message)
+        alert(result.message || "Không thể đổi trạng thái người dùng")
+        return
+      }
+
+      // ✅ Cập nhật trực tiếp vào danh sách users (không cần gọi lại fetchUsers)
+      setUsers(prev =>
+        prev.map(u =>
+          (u.id === id || u.userId === id)
+            ? { ...u, active: result.data.isActive }
+            : u
+        )
+      )
+
+      alert("✅ " + result.message)
+    } catch (e) {
+      console.error("Toggle error:", e)
+      alert("Lỗi kết nối đến máy chủ")
+    }
   }
+
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesRole = filterRole === "" || user.roleName === filterRole
-
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesRole = filterRole === "" || user.role.name === filterRole
     return matchesSearch && matchesRole
   })
 
   const getRoleDisplayName = (roleName) => {
+    console.log("getRoleDisplayName called with:", roleName)
     const role = roles.find((r) => r.name === roleName)
     return role ? role.displayName : roleName
   }
@@ -226,115 +262,138 @@ const UserManagement = () => {
   return (
     <LayoutLogin>
       <div className="user-management-page">
+        {/* HEADER */}
         <div className="page-header">
           <h2>👥 Quản lý Người dùng</h2>
           <p>Tạo, chỉnh sửa và phân quyền tài khoản người dùng trong hệ thống</p>
         </div>
 
+        {/* CONTROL BAR */}
         <div className="management-controls">
-          <div className="search-filters">
-            <div className="search-box">
+          <div className="search-filters flex w-full gap-4">
+            <div className="search-box flex-[5]">
               <input
                 type="text"
                 placeholder="🔍 Tìm kiếm theo tên, username hoặc email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 border rounded"
               />
             </div>
-            <div className="filter-box">
-              <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
+
+            <div className="filter-box flex-[3]">
+              <select
+                value={filterRole}
+                onChange={(e) => setFilterRole(e.target.value)}
+                className="w-full px-3 py-2 border rounded"
+              >
                 <option value="">Tất cả vai trò</option>
                 {roles.map((role) => (
-                  <option key={role.id} value={role.name}>
-                    {role.displayName}
-                  </option>
+                  <option key={role.id} value={role.name}>{role.displayName}</option>
                 ))}
               </select>
             </div>
+
+            <div className="add-user-box flex-[2]">
+              <button className="btn-add-user" onClick={() => {
+                setEditingUser(null)
+                setUserForm({
+                  username: "",
+                  fullName: "",
+                  email: "",
+                  phone: "",
+                  password: "",
+                  roleId: "",
+                  specialtyId: "",
+                  isActive: true,
+                })
+                setShowModal(true)
+              }}>
+                ➕ Thêm người dùng
+              </button>
+            </div>
           </div>
-          <button
-            className="btn-add-user"
-            onClick={() => {
-              setEditingUser(null)
-              setUserForm({
-                username: "",
-                fullName: "",
-                email: "",
-                phone: "",
-                roleId: "",
-                specialtyId: "",
-                isActive: true,
-              })
-              setShowModal(true)
-            }}
-          >
-            ➕ Thêm người dùng
-          </button>
         </div>
 
+        {/* THỐNG KÊ */}
         <div className="users-stats">
-  <div className="stat-card">
-    <div className="stat-label">Tổng người dùng</div>
-    <div className="stat-number">{users.length}</div>
-  </div>
-  <div className="stat-card">
-    <div className="stat-label">Đang hoạt động</div>
-    <div className="stat-number">{users.filter((u) => u.isActive).length}</div>
-  </div>
-  <div className="stat-card">
-    <div className="stat-label">Bác sĩ</div>
-    <div className="stat-number">{users.filter((u) => u.roleName === "doctor").length}</div>
-  </div>
-  <div className="stat-card">
-    <div className="stat-label">Kỹ thuật viên</div>
-    <div className="stat-number">{users.filter((u) => u.roleName === "technician").length}</div>
-  </div>
-</div>
+          <div className="stat-card">
+            <div className="stat-label">Tổng người dùng</div>
+            <div className="stat-number">{users.length}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">Đang hoạt động</div>
+            <div className="stat-number">{users.filter((u) => u.active).length}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">Bác sĩ</div>
+            <div className="stat-number">{users.filter((u) => u.role.name === "doctor").length}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">Kỹ thuật viên</div>
+            <div className="stat-number">{users.filter((u) => u.role.name === "technician").length}</div>
+          </div>
+        </div>
 
-        <div className="users-table-container">
-          <table className="users-table">
+        {/* BẢNG NGƯỜI DÙNG */}
+        <div className="users-table-container mt-6">
+          <table className="users-table w-full border-collapse rounded-xl overflow-hidden shadow-md">
             <thead>
-              <tr>
-                <th>Username</th>
-                <th>Họ tên</th>
-                <th>Email</th>
-                <th>Vai trò</th>
-                <th>Chuyên khoa</th>
-                <th>Trạng thái</th>
-                <th>Đăng nhập cuối</th>
-                <th>Hành động</th>
+              <tr className="bg-blue-600 text-white text-left text-sm uppercase font-semibold">
+                <th className="px-4 py-3">Username</th>
+                <th className="px-4 py-3">Họ tên</th>
+                <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">SĐT</th>
+                <th className="px-4 py-3">Vai trò</th>
+                <th className="px-4 py-3">Trạng thái</th>
+                <th className="px-4 py-3">Hành động</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-sm font-medium text-gray-700">
               {filteredUsers.map((user) => (
-                <tr key={user.id}>
-                  <td className="username-cell">{user.username}</td>
-                  <td className="fullname-cell">{user.fullName}</td>
-                  <td>{user.email}</td>
-                  <td>
-                    <span className={`role-badge role-${user.roleName}`}>{getRoleDisplayName(user.roleName)}</span>
+                <tr
+                  key={user.userId || user.id}
+                  className="hover:bg-gray-100 transition-colors border-b"
+                >
+                  <td className="px-4 py-2">{user.username}</td>
+                  <td className="px-4 py-2">{user.fullName}</td>
+                  <td className="px-4 py-2">{user.email}</td>
+                  <td className="px-4 py-2">{user.phone}</td>
+                  <td className="px-4 py-2">
+                    <span style={getRoleStyle(user.role)}>
+                      {getRoleDisplayName(user.role)}
+                    </span>
+
                   </td>
-                  <td>{user.specialtyName || "—"}</td>
-                  <td>
-                    <span className={`status-badge ${user.isActive ? "status-active" : "status-inactive"}`}>
-                      {user.isActive ? "Hoạt động" : "Tạm khóa"}
+                  <td className="px-4 py-2">
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${user.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      {user.active ? "Hoạt động" : "Tạm khóa"}
                     </span>
                   </td>
-                  <td>{user.lastLogin || "Chưa đăng nhập"}</td>
-                  <td className="actions-cell">
-                    <button className="btn-edit" onClick={() => handleEdit(user)} title="Chỉnh sửa">
-                      ✏️
-                    </button>
-                    <button
-                      className={`btn-toggle ${user.isActive ? "btn-deactivate" : "btn-activate"}`}
-                      onClick={() => toggleUserStatus(user.id)}
-                      title={user.isActive ? "Tạm khóa" : "Kích hoạt"}
-                    >
-                      {user.isActive ? "🔒" : "🔓"}
-                    </button>
-                    <button className="btn-delete" onClick={() => handleDelete(user.id)} title="Xóa">
-                      🗑️
-                    </button>
+                  <td className="px-4 py-2">
+                    <div className="flex items-center justify-start gap-2">
+                      <button
+                        onClick={() => handleEdit(user)}
+                        title="Chỉnh sửa"
+                        className="btn-edit"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => toggleUserStatus(user.id || user.userId)}
+                        title={user.active ? "Tạm khóa" : "Kích hoạt"}
+                        className={`btn-toggle ${user.active ? "btn-deactivate" : "btn-activate"}`}
+                      >
+                        {user.active ? "🔓" : "🔒"}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user.id || user.userId)}
+                        title="Xóa"
+                        className="btn-delete"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -342,76 +401,57 @@ const UserManagement = () => {
           </table>
         </div>
 
-        {/* User Form Modal */}
+        {/* FORM MODAL */}
         {showModal && (
           <div className="modal-overlay" onClick={() => setShowModal(false)}>
             <div className="user-modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>{editingUser ? "✏️ Chỉnh sửa người dùng" : "➕ Thêm người dùng mới"}</h3>
-                <button className="close-btn" onClick={() => setShowModal(false)}>
-                  ×
-                </button>
+                <button onClick={() => setShowModal(false)}>×</button>
               </div>
 
               <form onSubmit={handleSubmit} className="user-form">
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Username: *</label>
-                    <input
-                      type="text"
-                      name="username"
-                      value={userForm.username}
-                      onChange={handleFormChange}
-                      required
-                      disabled={editingUser !== null}
-                    />
+                    <label>Username *</label>
+                    <input type="text" name="username" value={userForm.username} onChange={handleFormChange} required disabled={!!editingUser} />
                   </div>
                   <div className="form-group">
-                    <label>Họ và tên: *</label>
+                    <label>Họ tên *</label>
                     <input type="text" name="fullName" value={userForm.fullName} onChange={handleFormChange} required />
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Email:</label>
+                    <label>Email</label>
                     <input type="email" name="email" value={userForm.email} onChange={handleFormChange} />
                   </div>
                   <div className="form-group">
-                    <label>Số điện thoại:</label>
+                    <label>SĐT</label>
                     <input type="tel" name="phone" value={userForm.phone} onChange={handleFormChange} />
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Vai trò: *</label>
+                    <label>{editingUser ? "Mật khẩu (nếu đổi)" : "Mật khẩu *"}</label>
+                    <input type="password" name="password" value={userForm.password} onChange={handleFormChange} required={!editingUser} />
+                  </div>
+                  <div className="form-group">
+                    <label>Vai trò *</label>
                     <select name="roleId" value={userForm.roleId} onChange={handleFormChange} required>
                       <option value="">-- Chọn vai trò --</option>
                       {roles.map((role) => (
-                        <option key={role.id} value={role.id}>
-                          {role.displayName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Chuyên khoa:</label>
-                    <select name="specialtyId" value={userForm.specialtyId} onChange={handleFormChange}>
-                      <option value="">-- Chọn chuyên khoa --</option>
-                      {specialties.map((specialty) => (
-                        <option key={specialty.id} value={specialty.id}>
-                          {specialty.name}
-                        </option>
+                        <option key={role.id} value={role.id}>{role.displayName}</option>
                       ))}
                     </select>
                   </div>
                 </div>
 
                 <div className="form-group checkbox-group">
-                  <label className="checkbox-label">
+                  <label>
                     <input type="checkbox" name="isActive" checked={userForm.isActive} onChange={handleFormChange} />
-                    <span className="checkmark"></span>
                     Tài khoản hoạt động
                   </label>
                 </div>

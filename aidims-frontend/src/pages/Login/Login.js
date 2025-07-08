@@ -6,6 +6,7 @@ import {authService} from "../../services/authService"
 import "../../css/auth.css"
 
 function Login() {
+    console.log("Login component loaded")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
@@ -61,16 +62,16 @@ function Login() {
         setTimeout(() => {
           switch (user.role) {
             case "admin":
-              navigate("/login/admin")
+              navigate("/IndexAdmin")
               break
             case "doctor":
-              navigate("/login/doctor")
+              navigate("/IndexDoctor")
               break
             case "receptionist":
-              navigate("/login/receptionist")
+              navigate("/receptionist")
               break
             case "technician":
-              navigate("/login/technician")
+              navigate("/technician")
               break
             default:
               navigate("/")
@@ -161,7 +162,7 @@ function Login() {
             </a>
           </div>
 
-          <div className="auth-divider">
+          {/* <div className="auth-divider">
             <span>Hoặc truy cập nhanh</span>
           </div>
 
@@ -178,7 +179,7 @@ function Login() {
             <a href="/login/admin" className="quick-btn admin">
               👨‍💼 Quản trị viên
             </a>
-          </div>
+          </div> */}
 
           <div className="auth-footer">
             <a href="/" className="back-home">

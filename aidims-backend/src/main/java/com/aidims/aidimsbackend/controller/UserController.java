@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,10 +26,7 @@ import com.aidims.aidimsbackend.repository.UserRepository;
 @RequestMapping("/api/users")
 // @CrossOrigin(origins = "http://localhost:3000")
 
-
-
 public class UserController {
-
 
     @Autowired
     private UserRepository userRepository;
@@ -53,9 +49,11 @@ public ResponseEntity<List<UserDto>> getAllUsers() {
                 user.getUserId(),
                 user.getUsername(),
                 user.getFullName(),
-                displayRole,
+                internalRole,
                 user.getEmail(),
-                user.isActive()
+                user.getPhone(),
+                user.isActive() // Thêm trường isActive
+                
             );
         })
         .toList();
@@ -81,7 +79,6 @@ public ResponseEntity<List<UserDto>> getAllUsers() {
         }
         return ResponseEntity.status(404).body(Map.of("error", "Không tìm thấy người dùng"));
     }
-
 
     // POST /users - Đăng ký user mới
     @PostMapping
@@ -115,42 +112,52 @@ public ResponseEntity<?> createUser(@RequestBody User user) {
     }
 }
 
-
     // PUT /users/{id} - Cập nhật user
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
-        Optional<User> userOpt = userRepository.findById(id);
-        System.out.println("Updating user with ID: " + id);
-        System.out.println("Updated user details: " + updatedUser);
+    @PatchMapping("/users/update-status/{id}")
+public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    Optional<User> userOpt = userRepository.findById(id);
+    System.out.println("Updating user with ID: " + id);
 
-        Map<String, Object> response = new HashMap<>();
+    Map<String, Object> response = new HashMap<>();
 
-        if (userOpt.isEmpty()) {
-            response.put("message", "Không tìm thấy người dùng với ID: " + id);
-            response.put("status", "error");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-        System.out.println("User found: " + userOpt.get());
+    if (userOpt.isEmpty()) {
+        response.put("message", "Không tìm thấy người dùng với ID: " + id);
+        response.put("status", "error");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+    System.out.println("User found: " + userOpt.get());
 
-        User existingUser = userOpt.get();
-        existingUser.setPassword(updatedUser.getPassword());
-        existingUser.setFullName(updatedUser.getFullName());
-        existingUser.setEmail(updatedUser.getEmail());
-        existingUser.setPhone(updatedUser.getPhone());
+    User existingUser = userOpt.get();
 
-        User savedUser = userRepository.save(existingUser);
-
-        if (savedUser.getRole() != null) {
-            savedUser.getRole().setUsers(null); // tránh vòng lặp JSON
-        }
-
-        response.put("message", "Cập nhật người dùng thành công");
-        response.put("status", "success");
-        response.put("data", savedUser);
-
-        return ResponseEntity.ok(response);
+    // Update fields if present in the request body
+    if (body.containsKey("password")) {
+        existingUser.setPassword((String) body.get("password"));
+    }
+    if (body.containsKey("fullName")) {
+        existingUser.setFullName((String) body.get("fullName"));
+    }
+    if (body.containsKey("email")) {
+        existingUser.setEmail((String) body.get("email"));
+    }
+    if (body.containsKey("phone")) {
+        existingUser.setPhone((String) body.get("phone"));
+    }
+    if (body.containsKey("isActive")) {
+        existingUser.setActive((Boolean) body.get("isActive"));
     }
 
+    User savedUser = userRepository.save(existingUser);
+
+    if (savedUser.getRole() != null) {
+        savedUser.getRole().setUsers(null); // tránh vòng lặp JSON
+    }
+
+    response.put("message", "Cập nhật người dùng thành công");
+    response.put("status", "success");
+    response.put("data", savedUser);
+
+    return ResponseEntity.ok(response);
+}
 
     @PatchMapping("/update-status/{id}")
 public ResponseEntity<?> updateUserStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> payload) {
@@ -194,11 +201,6 @@ public ResponseEntity<?> updateUserStatus(@PathVariable Long id, @RequestBody Ma
 
     return ResponseEntity.ok(response);
 }
-
-
-
-
-
 
     // DELETE /users/{id} - Xóa user theo ID
     @DeleteMapping("/{id}")

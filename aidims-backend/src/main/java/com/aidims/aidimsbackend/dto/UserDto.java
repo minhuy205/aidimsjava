@@ -6,14 +6,17 @@ public class UserDto {
     private String fullName;
     private String role;
     private String email;
+    private String phone;
+    
     private boolean isActive;
     
-    public UserDto(Long id, String username, String fullName, String role, String email, boolean isActive) {
+    public UserDto(Long id, String username, String fullName, String role, String email, String phone, boolean isActive) {
         this.id = id;
         this.username = username;
         this.fullName = fullName;
         this.role = role;
         this.email = email;
+        this.phone = phone;
         this.isActive = isActive;
     }
     
@@ -35,4 +38,9 @@ public class UserDto {
     
     public boolean isActive() { return isActive; }
     public void setActive(boolean isActive) { this.isActive = isActive; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    
 }
