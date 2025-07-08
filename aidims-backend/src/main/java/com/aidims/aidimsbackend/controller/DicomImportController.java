@@ -107,9 +107,14 @@ public ResponseEntity<?> importDicom(
         @RequestParam(value = "performed_by", required = false) String performedBy
 ) {
     System.out.println("[DicomImport] Nhận file: " + (file != null ? file.getOriginalFilename() : "null") + ", size: " + (file != null ? file.getSize() : "null"));
+    System.out.println("[DicomImport] Thông số kỹ thuật nhận được: " + technicalParams);
     if (file == null || file.isEmpty()) {
         System.out.println("[DicomImport] File null hoặc empty!");
         return ResponseEntity.status(400).body("Không nhận được file từ frontend!");
+    }
+    if (technicalParams == null || technicalParams.trim().isEmpty()) {
+        System.out.println("[DicomImport] Thiếu thông số kỹ thuật!");
+        return ResponseEntity.status(400).body("Thiếu thông số kỹ thuật (technical_params)!");
     }
     // Lưu file vào thư mục dicom_uploads tuyệt đối
     String uploadDir = System.getProperty("user.dir") + "/aidims-backend/dicom_uploads/";

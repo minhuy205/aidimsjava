@@ -189,7 +189,33 @@ const PatientProfile = () => {
   if (loading) {
     return (
         <LayoutLogin>
-
+          <button
+              onClick={() => window.history.back()}
+              style={{
+                position: 'fixed',
+                top: '20px',
+                left: '20px',
+                zIndex: 99999,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                background: '#fff',
+                border: '2px solid #007bff',
+                borderRadius: '8px',
+                color: '#007bff',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }}
+              title="Quay lại"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Quay lại</span>
+          </button>
           <div className="doctor-page">
             <div className="patient-list-container">
               <div className="page-header">

@@ -4,13 +4,11 @@ import Modal from "react-modal";
 import DrawingCanvas from "./DrawingCanvas";
 import "../css/ImageEditorModal.css";
 
-const ImageEditorModal = ({ isOpen, onRequestClose, imageUrl }) => {
+const ImageEditorModal = ({ isOpen, onRequestClose, imageUrl, isFloating = false }) => {
   const [lines, setLines] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [stageScale, setStageScale] = useState(1);
   const stageRef = useRef(null);
-
-  // Smooth zoom animation effect
   const zoomTarget = useRef(stageScale);
 
   useEffect(() => {
@@ -42,9 +40,11 @@ const ImageEditorModal = ({ isOpen, onRequestClose, imageUrl }) => {
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       contentLabel="Xem ảnh DICOM"
-      className="custom-modal"
-      overlayClassName="modal-overlay"
+      className={isFloating ? "floating-modal" : "custom-modal"}
+      overlayClassName={isFloating ? "floating-overlay" : "modal-overlay"}
+      parentSelector={isFloating ? () => document.body : undefined}
       ariaHideApp={false}
+      shouldCloseOnOverlayClick={!isFloating}
     >
       <div className="modal-header">
         <button className="zoom-btn" onClick={() => handleZoom("in")}>🔍 Zoom In</button>

@@ -1,4 +1,3 @@
-
 package com.aidims.aidimsbackend.controller;
 
 import java.time.LocalDateTime;
@@ -15,14 +14,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.aidims.aidimsbackend.entity.DicomImport;
 import com.aidims.aidimsbackend.entity.VerifyImage;
 import com.aidims.aidimsbackend.repository.DicomImportRepository;
-import com.aidims.aidimsbackend.service.DicomFileService;
 import com.aidims.aidimsbackend.service.VerifyImageService;
 
 @RestController
@@ -114,6 +110,41 @@ public class VerifyImageController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Error updating status: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/status-summary")
+    public ResponseEntity<?> getVerifyStatusSummary() {
+        List<VerifyImage> all = verifyImageService.getAllVerifyImages();
+        long daDuyet = all.stream().filter(v -> "approved".equalsIgnoreCase(v.getResult())).count();
+        long chuaDuyet = all.stream().filter(v -> !"approved".equalsIgnoreCase(v.getResult())).count();
+        return ResponseEntity.ok(Map.of(
+            "daDuyet", daDuyet,
+            "chuaDuyet", chuaDuyet,
+            "tong", all.size()
+        ));
+    }
+
+    @GetMapping("/summary-stats")
+    public ResponseEntity<?> getVerifyImageStats() {
+        List<DicomImport> allImports = dicomImportRepository.findAll();
+        List<VerifyImage> allVerifies = verifyImageService.getAllVerifyImages();
+        Map<Long, VerifyImage> verifyMap = allVerifies.stream()
+            .collect(java.util.stream.Collectors.toMap(VerifyImage::getImageId, v -> v, (a, b) -> a));
+        int tong = allImports.size();
+        int daDuyet = 0, tuChoi = 0, choDuyet = 0;
+        for (DicomImport di : allImports) {
+            VerifyImage vi = verifyMap.get(di.getId());
+            if (vi == null) choDuyet++;
+            else if ("approved".equalsIgnoreCase(vi.getResult())) daDuyet++;
+            else if ("rejected".equalsIgnoreCase(vi.getResult())) tuChoi++;
+            else choDuyet++;
+        }
+        return ResponseEntity.ok(Map.of(
+            "tong", tong,
+            "daDuyet", daDuyet,
+            "choDuyet", choDuyet,
+            "tuChoi", tuChoi
+        ));
     }
 
 }
