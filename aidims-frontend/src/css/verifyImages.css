@@ -559,3 +559,95 @@
 .image-info-modal-actions .btn-info:hover {
   background: #217dbb;
 }
+
+.status-tab-row {
+  display: flex;
+  gap: 28px;
+  margin: 28px 0 32px 0;
+  justify-content: center;
+  align-items: center;
+}
+.status-tab {
+  border: none;
+  outline: none;
+  padding: 14px 36px;
+  border-radius: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  background: #f5f7fa;
+  color: #444;
+  box-shadow: 0 4px 18px #e0e7ef;
+  cursor: pointer;
+  transition: all 0.18s, box-shadow 0.22s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 160px;
+  justify-content: center;
+  letter-spacing: 0.5px;
+}
+.status-tab span {
+  font-size: 18px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+.status-tab.pending {
+  background: #fffbe6;
+  color: #f39c12;
+  border: 1.5px solid #ffe29c;
+}
+.status-tab.approved {
+  background: #e6f9f0;
+  color: #1abc9c;
+  border: 1.5px solid #b2f2dd;
+}
+.status-tab.rejected {
+  background: #ffeaea;
+  color: #e74c3c;
+  border: 1.5px solid #ffb3b3;
+}
+.status-tab.all {
+  background: #f5f7fa;
+  color: #888;
+  border: 1.5px solid #e0e0e0;
+}
+.status-tab.active {
+  border: 2.5px solid #3498db;
+  background: #eaf6ff;
+  color: #3498db;
+  box-shadow: 0 6px 24px #b3d8fa;
+  transform: scale(1.06);
+  z-index: 1;
+}
+.status-tab:hover:not(.active) {
+  filter: brightness(0.98);
+  box-shadow: 0 4px 18px #d0e0e7;
+  transform: translateY(-2px) scale(1.03);
+}
+@media (max-width: 900px) {
+  .status-tab-row {
+    gap: 14px;
+    margin: 18px 0 18px 0;
+  }
+  .status-tab {
+    padding: 10px 16px;
+    font-size: 16px;
+    min-width: 100px;
+  }
+  .status-tab span {
+    font-size: 15px;
+  }
+}
+@media (max-width: 600px) {
+  .status-tab-row {
+    flex-direction: column;
+    gap: 10px;
+    margin: 12px 0 16px 0;
+  }
+  .status-tab {
+    width: 100%;
+    min-width: unset;
+    justify-content: flex-start;
+  }
+}
+
