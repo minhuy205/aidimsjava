@@ -7,6 +7,7 @@
   
   a {
     text-decoration: none;
+    color: #72aeeb;
   }
   .App {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -97,7 +98,8 @@
   
   .hero-content h1 {
     font-size: 3rem;
-    color: #0066cc;
+    /* color: #0066cc; */
+    color: #0077ff;
     margin-bottom: 10px;
     font-weight: bold;
   }
@@ -110,7 +112,7 @@
   
   .hero-content p {
     font-size: 1.1rem;
-    color: #666;
+    color: #c7c7c7;
     margin-bottom: 30px;
     line-height: 1.8;
   }
