@@ -5,12 +5,16 @@ public class UserDto {
     private String username;
     private String fullName;
     private String role;
+    private String email;
+    private boolean isActive;
     
-    public UserDto(Long id, String username, String fullName, String role) {
+    public UserDto(Long id, String username, String fullName, String role, String email, boolean isActive) {
         this.id = id;
         this.username = username;
         this.fullName = fullName;
         this.role = role;
+        this.email = email;
+        this.isActive = isActive;
     }
     
     // Getters and Setters
@@ -25,4 +29,10 @@ public class UserDto {
     
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean isActive) { this.isActive = isActive; }
 }

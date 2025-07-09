@@ -6,7 +6,6 @@ import {authService} from "../../services/authService"
 import "../../css/auth.css"
 
 function Login() {
-    console.log("Login component loaded")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
@@ -62,16 +61,16 @@ function Login() {
         setTimeout(() => {
           switch (user.role) {
             case "admin":
-              navigate("/IndexAdmin")
+              navigate("/login/admin")
               break
             case "doctor":
-              navigate("/IndexDoctor")
+              navigate("/login/doctor")
               break
             case "receptionist":
-              navigate("/receptionist")
+              navigate("/login/receptionist")
               break
             case "technician":
-              navigate("/technician")
+              navigate("/login/technician")
               break
             default:
               navigate("/")
@@ -150,19 +149,19 @@ function Login() {
           </form>
 
           <div className="auth-links">
-            {/* <p>
+            <p>
               Chưa có tài khoản?
               <a href="/register" className="link-primary">
                 {" "}
                 Đăng ký ngay
               </a>
-            </p> */}
+            </p>
             <a href="#" className="link-secondary">
               Quên mật khẩu?
             </a>
           </div>
 
-          {/* <div className="auth-divider">
+          <div className="auth-divider">
             <span>Hoặc truy cập nhanh</span>
           </div>
 
@@ -179,7 +178,7 @@ function Login() {
             <a href="/login/admin" className="quick-btn admin">
               👨‍💼 Quản trị viên
             </a>
-          </div> */}
+          </div>
 
           <div className="auth-footer">
             <a href="/" className="back-home">
