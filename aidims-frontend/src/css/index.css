@@ -254,7 +254,7 @@
   
   /* CTA Section */
   .cta-section {
-    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    /* background: linear-gradient(135deg, #0066cc 0%, #004499 100%); */
     color: white;
     padding: 80px 0;
     text-align: center;
@@ -332,3 +332,267 @@
       align-items: center;
     }
   }
+  /* Global */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  color: white;
+  overflow: hidden;
+}
+
+.hero-media {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 10, 30, 0.5);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.hero-content p {
+  font-size: 1.3rem;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-cta {
+  padding: 0.8rem 1.6rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #0a58ca;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #084298;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: #0a58ca;
+  border: 2px solid #0a58ca;
+}
+
+.btn-secondary:hover {
+  background-color: #e0e7ff;
+}
+
+/* Features Section */
+/* .features-section {
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.features-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background-color: #f9f9f9;
+  border-radius: 1rem;
+  padding: 2rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.feature-card img {
+  width: 100%;
+  max-width: 100px;
+  height: auto;
+  margin-bottom: 1.5rem;
+}
+
+.feature-text h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.feature-text p {
+  font-size: 1rem;
+  color: #555;
+} */
+
+.features-grid-section {
+  padding: 60px 0;
+  text-align: center;
+}
+
+.carousel-title {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #0a58ca;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.feature-overlay {
+  padding: 20px;
+  background-color: white;
+  text-align: left;
+}
+
+.feature-overlay h3 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  color: #0a58ca;
+}
+
+.feature-overlay p {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .feature-img {
+    height: 200px;
+  }
+}
+
+@media (max-width: 600px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-img {
+    height: 220px;
+  }
+}
+
+
+/* Dashboard Preview */
+.dashboard-preview {
+  background-color: #f0f4ff;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.dashboard-preview img {
+  width: 100%;
+  max-width: 1000px;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  margin-top: 2rem;
+}
+
+/* CTA Section */
+.cta-section {
+  background-color: #002c54;
+  color: white;
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.cta-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.cta-section p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.btn-cta {
+  background-color: white;
+  color: #0a58ca;
+  font-size: 1.1rem;
+  padding: 0.9rem 2rem;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.btn-cta:hover {
+  background-color: #e0e7ff;
+}

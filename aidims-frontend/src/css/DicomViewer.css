@@ -2,7 +2,7 @@
 .doctor-page {
   min-height: 100vh;
   background: #f8f9fa;
-  padding-top: 80px;
+  /* padding-top: 80px; */
 }
 
 .dicom-list-container {

@@ -2,7 +2,7 @@
 .doctor-page {
   min-height: 100vh;
   background: #f8f9fa;
-  padding-top: 80px; /* Thêm padding-top để tránh bị header che */
+  /* padding-top: 80px; Thêm padding-top để tránh bị header che */
 }
 
 .patient-list-container {

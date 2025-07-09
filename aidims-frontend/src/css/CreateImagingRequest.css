@@ -171,6 +171,12 @@
     font-size: 0.95rem;
 }
 
+.logout-btn {
+    background-color: transparent;
+    color: white;
+    border: 2px solid #fff;
+  }
+
 .btn-primary {
     background: #28a745;
     color: white;
