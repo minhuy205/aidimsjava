@@ -26,7 +26,7 @@ const Contact = () => {
   </ul>
   <h2>Sheet & Github</h2>
   <ul>
-    <li><a href="https://docs.google.com/spreadsheets/d/14ldAUh3Tvhpa1Rzu-aBGcjX6nUz2PPlf1W7RRH-sK_k/edit?usp=sharing">Link Google Sheet dự án</a></li>
+    <li><a href="https://docs.google.com/spreadsheets/d/1V5PADmai-D2lrqRuN2viL-ZkTWZqA2K32qBgBx6gJZk/edit?usp=sharing">Link Google Sheet dự án</a></li>
     <li><a href="https://github.com/minhuy205/aidimsjava.git"> Link Github dự án</a></li>
   </ul>
   <h2>Thông tin liên hệ</h2>

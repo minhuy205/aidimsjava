@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Layout from "../Layout/Layout";
+import LayoutLogin from "../Layout/LayoutLogin"
 import "../../css/importDicom.css";
 import { importDicom } from "../../services/ImportDicomService";
 import { patientService } from "../../services/patientService";
@@ -205,7 +205,7 @@ const ImportDicom = () => {
   };
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="import-dicom-page">
          <h2 className="page-title">📄 Import Ảnh DICOM</h2>
         <div className="page-header">
@@ -480,7 +480,7 @@ const ImportDicom = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </LayoutLogin>
   );
 };
 

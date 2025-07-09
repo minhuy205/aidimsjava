@@ -26,11 +26,11 @@ const IndexTechnician = () => {
                 <h3>Kiểm tra chất lượng</h3>
                 <p>Xác minh chất lượng hình ảnh và thông số kỹ thuật.</p>
               </Link>
-              <Link to="/technician/assign-images" className="feature-card">
+              {/* <Link to="/technician/assign-images" className="feature-card">
                 <div className="feature-icon assign-icon">👥</div>
                 <h3>Phân công hình ảnh</h3>
                 <p>Gán hình ảnh cho bệnh nhân và chuyển đến bác sĩ đọc.</p>
-              </Link>
+              </Link> */}
             </div>
           </div>
         </section>

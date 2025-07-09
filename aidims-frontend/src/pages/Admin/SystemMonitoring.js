@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Layout from "../Layout/Layout"
+import LayoutLogin from "../Layout/LayoutLogin"
 import "../../css/systemMonitoring.css"
 
 const SystemMonitoring = () => {
@@ -175,7 +175,7 @@ const SystemMonitoring = () => {
   }
 
   return (
-    <Layout>
+    <LayoutLogin>
       <div className="system-monitoring-page">
         <div className="page-header">
           <h2>📊 Giám sát Hệ thống</h2>
@@ -329,7 +329,7 @@ const SystemMonitoring = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </LayoutLogin>
   )
 }
 
