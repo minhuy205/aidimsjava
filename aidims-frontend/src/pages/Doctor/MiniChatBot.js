@@ -20,6 +20,8 @@ const MiniChatbot = () => {
     const [imageAnalysisMode, setImageAnalysisMode] = useState(false);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+    const dicomInputRef = useRef(null);
+    const [selectedDicom, setSelectedDicom] = useState(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -330,6 +332,94 @@ const MiniChatbot = () => {
         }
     };
 
+    // ── DICOM ──────────────────────────────────────────────────────────
+    // Xử lý khi user chọn file .dcm
+    const handleDicomUpload = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.dcm')) {
+            alert('Chỉ chấp nhận file DICOM (.dcm)');
+            return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+            alert('File DICOM không được vượt quá 50MB');
+            return;
+        }
+
+        setSelectedDicom(file);
+
+        // Thông báo cho user biết file đã được chọn
+        setMessages(prev => [...prev, {
+            id: Date.now(),
+            text: `🏥 **Đã chọn file DICOM:** ${file.name}\n(${(file.size/1024/1024).toFixed(2)} MB)\n\nNhấn **"🔬 Phân tích DICOM"** để gửi lên server phân tích.`,
+            sender: "bot",
+            timestamp: new Date()
+        }]);
+
+        // Reset input để có thể chọn lại cùng file
+        event.target.value = '';
+    };
+
+    // Gửi file .dcm lên /api/dicom/analyze
+    const sendDicomForAnalysis = async () => {
+        if (!selectedDicom) return;
+
+        setMessages(prev => [...prev, {
+            id: Date.now(),
+            text: `🔬 Đang phân tích DICOM: ${selectedDicom.name}`,
+            sender: "user",
+            timestamp: new Date()
+        }]);
+
+        const fileToSend = selectedDicom;
+        setSelectedDicom(null);
+        setIsTyping(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', fileToSend);
+            formData.append('message', inputMessage.trim() || 'Phân tích hình ảnh DICOM này');
+
+            const response = await fetch('http://localhost:8080/api/dicom/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errText}`);
+            }
+
+            const data = await response.json();
+
+            // Response mới có: analysisText, dicomImageBase64, metadata
+            setMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                text: data.analysisText || data.message || 'Phân tích DICOM hoàn tất!',
+                sender: "bot",
+                timestamp: new Date(),
+                dicomImage: data.dicomImageBase64 || null,   // data URL
+                dicomMeta:  data.metadata         || null    // object metadata
+            }]);
+            setConnectionStatus('connected');
+            setInputMessage('');
+
+        } catch (error) {
+            console.error('❌ DICOM analysis error:', error);
+            setConnectionStatus('disconnected');
+            setMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                text: `❌ **Lỗi phân tích DICOM**\n\n${error.message}\n\n📞 Hỗ trợ: 0777815075`,
+                sender: "bot",
+                timestamp: new Date()
+            }]);
+        } finally {
+            setIsTyping(false);
+        }
+    };
+    // ── end DICOM ──────────────────────────────────────────────────────
+
     return (
         <>
             {/* Chat Icon */}
@@ -405,7 +495,7 @@ const MiniChatbot = () => {
                                 className={`message-container ${message.sender}`}
                             >
                                 <div className={`message-bubble ${message.sender}`}>
-                                    {/* Hiển thị hình ảnh nếu có */}
+                                    {/* Ảnh thường (JPG/PNG upload) */}
                                     {message.images && message.images.length > 0 && (
                                         <div className="message-images">
                                             {message.images.map((image, index) => (
@@ -427,6 +517,89 @@ const MiniChatbot = () => {
                                             ))}
                                         </div>
                                     )}
+
+                                    {/* ── DICOM: ảnh convert + metadata ── */}
+                                    {message.dicomImage && (
+                                        <div style={{
+                                            marginBottom: '12px',
+                                            border: '1px solid #2a5298',
+                                            borderRadius: '10px',
+                                            overflow: 'hidden',
+                                            background: '#0a0a1a'
+                                        }}>
+                                            {/* Header ảnh */}
+                                            <div style={{
+                                                background: '#1a3a6b',
+                                                color: '#7eb8f7',
+                                                fontSize: '11px',
+                                                fontWeight: 600,
+                                                padding: '6px 10px',
+                                                letterSpacing: '0.5px'
+                                            }}>
+                                                🏥 DICOM IMAGE — {message.dicomMeta?.modality || 'N/A'} | {message.dicomMeta?.imageSize || ''}
+                                            </div>
+
+                                            {/* Ảnh DICOM */}
+                                            <img
+                                                src={message.dicomImage}
+                                                alt="DICOM"
+                                                style={{
+                                                    width: '100%',
+                                                    maxHeight: '280px',
+                                                    objectFit: 'contain',
+                                                    background: '#000',
+                                                    display: 'block'
+                                                }}
+                                            />
+
+                                            {/* Metadata table */}
+                                            {message.dicomMeta && (
+                                                <div style={{
+                                                    padding: '10px',
+                                                    fontSize: '11px',
+                                                    color: '#cce0ff',
+                                                    fontFamily: 'monospace'
+                                                }}>
+                                                    <div style={{
+                                                        color: '#7eb8f7',
+                                                        fontWeight: 700,
+                                                        marginBottom: '6px',
+                                                        fontSize: '11px'
+                                                    }}>
+                                                        📋 DICOM METADATA
+                                                    </div>
+                                                    {[
+                                                        ['Patient ID',    message.dicomMeta.patientId],
+                                                        ['Patient Name',  message.dicomMeta.patientName],
+                                                        ['Birth Date',    message.dicomMeta.patientBirthDate],
+                                                        ['Sex',           message.dicomMeta.patientSex],
+                                                        ['Modality',      message.dicomMeta.modality],
+                                                        ['Body Part',     message.dicomMeta.bodyPart],
+                                                        ['Study',         message.dicomMeta.studyDescription],
+                                                        ['Series',        message.dicomMeta.seriesDescription],
+                                                        ['Study Date',    message.dicomMeta.studyDate],
+                                                        ['Institution',   message.dicomMeta.institutionName],
+                                                        ['Manufacturer',  message.dicomMeta.manufacturer],
+                                                        ['Image Size',    message.dicomMeta.imageSize],
+                                                        ['Bits',          message.dicomMeta.bitsAllocated],
+                                                        ['KVP',           message.dicomMeta.kvp],
+                                                        ['Exposure',      message.dicomMeta.exposureTime ? message.dicomMeta.exposureTime + ' ms' : 'N/A'],
+                                                    ].filter(([, v]) => v && v !== 'N/A').map(([label, value]) => (
+                                                        <div key={label} style={{
+                                                            display: 'flex',
+                                                            gap: '8px',
+                                                            padding: '2px 0',
+                                                            borderBottom: '1px solid #1a3a6b'
+                                                        }}>
+                                                            <span style={{ color: '#7eb8f7', minWidth: '90px' }}>{label}</span>
+                                                            <span>{value}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {/* ── end DICOM block ── */}
 
                                     {message.text}
                                     <div className={`message-time ${message.sender}`}>
@@ -507,15 +680,45 @@ const MiniChatbot = () => {
                         >
                             📷 Phân tích ảnh
                         </button>
+
+                        {/* DICOM Upload Button */}
+                        <button
+                            onClick={() => dicomInputRef.current?.click()}
+                            className="test-btn image-upload"
+                            title="Tải lên file DICOM (.dcm)"
+                        >
+                            🏥 Tải DICOM
+                        </button>
+
+                        {/* Nút phân tích DICOM — chỉ hiện khi đã chọn file */}
+                        {selectedDicom && (
+                            <button
+                                onClick={sendDicomForAnalysis}
+                                className="test-btn gemini"
+                                title={`Phân tích ${selectedDicom.name}`}
+                                disabled={isTyping}
+                            >
+                                🔬 Phân tích DICOM
+                            </button>
+                        )}
                     </div>
 
-                    {/* Hidden File Input */}
+                    {/* Hidden File Input — ảnh thường */}
                     <input
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
                         multiple
                         onChange={handleImageUpload}
+                        style={{ display: 'none' }}
+                    />
+
+                    {/* Hidden File Input — DICOM */}
+                    <input
+                        ref={dicomInputRef}
+                        type="file"
+                        accept=".dcm"
+                        onChange={handleDicomUpload}
                         style={{ display: 'none' }}
                     />
 

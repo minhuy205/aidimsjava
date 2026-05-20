@@ -31,7 +31,8 @@ public class SecurityConfig {
                                 "/api/verify-image/save",
                                 "/api/verify-image/all",
                                 "/api/compare-images/**",
-                                "/api/dicom-viewer/**"
+                                "/api/dicom-viewer/**",
+                                "/api/dicom/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
