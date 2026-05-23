@@ -18,7 +18,7 @@ console.log('🤖 Bước 1: Đang chạy API test từ Postman...');
 let testSuccess = true;
 try {
     const envParam = fs.existsSync(ENV_PATH) ? `-e ${ENV_PATH}` : '';
-    execSync(`newman run ${COLLECTION_PATH} ${envParam} --reporters cli,json --reporter-json-export ${REPORT_PATH}`, { stdio: 'inherit' });
+    execSync(`npx newman run ${COLLECTION_PATH} ${envParam} --reporters cli,json --reporter-json-export ${REPORT_PATH}`, { stdio: 'inherit' });
     console.log('✅ Bước 1: Tất cả testcases đều PASS.');
 } catch (error) {
     console.log('⚠️ Bước 1: Phát hiện một số testcases bị thất bại (FAIL).');

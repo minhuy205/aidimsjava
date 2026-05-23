@@ -44,7 +44,7 @@ jobs:
           cd aidims-backend
           mvn clean package -DskipTests
           # Run the Spring Boot application in background and redirect logs
-          java -jar target/*.jar > spring-boot.log 2>&1 &
+          java -jar target/*.jar --gemini.api.key="${{ secrets.GEMINI_API_KEY }}" > spring-boot.log 2>&1 &
           
           # Wait up to 30 seconds for Spring Boot to start and be responsive on port 8080
           echo "Waiting for Spring Boot to start..."
