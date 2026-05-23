@@ -34,9 +34,10 @@ try {
     process.exit(1);
 }
 
-// 4. Quyết định đẩy code lên GitHub
+// 4. Quyết định đẩy code lên GitHub (ĐÃ VÔ HIỆU HÓA tự động commit/push theo yêu cầu của lập trình viên)
 if (testSuccess) {
-    console.log('🚀 Bước 3: Test thành công! Tiến hành đẩy code lên GitHub...');
+    console.log('🚀 Bước 3: Test thành công! (Tự động commit/push đã được tắt theo thiết lập bảo mật).');
+    /*
     try {
         // Lấy tên branch hiện tại
         const currentBranch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
@@ -60,6 +61,7 @@ if (testSuccess) {
         console.error('❌ Lỗi khi thực hiện các lệnh Git:', error.message);
         process.exit(1);
     }
+    */
 } else {
     console.log('🛑 QUY TRÌNH DỪNG LẠI: Phát hiện API test bị lỗi. Code KHÔNG được đẩy lên GitHub.');
     console.log('👉 Vui lòng kiểm tra lỗi trên bảng Jira, sửa code và chạy lại quy trình.');

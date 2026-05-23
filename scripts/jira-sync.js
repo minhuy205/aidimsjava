@@ -40,6 +40,31 @@ async function callJira(endpoint, options = {}) {
     return response.status === 204 ? null : await response.json();
 }
 
+/**
+ * Helper to format Postman Url object to string
+ */
+function formatUrl(urlObj) {
+    if (!urlObj) return '';
+    if (typeof urlObj === 'string') return urlObj;
+    
+    let urlStr = '';
+    if (urlObj.protocol) {
+        urlStr += urlObj.protocol + '://';
+    }
+    if (urlObj.host) {
+        const host = Array.isArray(urlObj.host) ? urlObj.host.join('.') : urlObj.host;
+        urlStr += host;
+    }
+    if (urlObj.port) {
+        urlStr += ':' + urlObj.port;
+    }
+    if (urlObj.path) {
+        const path = Array.isArray(urlObj.path) ? '/' + urlObj.path.join('/') : urlObj.path;
+        urlStr += path;
+    }
+    return urlStr || JSON.stringify(urlObj);
+}
+
 async function run() {
     try {
         console.log('🔍 Analyzing Newman test report...');
@@ -73,12 +98,15 @@ async function run() {
             for (const [requestName, requestFailures] of Object.entries(failedRequests)) {
                 const sampleFail = requestFailures[0];
                 const requestMethod = sampleFail.source.request.method || 'GET';
-                const requestUrl = sampleFail.source.request.url.toString() || '';
+                const requestUrl = sampleFail.source.request.url.raw || 
+                                   (typeof sampleFail.source.request.url === 'string' ? sampleFail.source.request.url : formatUrl(sampleFail.source.request.url)) || 
+                                   '';
                 
                 const summary = `[Bug-CI] Failure on API: ${requestMethod} - ${requestName}`;
                 
                 // 1. Check if an active (non-Done) bug with this summary already exists
-                const jql = `project = "${JIRA_PROJECT_KEY}" AND summary ~ "\\"${summary}\\"" AND status != "Done" AND status != "Resolved"`;
+                const escapedSummary = summary.replace(/"/g, '\\"');
+                const jql = `project = "${JIRA_PROJECT_KEY}" AND summary = "${escapedSummary}" AND status != "Done" AND status != "Resolved"`;
                 const searchResult = await callJira(`/search?jql=${encodeURIComponent(jql)}`);
 
                 if (searchResult.issues && searchResult.issues.length > 0) {
@@ -105,16 +133,23 @@ async function run() {
                                 {
                                     type: 'paragraph',
                                     content: [
-                                        { type: 'text', text: '🚨 Automated API test failure detected in CI/CD pipeline.\n\n', textStyle: { bold: true, color: '#DE350B' } }
+                                        { 
+                                            type: 'text', 
+                                            text: '🚨 Automated API test failure detected in CI/CD pipeline.\n\n', 
+                                            marks: [
+                                                { type: 'strong' },
+                                                { type: 'textColor', attrs: { color: '#DE350B' } }
+                                            ]
+                                        }
                                     ]
                                 },
                                 {
                                     type: 'paragraph',
                                     content: [
-                                        { type: 'text', text: `Request Details:\n`, textStyle: { bold: true } },
+                                        { type: 'text', text: `Request Details:\n`, marks: [{ type: 'strong' }] },
                                         { type: 'text', text: `- Method: ${requestMethod}\n` },
                                         { type: 'text', text: `- URL: ${requestUrl}\n\n` },
-                                        { type: 'text', text: `Failed Assertions:\n`, textStyle: { bold: true } },
+                                        { type: 'text', text: `Failed Assertions:\n`, marks: [{ type: 'strong' }] },
                                         { type: 'text', text: failureDetails }
                                     ]
                                 }
@@ -135,7 +170,7 @@ async function run() {
             console.log('🎉 All API tests passed! Checking if we need to resolve any previously logged Bugs...');
 
             // Search for active [Bug-CI] issues in Jira to auto-close them
-            const jql = `project = "${JIRA_PROJECT_KEY}" AND summary ~ "\\[Bug-CI\\]" AND status != "Done" AND status != "Resolved"`;
+            const jql = `project = "${JIRA_PROJECT_KEY}" AND summary ~ "Bug-CI" AND status != "Done" AND status != "Resolved"`;
             const openBugs = await callJira(`/search?jql=${encodeURIComponent(jql)}`);
 
             if (openBugs.issues && openBugs.issues.length > 0) {
