@@ -1,0 +1,98 @@
+name: API Testing and Jira Sync
+
+on:
+  push:
+    branches: [ master, main, dev ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  run-tests-and-sync-jira:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: aidims
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      # 1. Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 2. Verify MySQL and Initialize Database
+      - name: Initialize Database
+        run: |
+          mysql -h 127.0.0.1 -u root -e "show databases;"
+          mysql -h 127.0.0.1 -u root aidims < aidims.sql
+
+      # 3. Setup Java & Build Spring Boot Backend
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and Start Backend
+        run: |
+          cd aidims-backend
+          mvn clean package -DskipTests
+          # Run the Spring Boot application in background and redirect logs
+          java -jar target/*.jar > spring-boot.log 2>&1 &
+          
+          # Wait up to 30 seconds for Spring Boot to start and be responsive on port 8080
+          echo "Waiting for Spring Boot to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 > /dev/null; then
+              echo "Spring Boot is up and running!"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 1
+          done
+          
+          # Print logs if it didn't start
+          if ! curl -s http://localhost:8080 > /dev/null; then
+            echo "❌ Spring Boot failed to start in time. Here are the logs:"
+            cat spring-boot.log
+            exit 1
+          fi
+
+      # 4. Setup Node.js to run Newman
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Newman (Postman Runner)
+        run: npm install -g newman
+
+      # 5. Run API tests and export report as JSON
+      # If tests/aidims_collection.json does not exist yet, this step will be skipped or run against a default template.
+      - name: Run Postman Tests
+        run: |
+          # Check if the collection file exists, if not create a simple placeholder test run
+          if [ ! -f ./tests/aidims_collection.json ]; then
+            echo "⚠️ Postman collection not found. Creating a placeholder test run."
+            mkdir -p tests
+            echo '{"info":{"name":"Placeholder","schema":"https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},"item":[{"name":"Ping Check","request":{"method":"GET","header":[],"url":{"raw":"http://localhost:8080/api/ping","protocol":"http","host":["localhost"],"port":"8080","path":["api","ping"]}},"response":[]}]}' > ./tests/aidims_collection.json
+          fi
+          
+          newman run ./tests/aidims_collection.json -e ./tests/environment.json --reporters cli,json --reporter-json-export newman-report.json
+        continue-on-error: true # Ensure the next step (Sync Jira) runs even if tests fail
+
+      # 6. Synchronize results to Jira Cloud
+      - name: Sync with Jira
+        run: node ./scripts/jira-sync.js
+        env:
+          JIRA_DOMAIN: ${{ secrets.JIRA_DOMAIN }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ secrets.JIRA_PROJECT_KEY || 'TASK' }}
+          NEWMAN_REPORT_PATH: ./newman-report.json
