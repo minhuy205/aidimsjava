@@ -129,7 +129,7 @@ async function run() {
                 // 1. Check if an active (non-Done) bug with this summary already exists
                 const escapedSummary = summary.replace(/"/g, '\\"');
                 const jql = `project = "${JIRA_PROJECT_KEY}" AND summary = "${escapedSummary}" AND status != "Done" AND status != "Resolved"`;
-                const searchResult = await callJira(`/search?jql=${encodeURIComponent(jql)}`);
+                const searchResult = await callJira(`/search/jql?jql=${encodeURIComponent(jql)}`);
 
                 if (searchResult.issues && searchResult.issues.length > 0) {
                     console.log(`ℹ️ Issue already exists for "${summary}". Skipping creation.`);
@@ -193,7 +193,7 @@ async function run() {
 
             // Search for active [Bug-CI] issues in Jira to auto-close them
             const jql = `project = "${JIRA_PROJECT_KEY}" AND summary ~ "Bug-CI" AND status != "Done" AND status != "Resolved"`;
-            const openBugs = await callJira(`/search?jql=${encodeURIComponent(jql)}`);
+            const openBugs = await callJira(`/search/jql?jql=${encodeURIComponent(jql)}`);
 
             if (openBugs.issues && openBugs.issues.length > 0) {
                 console.log(`🧹 Found ${openBugs.issues.length} active CI-triggered bugs. Closing them...`);
