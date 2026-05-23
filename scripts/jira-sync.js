@@ -22,12 +22,21 @@ if (fs.existsSync(envPath)) {
     });
 }
 
+function cleanSecret(val) {
+    if (!val) return '';
+    let s = val.trim();
+    if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+        s = s.substring(1, s.length - 1).trim();
+    }
+    return s;
+}
+
 // Configuration from environment variables
-const JIRA_DOMAIN = process.env.JIRA_DOMAIN; // e.g., https://your-domain.atlassian.net
-const JIRA_EMAIL = process.env.JIRA_EMAIL;
-const JIRA_TOKEN = process.env.JIRA_TOKEN;
-const JIRA_PROJECT_KEY = process.env.JIRA_PROJECT_KEY || 'KAN'; // Default Project Key
-const REPORT_PATH = process.env.NEWMAN_REPORT_PATH || './newman-report.json';
+const JIRA_DOMAIN = cleanSecret(process.env.JIRA_DOMAIN); // e.g., https://your-domain.atlassian.net
+const JIRA_EMAIL = cleanSecret(process.env.JIRA_EMAIL);
+const JIRA_TOKEN = cleanSecret(process.env.JIRA_TOKEN);
+const JIRA_PROJECT_KEY = cleanSecret(process.env.JIRA_PROJECT_KEY || 'KAN'); // Default Project Key
+const REPORT_PATH = cleanSecret(process.env.NEWMAN_REPORT_PATH || './newman-report.json');
 
 if (!JIRA_DOMAIN || !JIRA_EMAIL || !JIRA_TOKEN) {
     console.error('❌ Error: Missing Jira configuration in environment variables (JIRA_DOMAIN, JIRA_EMAIL, JIRA_TOKEN).');
@@ -89,6 +98,18 @@ function formatUrl(urlObj) {
 
 async function run() {
     try {
+        console.log(`📡 Verifying connection to Jira project "${JIRA_PROJECT_KEY}"...`);
+        try {
+            const projectInfo = await callJira(`/project/${JIRA_PROJECT_KEY}`);
+            console.log(`✅ Successfully connected to Jira Project: ${projectInfo.name} (${projectInfo.key})`);
+            if (projectInfo.issueTypes) {
+                const types = projectInfo.issueTypes.map(t => `${t.name} (ID: ${t.id})`).join(', ');
+                console.log(`📋 Available Issue Types: ${types}`);
+            }
+        } catch (err) {
+            console.error(`❌ Project verification failed: ${err.message}`);
+        }
+
         console.log('🔍 Analyzing Newman test report...');
         
         if (!fs.existsSync(REPORT_PATH)) {
