@@ -26,7 +26,7 @@ if (fs.existsSync(envPath)) {
 const JIRA_DOMAIN = process.env.JIRA_DOMAIN; // e.g., https://your-domain.atlassian.net
 const JIRA_EMAIL = process.env.JIRA_EMAIL;
 const JIRA_TOKEN = process.env.JIRA_TOKEN;
-const JIRA_PROJECT_KEY = process.env.JIRA_PROJECT_KEY || 'TASK'; // Default Project Key
+const JIRA_PROJECT_KEY = process.env.JIRA_PROJECT_KEY || 'KAN'; // Default Project Key
 const REPORT_PATH = process.env.NEWMAN_REPORT_PATH || './newman-report.json';
 
 if (!JIRA_DOMAIN || !JIRA_EMAIL || !JIRA_TOKEN) {
