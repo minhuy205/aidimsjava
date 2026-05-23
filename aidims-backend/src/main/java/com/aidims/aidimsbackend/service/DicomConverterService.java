@@ -70,6 +70,10 @@ public class DicomConverterService {
             reader.dispose();
         }
 
+        if (image == null) {
+            throw new RuntimeException("Không thể giải mã hình ảnh từ tệp DICOM (Định dạng pixel không được hỗ trợ hoặc thiếu bộ giải mã)");
+        }
+
         // ── 3. Normalize + convert sang RGB ─────────────────────────────
         image = normalizeToRgb(image);
 
