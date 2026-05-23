@@ -173,6 +173,9 @@
           "listen": "test",
           "script": {
             "exec": [
+              "if (pm.response.code !== 200) {",
+              "    console.log(\"❌ DICOM Success Test Failed! Server response body:\", pm.response.text());",
+              "}",
               "pm.test(\"Status code is 200\", function () {",
               "    pm.response.to.have.status(200);",
               "});",

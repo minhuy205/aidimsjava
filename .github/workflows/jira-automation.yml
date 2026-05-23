@@ -87,6 +87,17 @@ jobs:
           newman run ./tests/aidims_collection.json -e ./tests/environment.json --reporters cli,json --reporter-json-export newman-report.json
         continue-on-error: true # Ensure the next step (Sync Jira) runs even if tests fail
 
+      # 5b. Debug Spring Boot logs
+      - name: Debug Spring Boot Logs
+        run: |
+          if [ -f ./aidims-backend/spring-boot.log ]; then
+            echo "📋 === SPRING BOOT BACKEND LOGS ==="
+            cat ./aidims-backend/spring-boot.log
+          else
+            echo "⚠️ spring-boot.log not found."
+          fi
+        if: always()
+
       # 6. Synchronize results to Jira Cloud
       - name: Sync with Jira
         run: node ./scripts/jira-sync.js
