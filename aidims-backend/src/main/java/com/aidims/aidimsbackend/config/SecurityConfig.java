@@ -27,9 +27,10 @@ public class SecurityConfig {
                                 "/api/chat/**",
                                 "/api/imaging-types/**",
                                 "/api/dicom-import/**",
-                                "/api/verify-image/dicom-imports",
-                                "/api/verify-image/save",
-                                "/api/verify-image/all",
+
+                                // FIX CHỖ NÀY
+                                "/api/verify-image/**",
+
                                 "/api/compare-images/**",
                                 "/api/dicom-viewer/**",
                                 "/api/dicom/**"
@@ -44,25 +45,40 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration configuration = new CorsConfiguration();
 
-    configuration.setAllowedOrigins(Arrays.asList(
-        "http://localhost:3000",
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
                 "http://localhost:3001",
                 "http://localhost:8080",
                 "http://127.0.0.1:3000"
-    ));
+        ));
 
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-    configuration.setAllowedHeaders(Arrays.asList("*"));
-    configuration.setExposedHeaders(Arrays.asList(
-        "Content-Disposition", "Content-Type", "Cache-Control"
-    ));
-    configuration.setAllowCredentials(true); // Giữ true nhưng bỏ dấu "*"
-    configuration.setMaxAge(3600L);
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "OPTIONS"
+        ));
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+
+        configuration.setExposedHeaders(Arrays.asList(
+                "Content-Disposition",
+                "Content-Type",
+                "Cache-Control"
+        ));
+
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 }
