@@ -39,6 +39,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Run Backend Unit Tests
+        run: |
+          cd aidims-backend
+          mvn test
+
       - name: Build and Start Backend
         run: |
           cd aidims-backend
@@ -72,6 +77,13 @@ jobs:
 
       - name: Install Newman (Postman Runner)
         run: npm install -g newman
+
+      # 4b. Install Frontend Dependencies & Run Frontend Unit Tests
+      - name: Install Frontend Dependencies & Run Frontend Unit Tests
+        run: |
+          cd aidims-frontend
+          npm install
+          npm test -- --watchAll=false
 
       # 5. Run API tests and export report as JSON
       # If tests/aidims_collection.json does not exist yet, this step will be skipped or run against a default template.

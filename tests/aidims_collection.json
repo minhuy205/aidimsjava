@@ -5,7 +5,7 @@
   },
   "item": [
     {
-      "name": "Login Validation - Empty Username",
+      "name": "Auth - Login Validation - Empty Username",
       "request": {
         "method": "POST",
         "header": [
@@ -49,7 +49,7 @@
       ]
     },
     {
-      "name": "Login Validation - Empty Password",
+      "name": "Auth - Login Validation - Empty Password",
       "request": {
         "method": "POST",
         "header": [
@@ -93,7 +93,7 @@
       ]
     },
     {
-      "name": "Login Validation - Special Characters Password",
+      "name": "Auth - Login Validation - Special Characters Password",
       "request": {
         "method": "POST",
         "header": [
@@ -137,7 +137,1610 @@
       ]
     },
     {
-      "name": "DICOM Analysis - Success",
+      "name": "Auth - Login Success",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"1\",\n    \"password\": \"1\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Login successful\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "    pm.expect(jsonData.data.username).to.eql(\"1\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management - Create User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"postman_user\",\n    \"password\": \"password123\",\n    \"fullName\": \"Postman User\",\n    \"email\": \"postman_user@example.com\",\n    \"phone\": \"0987654321\",\n    \"role\": {\n        \"roleId\": 2\n    }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"User created successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "    pm.expect(jsonData.data.userId).to.not.be.null;",
+              "    pm.environment.set(\"testUserId\", jsonData.data.userId);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management - Get All Users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/users",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Users list is not empty\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management - Get User By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/users/{{testUserId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "{{testUserId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"User ID and username matches\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.userId).to.eql(parseInt(pm.environment.get(\"testUserId\")));",
+              "    pm.expect(jsonData.username).to.eql(\"postman_user\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management - Update User Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"isActive\": false\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/update-status/{{testUserId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "update-status",
+            "{{testUserId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Status updated to inactive\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "    pm.expect(jsonData.data.isActive).to.eql(false);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management - Update User",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"postman_user\",\n    \"password\": \"newpassword123\",\n    \"fullName\": \"Postman User Updated\",\n    \"email\": \"postman_user_updated@example.com\",\n    \"phone\": \"0987654322\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/{{testUserId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "{{testUserId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"User updated successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "    pm.expect(jsonData.data.fullName).to.eql(\"Postman User Updated\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management - Delete User",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/users/{{testUserId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "{{testUserId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"User deleted response contains success message\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.eql(\"User deleted successfully\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/receptionist/dashboard",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "receptionist",
+            "dashboard"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Dashboard response matches\", function () {",
+              "    pm.expect(pm.response.text()).to.eql(\"Trang tiếp nhận viên\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Get Doctor By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/receptionist/doctor/4",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "receptionist",
+            "doctor",
+            "4"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Doctor ID matches\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.eql(4);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patient - Get All Patients",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/patients",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patients"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Patients array returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an(\"array\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Register Patient",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"patient_code\": \"BN_POSTMAN\",\n    \"full_name\": \"Postman Patient\",\n    \"date_of_birth\": \"1995-05-15\",\n    \"gender\": \"Nam\",\n    \"phone\": \"0912345678\",\n    \"email\": \"patient_postman@example.com\",\n    \"address\": \"Hanoi\",\n    \"identity_number\": \"123456789\",\n    \"insurance_number\": \"HI123456\",\n    \"emergency_contact_name\": \"Emergency Contact\",\n    \"emergency_contact_phone\": \"0987654321\",\n    \"blood_type\": \"O+\",\n    \"allergies\": \"None\",\n    \"medical_history\": \"None\",\n    \"age\": 30,\n    \"temperature\": 36.8,\n    \"heart_rate\": 80,\n    \"blood_pressure\": \"120/80\",\n    \"respiratory_rate\": 18,\n    \"oxygen_saturation\": 98\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/receptionist/patient",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "receptionist",
+            "patient"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Patient registered successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.patient_id).to.not.be.null;",
+              "    pm.expect(jsonData.patient_code).to.eql(\"BN_POSTMAN\");",
+              "    pm.environment.set(\"patientId\", jsonData.patient_id);",
+              "    pm.environment.set(\"patientCode\", jsonData.patient_code);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patient - Get Patient By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/patients/{{patientId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patients",
+            "{{patientId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Patient details match\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.patient_id).to.eql(parseInt(pm.environment.get(\"patientId\")));",
+              "    pm.expect(jsonData.full_name).to.eql(\"Postman Patient\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Get Patient By ID (Alt)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/receptionist/patients/{{patientId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "receptionist",
+            "patients",
+            "{{patientId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Patient check returned valid patient\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.patient_id).to.eql(parseInt(pm.environment.get(\"patientId\")));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Record Symptom (Simple)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/receptionist/symptom?patientId={{patientId}}&description=Sốt cao 39 độ",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "receptionist",
+            "symptom"
+          ],
+          "query": [
+            {
+              "key": "patientId",
+              "value": "{{patientId}}"
+            },
+            {
+              "key": "description",
+              "value": "Sốt cao 39 độ"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Symptom description matches\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.description).to.eql(\"Sốt cao 39 độ\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Record Symptom (Detailed)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"patient_id\": \"{{patientId}}\",\n    \"chief_complaint\": \"Đau ngực dữ dội, khó thở\",\n    \"severity_level\": \"Nặng\",\n    \"priority_level\": \"Khẩn cấp\",\n    \"onset_time\": \"Từ sáng nay\",\n    \"duration\": \"4 giờ\",\n    \"pain_scale\": 8,\n    \"additional_notes\": \"Nghi ngờ nhồi máu cơ tim cấp\",\n    \"recorded_by\": \"Huy - Nhân viên tiếp nhận\",\n    \"selected_symptoms\": \"[{\\\"code\\\":\\\"TM01\\\",\\\"name\\\":\\\"Đau ngực\\\"},{\\\"code\\\":\\\"TM02\\\",\\\"name\\\":\\\"Khó thở\\\"}]\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/symptom-record/create",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "symptom-record",
+            "create"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Detailed symptom record saved successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.not.be.null;",
+              "    pm.expect(jsonData.mainSymptom).to.eql(\"Đau ngực dữ dội, khó thở\");",
+              "    pm.environment.set(\"symptomRecordId\", jsonData.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Symptom Record - Get All Symptoms",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/symptom-record",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "symptom-record"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Symptoms list is an array and contains records\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an(\"array\");",
+              "    var record = jsonData.find(function(r) {",
+              "        return r.patient_id === parseInt(pm.environment.get(\"patientId\"));",
+              "    });",
+              "    pm.expect(record).to.not.be.undefined;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Symptom Record - Get By Patient ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/symptom-record/patient/{{patientId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "symptom-record",
+            "patient",
+            "{{patientId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Returns symptoms for patient\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an(\"array\");",
+              "    pm.expect(jsonData.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Assign Doctor",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/receptionist/assign?patientId={{patientId}}&doctorId=4&department=Tim mạch&priority=Khẩn cấp&notes=Đau ngực cấp cứu",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "receptionist",
+            "assign"
+          ],
+          "query": [
+            {
+              "key": "patientId",
+              "value": "{{patientId}}"
+            },
+            {
+              "key": "doctorId",
+              "value": "4"
+            },
+            {
+              "key": "department",
+              "value": "Tim mạch"
+            },
+            {
+              "key": "priority",
+              "value": "Khẩn cấp"
+            },
+            {
+              "key": "notes",
+              "value": "Đau ngực cấp cứu"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Doctor assignment successful\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.department).to.eql(\"Tim mạch\");",
+              "    pm.expect(jsonData.status).to.eql(\"Đang chờ\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Get Assignments",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/receptionist/assignments",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "receptionist",
+            "assignments"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Assignments array returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an(\"array\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Get Doctors",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/receptionist/doctors",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "receptionist",
+            "doctors"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Doctors array returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an(\"array\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Get Doctors By Department",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/receptionist/doctors-by-department?department=Tim mạch",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "receptionist",
+            "doctors-by-department"
+          ],
+          "query": [
+            {
+              "key": "department",
+              "value": "Tim mạch"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Doctor matches department\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData[0].department).to.eql(\"Tim mạch\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Create Imaging Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"patientId\": \"{{patientId}}\",\n    \"imagingType\": \"XR\",\n    \"bodyPart\": \"chest\",\n    \"clinicalIndication\": \"Đau ngực dữ dội, khó thở kéo dài\",\n    \"notes\": \"Chụp X-quang phổi thẳng\",\n    \"priorityLevel\": \"urgent\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/request-photo",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "request-photo"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Imaging request created successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "    pm.expect(jsonData.data.requestCode).to.not.be.null;",
+              "    pm.environment.set(\"requestCode\", jsonData.data.requestCode);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Get All Imaging Requests",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/request-photo",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "request-photo"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Requests array is not empty\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "    pm.expect(jsonData.data.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Get Requests By Patient ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/request-photo/patient/{{patientId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "request-photo",
+            "patient",
+            "{{patientId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Requests for specific patient returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "    pm.expect(jsonData.data.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Get Imaging Type Technical Params",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/imaging-types/XR",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "imaging-types",
+            "XR"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Technical parameters returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.kVp).to.not.be.null;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician - Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/technician/dashboard",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "technician",
+            "dashboard"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Technician dashboard string matches\", function () {",
+              "    pm.expect(pm.response.text()).to.eql(\"Trang kỹ thuật viên\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician - Import DICOM file",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "src": "tests/sample.dcm",
+              "type": "file"
+            },
+            {
+              "key": "patient_code",
+              "value": "{{patientCode}}",
+              "type": "text"
+            },
+            {
+              "key": "patient_name",
+              "value": "Postman Patient",
+              "type": "text"
+            },
+            {
+              "key": "study_type",
+              "value": "X-Ray",
+              "type": "text"
+            },
+            {
+              "key": "body_part",
+              "value": "chest",
+              "type": "text"
+            },
+            {
+              "key": "technical_params",
+              "value": "{\"kVp\":\"80\",\"mAs\":\"10\"}",
+              "type": "text"
+            },
+            {
+              "key": "notes",
+              "value": "Imported via Postman test suite",
+              "type": "text"
+            },
+            {
+              "key": "performed_by",
+              "value": "7",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/dicom-import/import",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "dicom-import",
+            "import"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Import test DICOM file successfully\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(pm.response.text()).to.include(\"Import thành công\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician - View Dicom Viewer - Find File Name",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/dicom-viewer/all",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "dicom-viewer",
+            "all"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Get all DICOM viewer records and extract filename for test patient\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an(\"array\");",
+              "    ",
+              "    var record = jsonData.find(function(r) {",
+              "        return r.patientCode === pm.environment.get(\"patientCode\");",
+              "    });",
+              "    ",
+              "    pm.expect(record).to.not.be.undefined;",
+              "    pm.expect(record.fileName).to.not.be.null;",
+              "    pm.environment.set(\"importedDicomFileName\", record.fileName);",
+              "    pm.environment.set(\"importedDicomId\", record.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician - Verify Image Quality - Save Verification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"imageId\": \"{{importedDicomId}}\",\n    \"checkedBy\": 1,\n    \"result\": \"pending\",\n    \"note\": \"Kiểm định chất lượng X-quang Postman\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/verify-image/save",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "verify-image",
+            "save"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Verification saved successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.not.be.null;",
+              "    pm.expect(jsonData.result).to.eql(\"pending\");",
+              "    pm.environment.set(\"verifyImageId\", jsonData.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician - Get Verification by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/verify-image/{{verifyImageId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "verify-image",
+            "{{verifyImageId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Verification details match\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.eql(parseInt(pm.environment.get(\"verifyImageId\")));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician - Get All Verifications",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/verify-image/all",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "verify-image",
+            "all"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Verifications list contains items\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician - Update Image Quality Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"status\": \"approved\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/verify-image/{{verifyImageId}}/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "verify-image",
+            "{{verifyImageId}}",
+            "status"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Status updated to approved\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.result).to.eql(\"approved\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician - Get Verification Status Summary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/verify-image/status-summary",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "verify-image",
+            "status-summary"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Status summary is returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.tong).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technician - Get Image Summary Stats",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/verify-image/summary-stats",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "verify-image",
+            "summary-stats"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Summary stats are returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.daDuyet).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Dicom Viewer - Get Dicom By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/dicom-viewer/{{importedDicomId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "dicom-viewer",
+            "{{importedDicomId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Dicom record matches ID\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.eql(parseInt(pm.environment.get(\"importedDicomId\")));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Dicom Viewer - Get Dicom By Patient Code",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/dicom-viewer/patient/{{patientCode}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "dicom-viewer",
+            "patient",
+            "{{patientCode}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Dicom record matches patient code\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData[0].patientCode).to.eql(pm.environment.get(\"patientCode\"));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Dicom Viewer - Search Dicom",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/dicom-viewer/search?keyword=Postman",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "dicom-viewer",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "Postman"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Search results returned matches\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Dicom Viewer - Stats",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/dicom-viewer/stats",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "dicom-viewer",
+            "stats"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Stats contain total count\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.total_count).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Dicom Viewer - Serve Image Browser Compatible Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/dicom-viewer/image/{{importedDicomFileName}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "dicom-viewer",
+            "image",
+            "{{importedDicomFileName}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Served image Content-Type is browser compatible\", function () {",
+              "    var contentType = pm.response.headers.get(\"Content-Type\");",
+              "    console.log(\"Served DICOM file Content-Type:\", contentType);",
+              "    // standard HTML <img> tags cannot render application/dicom.",
+              "    // It should be mapped to image/jpeg, image/png, or image/webp.",
+              "    pm.expect(contentType).to.not.equal(\"application/dicom\");",
+              "    pm.expect(contentType).to.be.oneOf([\"image/jpeg\", \"image/png\", \"image/webp\"]);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Dicom Viewer - Download Dicom File",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/dicom-viewer/download/{{importedDicomFileName}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "dicom-viewer",
+            "download",
+            "{{importedDicomFileName}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response Content-Type is octet-stream for download\", function () {",
+              "    var contentType = pm.response.headers.get(\"Content-Type\");",
+              "    pm.expect(contentType).to.eql(\"application/octet-stream\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Dicom Analysis - AI",
       "request": {
         "method": "POST",
         "header": [],
@@ -173,9 +1776,6 @@
           "listen": "test",
           "script": {
             "exec": [
-              "if (pm.response.code !== 200) {",
-              "    console.log(\"❌ DICOM Success Test Failed! Server response body:\", pm.response.text());",
-              "}",
               "pm.test(\"Status code is 200\", function () {",
               "    pm.response.to.have.status(200);",
               "});",
@@ -193,7 +1793,7 @@
       ]
     },
     {
-      "name": "DICOM Analysis - Failure (Invalid Extension)",
+      "name": "Doctor - Dicom Analysis - Failure (Invalid Extension)",
       "request": {
         "method": "POST",
         "header": [],
@@ -236,6 +1836,388 @@
               "    var jsonData = pm.response.json();",
               "    pm.expect(jsonData.status).to.eql(\"error\");",
               "    pm.expect(jsonData.analysisText).to.include(\"Chỉ hỗ trợ file .dcm\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Diagnostic Report - Generate Report Code (GET)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/diagnostic-reports/generate-code",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "diagnostic-reports",
+            "generate-code"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Report code generated successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "    pm.expect(jsonData.data).to.be.a(\"string\");",
+              "    pm.environment.set(\"reportCode\", jsonData.data);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Diagnostic Report - Generate Report Code (POST)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/diagnostic-reports/generate-code",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "diagnostic-reports",
+            "generate-code"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Report code generated successfully via POST\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Diagnostic Report - Create Report",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"resultId\": 1,\n    \"reportCode\": \"{{reportCode}}\",\n    \"findings\": \"Phổi sáng bình thường, vòm hoành đều, bóng tim không to.\",\n    \"impression\": \"Hình ảnh tim phổi bình thường trên X-quang.\",\n    \"recommendations\": \"Khám lại sau 6 tháng hoặc khi có triệu chứng đau ngực trở lại.\",\n    \"reportType\": \"ChinhThuc\",\n    \"radiologistId\": 4,\n    \"status\": \"HoanThanh\",\n    \"referringDoctorName\": \"BS. Nguyễn Văn A\",\n    \"referringDoctorSpecialty\": \"Tim mạch\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/diagnostic-reports",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "diagnostic-reports"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Diagnostic report created successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "    pm.expect(jsonData.data.reportId).to.not.be.null;",
+              "    pm.environment.set(\"reportId\", jsonData.data.reportId);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Diagnostic Report - Get All Reports",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/diagnostic-reports",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "diagnostic-reports"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Reports list is returned and contains created report\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "    pm.expect(jsonData.data.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Diagnostic Report - Get Report By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/diagnostic-reports/{{reportId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "diagnostic-reports",
+            "{{reportId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Report details match\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "    pm.expect(jsonData.data.reportId).to.eql(parseInt(pm.environment.get(\"reportId\")));",
+              "    pm.expect(jsonData.data.reportCode).to.eql(pm.environment.get(\"reportCode\"));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Diagnostic Report - Get Statistics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/diagnostic-reports/statistics",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "diagnostic-reports",
+            "statistics"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Statistics returned matches\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "    pm.expect(jsonData.data.totalReports).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Compare Patient Images - Search",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/compare-images/search?keyword={{patientCode}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "compare-images",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "{{patientCode}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Compare search returns patient images\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Chatbot - Send Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"message\": \"Tôi bị đau đầu dữ dội và có cảm giác buồn nôn\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/message",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "chat",
+            "message"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Chatbot response returned successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "    pm.expect(jsonData.message).to.not.be.null;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Chatbot - Analyze Image",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"message\": \"Phân tích phim chụp này\",\n    \"images\": [\n        {\n            \"name\": \"test.jpg\",\n            \"type\": \"image/jpeg\",\n            \"data\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=\",\n            \"size\": 100\n        }\n    ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/chat/analyze-image",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "chat",
+            "analyze-image"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 or 500 (depends on API key configuration)\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 500]);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receptionist - Delete Detailed Symptom",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/symptom-record/{{symptomRecordId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "symptom-record",
+            "{{symptomRecordId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
               "});"
             ],
             "type": "text/javascript"
