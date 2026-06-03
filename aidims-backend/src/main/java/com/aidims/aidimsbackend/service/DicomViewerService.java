@@ -5,6 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -322,4 +330,29 @@ public class DicomViewerService {
         if (fileName == null) return null;
         return "http://localhost:" + serverPort + "/api/dicom-viewer/image/" + fileName;
     }
+
+    // === API FIX TASK-37: Trả luồng byte ảnh y khoa trực tiếp lên trình duyệt ===
+    @GetMapping("/serve/{fileName:.+}")
+    public ResponseEntity<Resource> serveImageBrowserCompatible(@PathVariable String fileName) {
+        try {
+            // Đọc trực tiếp từ thư mục dicom_uploads của dự án
+            Path filePath = Paths.get("dicom_uploads").resolve(fileName).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() || resource.isReadable()) {
+                MediaType mediaType = MediaType.IMAGE_JPEG;
+                if (fileName.toLowerCase().endsWith(".png")) {
+                    mediaType = MediaType.IMAGE_PNG;
+                }
+                return ResponseEntity.ok()
+                        .contentType(mediaType)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 }
